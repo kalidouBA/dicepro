@@ -371,8 +371,6 @@ objective_wrapper <- function(objective_opt, dataset, config, params, W_prime = 
 #' @param W_prime        Optional initial W matrix.
 #' @return list(trials, W, H).
 #' @export
-# MODIF: `config_path` remplacé par `config` (liste R).
-# `.get_conf_from_json()` supprimé — plus d'I/O JSON, plus de jsonlite.
 research_hyperOpt <- function(objective_opt, dataset,
                               config,                # <-- plus config_path
                               hp_space = NULL,

@@ -215,7 +215,7 @@ See `?BlueCode` and `?CellMixtures` for full documentation.
 
 ## Vignettes
 
-Two vignettes provide step-by-step walkthroughs:
+Two vignettes provide step-by-step:
 
 ``` r
 vignette("vignette-simulation", package = "dicepro")
@@ -228,8 +228,8 @@ vignette("vignette-real-data",  package = "dicepro")
 
 If you use dicepro in your research, please cite:
 
-> *When Less Is Not More\]{When Less Is Not More: Mitigates the Impact
-> of Incomplete Reference Matrices on Cellular Frequency Deconvolution*
+> \[When Less Is Not More\]{When Less Is Not More: Mitigates the Impact
+> of Incomplete Reference Matrices on Cellular Frequency Deconvolution\*
 > Bioinformatics. <doi:XXXX>
 
 ------------------------------------------------------------------------

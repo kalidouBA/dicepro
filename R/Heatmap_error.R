@@ -77,8 +77,6 @@
 heatmap_abundances <- function(res2plot, base_size = 9) {
 
   Iterate <- Cell_Type <- Abundances <- NULL
-
-  # Remplace tidyr::pivot_longer() — base R, pas de dépendance
   iter_col   <- res2plot$Iterate
   ct_cols    <- setdiff(names(res2plot), "Iterate")
 
@@ -134,7 +132,6 @@ heatmap_abundances <- function(res2plot, base_size = 9) {
 metric_plot <- function(perf2plot,
                         ylab      = "Error between folds",
                         base_size = 9) {
-  # Silence R CMD CHECK notes for NSE column names
   Iterate <- metric <- NULL
 
   ggplot2::ggplot(

@@ -52,11 +52,6 @@ run_experiment <- function(dataset,
     hspaceTechniqueChoose,
     c("all", "restrictionEspace")
   )
-
-  # MODIF: config construit comme objet R — plus besoin de jsonlite pour
-  # l'écrire sur disque puis le relire aussitôt après.
-  # exp pointe toujours vers paths$data_dir pour que objective_opt() puisse
-  # s'en servir comme répertoire de sauvegarde intermédiaire.
   base_config <- list(
     exp          = paths$data_dir,
     hp_max_evals = hp_max_evals,
@@ -79,16 +74,11 @@ run_experiment <- function(dataset,
     function(arg) .parse_hyperopt_searchspace(arg, raw_space[[arg]])
   )
 
-  # MODIF: on assemble la config finale en mémoire (raw_space inclus pour
-  # validation dans .parse_config(), mais on ne la sérialise plus sur disque).
   hyperopt_config <- c(base_config, list(hp_space = raw_space))
-
-  # MODIF: on passe `config` directement à research_hyperOpt() au lieu de
-  # config_path. Le fichier JSON intermédiaire n'existe plus.
   research_hyperOpt(
     objective_opt = objective_opt,
     dataset       = dataset,
-    config        = hyperopt_config,   # <-- objet R, plus de fichier JSON
+    config        = hyperopt_config,
     hp_space      = parsed_space,
     W_prime       = W_prime
   )
