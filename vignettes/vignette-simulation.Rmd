@@ -34,14 +34,24 @@ knitr::opts_chunk$set(
 
 # Overview
 
-This vignette demonstrates a complete dicepro deconvolution workflow on
+This vignette demonstrates complete dicepro deconvolution workflows on
 **fully synthetic data**, enabling end-to-end reproducibility without
 requiring access to proprietary datasets.
+
+Two simulation strategies are available and covered here:
+
+| Function | Reference matrix | Cell-type names | Best used for |
+|---|---|---|---|
+| `simulation()` | Synthetic (generated internally) | Generic (`CellType_k`) | Flexible benchmarking with custom parameters |
+| `simulation_bluecode()` | BlueCode (bundled real reference) | Real biological names | Realistic benchmarking on human tissue cell types |
+
+Both functions return the same standardised triplet — `$W`, `$p`, `$B` —
+and are fully interchangeable as input to `dicepro()`.
 
 The pipeline proceeds in four stages:
 
 1. **Simulate** a reference signature matrix and ground-truth cell-type
-   proportions using the built-in simulation framework.
+   proportions.
 2. **Generate** a noisy bulk RNA-seq matrix from the simulated mixture.
 3. **Deconvolve** using the main `dicepro()` function with automated
    hyperparameter optimisation.
@@ -49,13 +59,15 @@ The pipeline proceeds in four stages:
 
 ---
 
-# Data Simulation
+# Strategy 1 — Fully Synthetic Simulation
 
-`simulation()` generates a self-consistent triplet -- reference matrix
-`$W`, proportion matrix `$p`, and noisy bulk matrix `$B` -- in a single
-call, guaranteeing column-name alignment across all three outputs.
+`simulation()` generates a self-consistent triplet from scratch: a synthetic
+reference matrix `$W`, ground-truth proportion matrix `$p`, and noisy bulk
+matrix `$B`, guaranteeing column-name alignment across all three outputs.
 
-```{r simulate, eval=FALSE}
+## Data Generation
+
+```{r simulate-synthetic}
 library(dicepro)
 set.seed(2101L)
 
@@ -76,7 +88,9 @@ cat("Bulk       :", dim(sim_data$B), "\n")
 cat("Row sums   :", round(range(rowSums(sim_data$p)), 4), "\n")
 ```
 
-```{r sanity-check, eval=FALSE}
+## Noise Model Sanity Check
+
+```{r sanity-check-synthetic}
 bulk_clean <- as.matrix(sim_data$W) %*% t(as.matrix(sim_data$p))
 
 plot(
@@ -90,11 +104,9 @@ plot(
 abline(0, 1, col = "firebrick", lwd = 1.5)
 ```
 
----
+## Deconvolution
 
-# Deconvolution with `dicepro()`
-
-```{r run-dicepro, eval=FALSE}
+```{r run-dicepro-synthetic}
 out <- dicepro(
   reference             = as.matrix(sim_data$W),
   bulk                  = as.matrix(sim_data$B),
@@ -110,34 +122,32 @@ out <- dicepro(
 )
 ```
 
----
+## Results
 
-# Results
+### Optimal Hyperparameters
 
-## Optimal Hyperparameters
-
-```{r best-hp, eval=FALSE}
+```{r best-hp-synthetic}
 cat("Best lambda :", out$hyperparameters$lambda, "\n")
 cat("Best gamma  :", out$hyperparameters$gamma,  "\n")
 cat("Loss        :", out$metrics$loss,            "\n")
 cat("Constraint  :", out$metrics$constraint,      "\n")
 ```
 
-## Hyperparameter Optimisation Report
+### Hyperparameter Optimisation Report
 
-```{r plot-hyperopt, eval=FALSE, fig.height=9}
+```{r plot-hyperopt-synthetic, fig.height=9}
 out$plot_hyperopt
 ```
 
-## Pareto Frontier
+### Pareto Frontier
 
-```{r plot-pareto, eval=FALSE}
+```{r plot-pareto-synthetic}
 out$plot
 ```
 
-## Recovered vs True Proportions
+### Recovered vs True Proportions
 
-```{r compare-props, eval=FALSE}
+```{r compare-props-synthetic}
 true_prop <- as.matrix(sim_data$p)
 pred_prop <- as.matrix(out$H)
 
@@ -159,9 +169,9 @@ plot(
 abline(0, 1, col = "firebrick", lwd = 1.5)
 ```
 
-## Per-Cell-Type Correlation
+### Per-Cell-Type Correlation
 
-```{r per-ct-cor, eval=FALSE, fig.height=4}
+```{r per-ct-cor-synthetic, fig.height=4}
 ct_cors <- vapply(common_ct, function(ct) {
   cor(true_common[, ct], pred_common[, ct])
 }, numeric(1L))
@@ -172,24 +182,231 @@ barplot(
   horiz = TRUE, las = 1,
   col   = ifelse(sort(ct_cors) > 0.7, "#2c7bb6", "#d7191c"),
   xlab  = "Pearson r",
-  main  = "Per-cell-type correlation",
+  main  = "Per-cell-type correlation (synthetic)",
   xlim  = c(-0.2, 1)
 )
 abline(v = 0.7, lty = 2, col = "gray40")
 ```
 
-## Quantitative Performance Metrics
+### Quantitative Performance Metrics
 
-```{r perf-metrics, eval=FALSE}
+```{r perf-metrics-synthetic}
 perf <- MakeTable1Tool(pred_mat = pred_common, obs_mat = true_common)
 knitr::kable(perf$Perf, digits = 3,
-             caption = "Performance metrics -- simulated data")
+             caption = "Performance metrics -- fully synthetic data")
 ```
+
+---
+
+# Strategy 2 — BlueCode-Based Simulation
+
+`simulation_bluecode()` uses the **BlueCode** reference matrix bundled with
+the package — a curated signature matrix covering 34 human cell types across
+five tissue compartments — as the fixed reference `$W`. Proportions are
+simulated via a two-level Dirichlet hierarchy that reflects the biological
+organisation of human tissues.
+
+This strategy is recommended when benchmarking should be grounded in a
+biologically realistic reference, while keeping full control over the
+ground-truth proportions.
+
+## Compartment Structure
+
+The hierarchy encodes five major tissue compartments with their constituent
+cell types:
+
+| Compartment | Cell types (n) | Default α |
+|---|---|---|
+| Immune | B naive/memory, T CD4/CD8, NK, Monocyte, Macrophage, Neutrophil | 4.0 |
+| Stromal | Fibroblasts (×5), MSC, Chondrocyte, Osteoblast | 2.5 |
+| Endothelial | Large vessel, microvascular (×2) | 1.8 |
+| Epithelial | Mammary, renal, respiratory, keratinocyte, melanocyte | 1.8 |
+| Muscle | Smooth muscle (×7), cardiac myocyte, myometrial | 1.5 |
+
+## Data Generation
+
+```{r simulate-bluecode}
+library(dicepro)
+
+sim_bc <- simulation_bluecode(
+  nSample    = 30L,
+  sigma_bio  = 0.15,
+  sigma_tech = 0.02,
+  seed       = 2101L
+)
+
+cat("Reference  :", dim(sim_bc$W), "\n")  # nGenes x 34
+cat("Proportions:", dim(sim_bc$p), "\n")  # 30 x 34
+cat("Bulk       :", dim(sim_bc$B), "\n")  # nGenes x 30
+cat("Row sums   :", round(range(rowSums(sim_bc$p)), 4), "\n")
+
+# Real cell-type names from BlueCode
+head(colnames(sim_bc$p))
+```
+
+## Proportion Distribution by Compartment
+
+The hierarchical model induces realistic between-compartment variation.
+Visualising the compartment-level totals confirms the expected dominance of
+the Immune compartment.
+
+```{r compartment-overview}
+# Cell-type to compartment mapping (mirrors .bluecode_cell_groups)
+compartment_map <- c(
+  rep("Immune",      9),
+  rep("Stromal",     8),
+  rep("Endothelial", 3),
+  rep("Epithelial",  5),
+  rep("Muscle",      9)
+)
+names(compartment_map) <- colnames(sim_bc$p)
+
+# Aggregate proportions by compartment for each sample
+comp_props <- t(apply(sim_bc$p, 1, function(row) {
+  tapply(row, compartment_map[names(row)], sum)
+}))
+
+boxplot(
+  comp_props,
+  col  = c("#4393c3", "#74c476", "#fd8d3c", "#9ecae1", "#fb6a4a"),
+  ylab = "Compartment proportion",
+  main = "Simulated compartment proportions (BlueCode)",
+  las  = 2
+)
+```
+
+## Noise Model Sanity Check
+
+```{r sanity-check-bluecode}
+bulk_clean_bc <- as.matrix(sim_bc$W) %*% t(as.matrix(sim_bc$p))
+
+plot(
+  bulk_clean_bc[seq_len(500L)],
+  as.matrix(sim_bc$B)[seq_len(500L)],
+  xlab = "Clean bulk (first 500 entries)",
+  ylab = "Noisy bulk",
+  pch  = 19, cex = 0.4, col = "#74c476",
+  main = "Noise model: clean vs noisy bulk (BlueCode)"
+)
+abline(0, 1, col = "firebrick", lwd = 1.5)
+```
+
+## Deconvolution
+
+```{r run-dicepro-bluecode}
+out_bc <- dicepro(
+  reference             = as.matrix(sim_bc$W),
+  bulk                  = as.matrix(sim_bc$B),
+  methodDeconv          = "FARDEEP",
+  W_prime               = 0,
+  bulkName              = "BlueCodeBulk",
+  refName               = "BlueCode",
+  hp_max_evals          = 150L,
+  algo_select           = "random",
+  output_path           = tempdir(),
+  hspaceTechniqueChoose = "all",
+  normalize             = FALSE
+)
+```
+
+## Results
+
+### Optimal Hyperparameters
+
+```{r best-hp-bluecode}
+cat("Best lambda :", out_bc$hyperparameters$lambda, "\n")
+cat("Best gamma  :", out_bc$hyperparameters$gamma,  "\n")
+cat("Loss        :", out_bc$metrics$loss,            "\n")
+cat("Constraint  :", out_bc$metrics$constraint,      "\n")
+```
+
+### Hyperparameter Optimisation Report
+
+```{r plot-hyperopt-bluecode, fig.height=9}
+out_bc$plot_hyperopt
+```
+
+### Pareto Frontier
+
+```{r plot-pareto-bluecode}
+out_bc$plot
+```
+
+### Recovered vs True Proportions
+
+```{r compare-props-bluecode}
+true_prop_bc <- as.matrix(sim_bc$p)
+pred_prop_bc <- as.matrix(out_bc$H)
+
+common_ct_bc   <- intersect(colnames(pred_prop_bc), colnames(true_prop_bc))
+true_common_bc <- true_prop_bc[, common_ct_bc, drop = FALSE]
+pred_common_bc <- pred_prop_bc[, common_ct_bc, drop = FALSE]
+
+r_overall_bc <- cor(as.vector(true_common_bc), as.vector(pred_common_bc))
+cat(sprintf("Overall Pearson r: %.3f\n", r_overall_bc))
+
+plot(
+  as.vector(true_common_bc),
+  as.vector(pred_common_bc),
+  xlab = "True proportions",
+  ylab = "Predicted proportions",
+  pch  = 19, cex = 0.5, col = "#74c47699",
+  main = sprintf("True vs Predicted — BlueCode  (r = %.3f)", r_overall_bc)
+)
+abline(0, 1, col = "firebrick", lwd = 1.5)
+```
+
+### Per-Cell-Type Correlation
+
+```{r per-ct-cor-bluecode, fig.height=6}
+ct_cors_bc <- vapply(common_ct_bc, function(ct) {
+  cor(true_common_bc[, ct], pred_common_bc[, ct])
+}, numeric(1L))
+
+par(mar = c(5, 14, 3, 1))
+barplot(
+  sort(ct_cors_bc),
+  horiz = TRUE, las = 1,
+  col   = ifelse(sort(ct_cors_bc) > 0.7, "#2c7bb6", "#d7191c"),
+  xlab  = "Pearson r",
+  main  = "Per-cell-type correlation (BlueCode)",
+  xlim  = c(-0.2, 1)
+)
+abline(v = 0.7, lty = 2, col = "gray40")
+```
+
+### Quantitative Performance Metrics
+
+```{r perf-metrics-bluecode}
+perf_bc <- MakeTable1Tool(pred_mat = pred_common_bc, obs_mat = true_common_bc)
+knitr::kable(perf_bc$Perf, digits = 3,
+             caption = "Performance metrics -- BlueCode simulation")
+```
+
+---
+
+# Comparing Both Strategies
+
+When both strategies are run under the same conditions, their overall
+correlation scores can be compared directly.
+
+```{r compare-strategies}
+cat(sprintf(
+  "Overall Pearson r\n  Synthetic  : %.3f\n  BlueCode   : %.3f\n",
+  r_overall, r_overall_bc
+))
+```
+
+The two strategies are complementary: `simulation()` offers maximum
+flexibility for stress-testing deconvolution under varying gene numbers,
+cell-type counts, or noise levels; `simulation_bluecode()` anchors the
+benchmark in a biologically grounded reference, making results more
+interpretable in the context of real human tissue data.
 
 ---
 
 # Session Info
 
-```{r session-info, eval=FALSE}
+```{r session-info}
 sessionInfo()
 ```
