@@ -27,12 +27,11 @@ simulation(
 }
 \arguments{
 \item{W}{Numeric matrix (genes x cell types) or \code{NULL}.
-If \code{NULL}, a reference matrix is generated
-internally via \code{\link{generate_ref_matrix}}.}
+If \code{NULL}, a reference matrix is generated internally via
+\code{\link{generate_ref_matrix}}.}
 
 \item{prop}{Numeric matrix (samples x cell types) or \code{NULL}.
-If \code{NULL}, proportions are generated via
-\code{\link{generateProp}}.}
+If \code{NULL}, proportions are generated via \code{\link{generateProp}}.}
 
 \item{nSample}{Integer. Number of samples. Default: \code{50}.}
 
@@ -43,22 +42,19 @@ If \code{NULL}, proportions are generated via
 \item{nGenes}{Integer. Number of genes. Default: \code{500}.}
 
 \item{lambda_vec}{Numeric vector of length \code{nCellsType}. Per
-cell-type Poisson lambda parameters. If \code{NULL},
-drawn uniformly in \code{[20, 60]}. Passed to
+cell-type Poisson lambda parameters. Passed to
 \code{\link{generate_ref_matrix}}.}
 
 \item{corr}{Numeric matrix. Inter-cell-type correlation.
 If \code{NULL}, generated internally.}
 
 \item{scenario}{Character. Proportion scenario passed to
-\code{\link{generateProp}}. Use
-\code{"hierarchical"} for realistic tissue
-composition (recommended).}
+\code{\link{generateProp}}. Use \code{"hierarchical"} for realistic
+tissue composition (recommended).}
 
 \item{loi}{Character. Expression law for reference generation.
-\code{"rpois"} for Poisson via Gaussian copula,
-any other value for log-normal.
-Default: \code{"rpois"}.}
+\code{"rpois"} for Poisson via Gaussian copula, any other value for
+log-normal. Default: \code{"rpois"}.}
 
 \item{tpm}{Logical. TPM normalization of reference.
 Default: \code{FALSE}.}
@@ -72,18 +68,15 @@ Default: \code{50}.}
 \item{sparse}{Logical. Random sparsity in reference.
 Default: \code{FALSE}.}
 
-\item{prob_sparse}{Numeric. Sparsity probability.
-Default: \code{0.5}.}
+\item{prob_sparse}{Numeric. Sparsity probability. Default: \code{0.5}.}
 
 \item{sigma_bio}{Numeric. Standard deviation of multiplicative
 biological noise. Default: \code{0.07}.}
 
 \item{sigma_tech}{Numeric. Standard deviation of additive technical
-noise (proportional to expression level).
-Default: \code{0.07}.}
+noise (proportional to expression level). Default: \code{0.07}.}
 
-\item{seed}{Integer. Random seed for noise reproducibility.
-Default: \code{1234}.}
+\item{seed}{Integer. Random seed. Default: \code{1234}.}
 }
 \value{
 A named list with three elements:
@@ -93,7 +86,7 @@ A named list with three elements:
 \item{\code{W}}{data.frame. Reference signature matrix
 (genes x cell types).}
 \item{\code{B}}{data.frame. Noisy bulk expression matrix
-(genes x samples), with biological and technical noise applied.}
+(genes x samples).}
 }
 }
 \description{
@@ -101,22 +94,19 @@ Generates synthetic bulk RNA-seq expression matrices by linearly mixing
 reference cell-type profiles according to simulated proportions, with
 optional biological and technical noise. The noise model is consistent
 with the Gaussian likelihood framework underlying dicepro's objective
-function: biological noise is applied multiplicatively and technical
-noise additively, so that normalization to a Gaussian scale prior to
+function: biological noise is applied multiplicatively and technical noise
+additively, so that normalization to a Gaussian scale prior to
 deconvolution is a formal requirement.
 }
 \details{
 The bulk expression matrix is generated as:
 \deqn{\mathbf{B} = \mathbf{W} \cdot \mathbf{P}^\top}
-where \eqn{\mathbf{W}} is the reference matrix and \eqn{\mathbf{P}}
-the proportion matrix. Noise is then applied as:
+Noise is then applied as:
 \deqn{B^*_{gn} = B_{gn}(1 + \varepsilon^{\text{bio}}_{gn}) +
       \varepsilon^{\text{tech}}_{gn} \cdot B_{gn}}
 where \eqn{\varepsilon^{\text{bio}} \sim \mathcal{N}(0, \sigma^2_{\text{bio}})}
 and \eqn{\varepsilon^{\text{tech}} \sim \mathcal{N}(0, \sigma^2_{\text{tech}})}.
-Negative values are clipped to zero. This noise structure motivates
-Gaussian normalization of both bulk and reference inputs prior to
-deconvolution with dicepro.
+Negative values are clipped to zero.
 }
 \examples{
 if (interactive()) {

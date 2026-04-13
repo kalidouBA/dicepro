@@ -20,16 +20,15 @@ generate_ref_matrix(
 }
 \arguments{
 \item{loi}{Character. Expression model: \code{"rpois"} for
-Poisson-based simulation via Gaussian copula or any
-other value for log-normal simulation.
-Default: \code{"rpois"}.}
+Poisson-based simulation via Gaussian copula or any other value for
+log-normal simulation. Default: \code{"rpois"}.}
 
 \item{tpm}{Logical. If \code{TRUE}, columns are TPM-normalized.
 Default: \code{FALSE}.}
 
 \item{bloc}{Logical. If \code{TRUE}, introduces block sparsity
-so that each cell type expresses only a subset of
-genes. Default: \code{FALSE}.}
+so that each cell type expresses only a subset of genes.
+Default: \code{FALSE}.}
 
 \item{nGenesByCellType}{Integer. Number of genes per cell-type block
 (used when \code{bloc = TRUE}).}
@@ -42,25 +41,23 @@ retained for API compatibility).}
 \item{nGenes}{Integer. Number of genes. Default: \code{500}.}
 
 \item{lambda_vec}{Numeric vector of length \code{nCellsType}. Per
-cell-type Poisson lambda parameters. If \code{NULL},
-drawn uniformly in \code{[20, 60]}. Only used when
-\code{loi = "rpois"}.}
+cell-type Poisson lambda parameters. If \code{NULL}, drawn uniformly in
+\code{[20, 60]}. Only used when \code{loi = "rpois"}.}
 
 \item{corr}{Numeric matrix. Inter-cell-type correlation matrix.
-If \code{NULL}, generated via
-\code{.clusterGeneration}.}
+If \code{NULL}, generated via \code{.rcorrmatrix}.}
 
 \item{sparse}{Logical. If \code{TRUE}, introduces random sparsity
-by zeroing entries with probability
-\code{1 - prob_sparse}. Default: \code{FALSE}.}
+by zeroing entries with probability \code{1 - prob_sparse}.
+Default: \code{FALSE}.}
 
 \item{prob_sparse}{Numeric. Probability of a non-zero entry when
 \code{sparse = TRUE}. Default: \code{NULL}.}
 }
 \value{
 A numeric matrix of dimensions \code{nGenes x nCellsType}.
-Row names are \code{Gene_1}, ..., \code{Gene_nGenes};
-column names are \code{CellType_1}, ..., \code{CellType_nCellsType}.
+Row names are \code{Gene_1}, ..., \code{Gene_nGenes}; column names are
+\code{CellType_1}, ..., \code{CellType_nCellsType}.
 }
 \description{
 Constructs a synthetic gene-by-cell-type reference matrix using either
@@ -80,8 +77,8 @@ normal draws are exponentiated after a location shift of 6.
 \examples{
 if (interactive()) {
   set.seed(2101)
-  ref_pois  <- generate_ref_matrix(loi = "rpois",  nGenes = 50, nCellsType = 5)
-  ref_gauss <- generate_ref_matrix(loi = "gauss",  nGenes = 50, nCellsType = 5)
+  ref_pois  <- generate_ref_matrix(loi = "rpois", nGenes = 50, nCellsType = 5)
+  ref_gauss <- generate_ref_matrix(loi = "gauss", nGenes = 50, nCellsType = 5)
   dim(ref_pois)   # 50 x 5
   dim(ref_gauss)  # 50 x 5
 }

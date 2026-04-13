@@ -4,10 +4,21 @@
 \alias{generateProp}
 \title{Generate Cell-Type Proportion Matrix}
 \usage{
-generateProp(n_cell_types, nSample, nCell = 500, scenario = NULL)
+generateProp(
+  n_cell_types = NULL,
+  nSample,
+  nCell = 500,
+  scenario = NULL,
+  alpha_groups = c(Immune = 4, Stromal = 2.5, Endothelial = 1.8, Epithelial = 1.8, Muscle
+    = 1.5),
+  alpha_subtypes = list(Immune = 8, Stromal = 8, Endothelial = 8, Epithelial = 8, Muscle
+    = 8),
+  seed = 1234
+)
 }
 \arguments{
-\item{n_cell_types}{Integer. Number of distinct cell types.}
+\item{n_cell_types}{Integer. Number of distinct cell types. Ignored when
+\code{scenario = "bluecode"} (fixed at 34 by the BlueCode reference).}
 
 \item{nSample}{Integer. Number of samples to generate.}
 
@@ -16,43 +27,60 @@ rounding precision in the uniform scenario).}
 
 \item{scenario}{Character. Proportion generation strategy. One of:
 \code{"even"} for near-equal proportions,
-\code{"uniform"} for random uniform sampling, or
-\code{"hierarchical"} for two-level Dirichlet sampling
-reflecting tissue compartment structure.
+\code{"uniform"} for random uniform sampling,
+\code{"hierarchical"} for two-level Dirichlet sampling with generic
+\code{CellType_k} names, or
+\code{"bluecode"} for two-level Dirichlet sampling using the real
+cell-type names and compartment structure of the BlueCode reference.
 Any other value defaults to a flat Dirichlet draw.}
+
+\item{alpha_groups}{Named numeric vector of length 5. Dirichlet
+concentration parameters for the five tissue compartments
+(Immune, Stromal, Endothelial, Epithelial, Muscle). Only used when
+\code{scenario = "bluecode"}.
+Default: \code{c(Immune=4, Stromal=2.5, Endothelial=1.8, Epithelial=1.8,
+  Muscle=1.5)}.}
+
+\item{alpha_subtypes}{Named list with one scalar per compartment. Controls
+the concentration of sub-type Dirichlet draws within each compartment.
+Higher values produce more even sub-type distributions. Only used when
+\code{scenario = "bluecode"}.
+Default: all compartments set to \code{8}.}
+
+\item{seed}{Integer. Random seed. Only used when \code{scenario =
+"bluecode"}. Default: \code{1234}.}
 }
 \value{
-A numeric matrix of dimensions \code{nSample x n_cell_types},
-where each row sums to 1. Row names are \code{Sample_1}, ...,
-\code{Sample_nSample}; column names are \code{CellType_1}, ...,
-\code{CellType_n_cell_types}.
+A numeric matrix of dimensions \code{nSample x n_cell_types} where
+each row sums to 1. For all scenarios except \code{"bluecode"}, row names
+are \code{Sample_1}, ..., \code{Sample_nSample} and column names are
+\code{CellType_1}, ..., \code{CellType_n_cell_types}. For
+\code{"bluecode"}, row names are \code{sample_1}, ...,
+\code{sample_nSample} and column names are the real BlueCode cell-type
+names ordered by compartment.
 }
 \description{
 Simulates cell-type proportion matrices for bulk RNA-seq deconvolution
-benchmarking. Three scenarios are supported: equal proportions across
-cell types, uniform random sampling, or hierarchical Dirichlet sampling
-reflecting realistic tissue compartment organization.
-}
-\details{
-The \code{"hierarchical"} scenario implements the two-level Dirichlet model
-described in the dicepro simulation framework. At the first level, samples
-are drawn from five major tissue compartments (Immune, Stromal, Endothelial,
-Epithelial, Muscle) using compartment-specific concentration parameters
-reflecting expected relative abundances. At the second level, each
-compartment is further decomposed into its constituent cell sub-populations.
-This hierarchical structure produces realistic covariance patterns between
-cell types that are absent from flat Dirichlet draws.
+benchmarking. Four scenarios are supported: equal proportions across cell
+types, uniform random sampling, hierarchical Dirichlet sampling reflecting
+realistic tissue compartment organization, or a BlueCode-specific
+hierarchical model that preserves real cell-type names.
 }
 \examples{
 if (interactive()) {
   set.seed(2101)
+
   # Equal proportions
   prop_even <- generateProp(nSample = 20, n_cell_types = 10,
     scenario = "even")
 
-  # Hierarchical Dirichlet (recommended for realistic benchmarking)
+  # Generic hierarchical Dirichlet
   prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
     scenario = "hierarchical")
   all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
+
+  # BlueCode hierarchical Dirichlet (real cell-type names)
+  prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
+  colnames(prop_bc)  # real BlueCode cell-type names
 }
 }
