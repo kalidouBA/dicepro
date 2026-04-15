@@ -75,13 +75,12 @@ run_experiment <- function(dataset,
   )
 
   hyperopt_config <- c(base_config, list(hp_space = raw_space))
-  research_hyperOpt(
-    objective_opt = objective_opt,
-    dataset       = dataset,
-    config        = hyperopt_config,
-    hp_space      = parsed_space,
-    W_prime       = W_prime
-  )
+  resHyperOpt <- research_hyperOpt( objective_opt = objective_opt,
+                                    dataset       = dataset,
+                                    config        = hyperopt_config,
+                                    hp_space      = parsed_space,
+                                    W_prime       = W_prime)
+  return(resHyperOpt)
 }
 
 

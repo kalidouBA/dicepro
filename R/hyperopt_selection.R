@@ -155,15 +155,13 @@ utils::globalVariables(c("frob_H", "loss"))
       size    = 5,
       stroke  = 1.2
     ) +
-    ggplot2::scale_x_log10() +
-    ggplot2::scale_y_log10() +
-    ggplot2::labs(
-      title = "Frobenius Norm vs Constraint Deviation \u2014 Pareto Frontier",
-      x     = "Frobenius Norm (log scale, reversed)",
-      y     = "|1 \u2212 Constraint| (log scale, reversed)"
-    ) +
     ggplot2::scale_x_log10(trans = "reverse") +
     ggplot2::scale_y_log10(trans = "reverse") +
+    ggplot2::labs(
+      title = "Frobenius Norm vs Constraint Deviation - Pareto Frontier",
+      x     = "Frobenius Norm (log scale reversed)",
+      y     = "|1 - Constraint| (log scale reversed)"
+    ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
       plot.title = ggplot2::element_text(face = "bold", size = 11)
@@ -294,7 +292,7 @@ best_hyperParams <- function(trials_df,
   )
 
   # ---- Assemble output -----------------------------------------------------
-  list(
+  return(list(
     hyperparameters = list(
       lambda = best_row$lambda_,
       gamma  = best_row$gamma
@@ -307,5 +305,5 @@ best_hyperParams <- function(trials_df,
     W      = W[[best_trial]],
     H      = H[[best_trial]][, -1],
     plot   = plot_res
-  )
+  ))
 }
