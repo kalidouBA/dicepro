@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 compute_grad_eigen_fast <- function(W, H, B, sigma, lambda, gamma) {
-    .Call('_dicepro_compute_grad_eigen_fast', PACKAGE = 'dicepro', W, H, B, sigma, lambda, gamma)
+    .Call(`_dicepro_compute_grad_eigen_fast`, W, H, B, sigma, lambda, gamma)
 }
 
 compute_obj_term1_eigen_fast <- function(W, H, B, sigma) {
-    .Call('_dicepro_compute_obj_term1_eigen_fast', PACKAGE = 'dicepro', W, H, B, sigma)
+    .Call(`_dicepro_compute_obj_term1_eigen_fast`, W, H, B, sigma)
 }
 
