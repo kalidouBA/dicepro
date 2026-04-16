@@ -41,120 +41,28 @@
 
 
 # -----------------------------------------------------------------------------
-# dicepro  [public]
+# Internal input validation
 # -----------------------------------------------------------------------------
 
-#' Semi-supervised bulk RNA-seq deconvolution with NMF hyperparameter
-#' optimisation
+#' Validate dicepro inputs
 #'
-#' \code{dicepro} performs cell-type deconvolution of bulk RNA-seq data by
-#' combining a supervised deconvolution step (estimating proportions of
-#' \emph{known} cell types) with an unsupervised NMF step (discovering and
-#' quantifying \emph{unknown} cell types). Hyperparameters
-#' \eqn{(\lambda, \gamma, p')} are selected automatically via Pareto-frontier
-#' analysis and knee-point detection.
+#' Internal helper that validates and normalizes user parameters.
 #'
-#' @section Pipeline:
-#' \enumerate{
-#'   \item \strong{Normalisation} (optional): z-score per gene applied to
-#'     both \code{reference} and \code{bulk} via
-#'     \code{.normalize_zscore_per_gene()}.
-#'   \item \strong{Gene intersection}: only genes present in both matrices
-#'     are retained.
-#'   \item \strong{Supervised deconvolution}: \code{\link{running_method}}
-#'     estimates known cell-type proportions.
-#'   \item \strong{Hyperparameter search}: \code{\link{run_experiment}}
-#'     evaluates \code{hp_max_evals} configurations using the chosen
-#'     \code{algo_select} strategy.
-#'   \item \strong{Best configuration}: \code{\link{best_hyperParams}}
-#'     selects the knee point on the Pareto frontier.
-#'   \item \strong{Report}: plots are saved under
-#'     \code{output_path/dicepro_<bulkName>_<refName>/report/}.
-#' }
+#' @param normalize Logical. Whether to apply z-score normalization.
+#' @param algo_select Character. Hyperparameter search strategy.
+#' @param hspaceTechniqueChoose Character. Hyperparameter space strategy.
 #'
-#' @param reference    Numeric matrix of reference gene expression profiles,
-#'   dimensions \eqn{G \times K} (genes \eqn{\times} known cell types).
-#'   Row names must be gene symbols.
-#' @param bulk         Numeric matrix of bulk RNA-seq expression,
-#'   dimensions \eqn{G \times N} (genes \eqn{\times} samples).
-#'   Row names must be gene symbols matching \code{reference}.
-#' @param methodDeconv Character scalar. Deconvolution method to use for
-#'   the supervised step. One of \code{"CSx"}, \code{"DCQ"},
-#'   \code{"CDSeq"}, or \code{"FARDEEP"} (default \code{"CSx"}).
-#' @param cibersortx_email Character scalar. Registered email for the
-#'   CIBERSORTx web service. Required when \code{methodDeconv = "CSx"};
-#'   ignored otherwise.
-#' @param cibersortx_token Character scalar. API token for the CIBERSORTx
-#'   web service. Required when \code{methodDeconv = "CSx"};
-#'   ignored otherwise.
-#' @param W_prime      Either \code{0} (default, initialise a single unknown
-#'   cell-type column automatically) or a numeric matrix of dimensions
-#'   \eqn{G \times U} providing initial signatures for \eqn{U} unknown cell
-#'   types.
-#' @param bulkName     Character scalar. Label for the bulk dataset, used in
-#'   the output directory name and plot titles (default \code{"Bulk"}).
-#' @param refName      Character scalar. Label for the reference dataset,
-#'   used in the output directory name and plot titles
-#'   (default \code{"Reference"}).
-#' @param hp_max_evals Positive integer. Number of hyperparameter
-#'   configurations to evaluate during the search
-#'   (default \code{100}). Increase to \eqn{\geq 200} for production use.
-#' @param N_unknownCT  Positive integer. Number of unknown cell types to
-#'   estimate when \code{W_prime = 0} (default \code{1}).
-#' @param algo_select  Character scalar. Hyperparameter sampling strategy.
-#'   \describe{
-#'     \item{\code{"random"}}{Pure random search (default).}
-#'     \item{\code{"tpe"}}{Tree-structured Parzen Estimator.}
-#'     \item{\code{"atpe"}}{Accepted alias for \code{"tpe"}.}
-#'     \item{\code{"anneal"}}{Accepted in config; currently falls back to
-#'       \code{"random"}.}
-#'   }
-#' @param output_path  Character scalar. Root directory for all outputs.
-#'   Defaults to \code{getwd()} when \code{NULL}.
-#' @param hspaceTechniqueChoose Character scalar. Hyperparameter space
-#'   parameterisation (\code{"all"} or \code{"restrictionEspace"}).
-#' @param out_Decon    Optional numeric matrix. Pre-computed deconvolution
-#'   result. When provided, \code{\link{running_method}} is skipped.
-#' @param normalize    Logical scalar. When \code{TRUE} (default), both
-#'   matrices are z-score normalised per gene before deconvolution.
+#' @return A named list with validated parameters.
 #'
-#' @return An object of class \code{"dicepro"} (a named list), or
-#'   \code{invisible(NULL)} when no valid hyperparameter configuration is
-#'   found. The list contains:
-#' \describe{
-#'   \item{hyperparameters}{Named list with \code{lambda} and \code{gamma}.}
-#'   \item{metrics}{Named list with \code{loss} and \code{constraint}.}
-#'   \item{trials}{data.frame of all successful trial results.}
-#'   \item{W}{Signature matrix of the selected trial.}
-#'   \item{H}{Proportion matrix of the selected trial.}
-#'   \item{plot}{ggplot2 figure of the Pareto frontier.}
-#'   \item{plot_hyperopt}{ggplot2 scatter-matrix of all hyperparameter
-#'     configurations.}
-#' }
-#'
-#' @seealso
-#'   \code{\link{running_method}}, \code{\link{run_experiment}},
-#'   \code{\link{best_hyperParams}}, \code{\link{plot_hyperopt}}.
-#'
-#' @export
-dicepro <- function(reference, bulk,
-                    methodDeconv          = "CSx",
-                    cibersortx_email      = NULL,
-                    cibersortx_token      = NULL,
-                    W_prime               = 0,
-                    bulkName              = "Bulk",
-                    refName               = "Reference",
-                    hp_max_evals          = 100,
-                    N_unknownCT           = 1,
-                    algo_select           = "random",
-                    output_path           = NULL,
-                    hspaceTechniqueChoose = "all",
-                    out_Decon             = NULL,
-                    normalize             = TRUE) {
+#' @keywords internal
+#' @noRd
+.validate_inputs <- function(normalize,
+                             algo_select,
+                             hspaceTechniqueChoose) {
 
-  # ---- Input validation ------------------------------------------------------
-  if (!is.logical(normalize) || length(normalize) != 1L)
-    stop("'normalize' must be a single logical value (TRUE or FALSE).")
+  if (!is.logical(normalize) || length(normalize) != 1L) {
+    stop("'normalize' must be TRUE or FALSE.", call. = FALSE)
+  }
 
   algo_select <- match.arg(
     tolower(algo_select),
@@ -166,135 +74,419 @@ dicepro <- function(reference, bulk,
     c("restrictionEspace", "all")
   )
 
-  # ---- Normalisation ---------------------------------------------------------
+  list(
+    normalize = normalize,
+    algo_select = algo_select,
+    hspaceTechniqueChoose = hspaceTechniqueChoose
+  )
+}
+
+
+
+# -----------------------------------------------------------------------------
+# Data preprocessing
+# -----------------------------------------------------------------------------
+
+#' Prepare bulk and reference matrices
+#'
+#' Applies optional normalization and keeps intersecting genes only.
+#'
+#' @param reference Numeric matrix (genes x cell types).
+#' @param bulk Numeric matrix (genes x samples).
+#' @param normalize Logical.
+#'
+#' @return A list containing:
+#' \describe{
+#'   \item{reference}{Filtered reference matrix}
+#'   \item{bulk}{Filtered bulk matrix}
+#' }
+#'
+#' @keywords internal
+#' @noRd
+.prepare_data <- function(reference, bulk, normalize) {
+
   if (normalize) {
     reference <- .normalize_zscore_per_gene(reference)
     bulk      <- .normalize_zscore_per_gene(bulk)
   } else {
     reference <- as.matrix(reference)
     bulk      <- as.matrix(bulk)
-    message("normalize = FALSE: matrices used as-is.")
   }
 
-  # ---- Gene intersection -----------------------------------------------------
   geneIntersect <- intersect(rownames(reference), rownames(bulk))
-  if (length(geneIntersect) == 0L)
-    stop("No common genes between 'reference' and 'bulk'.")
+
+  if (length(geneIntersect) == 0L) {
+    stop("No common genes between 'reference' and 'bulk'.", call. = FALSE)
+  }
 
   reference <- reference[geneIntersect, , drop = FALSE]
   bulk      <- bulk[geneIntersect, , drop = FALSE]
+
   rownames(reference) <- rownames(bulk) <- geneIntersect
+
   message(sprintf("Gene intersection: %d genes retained.", length(geneIntersect)))
 
-  # ---- Supervised deconvolution ----------------------------------------------
+  list(reference = reference, bulk = bulk)
+}
+
+
+# -----------------------------------------------------------------------------
+# Deconvolution engine (private)
+# -----------------------------------------------------------------------------
+
+#' Run or validate supervised deconvolution
+#'
+#' Either executes \code{running_method()} or validates a user-provided matrix.
+#'
+#' @param bulk,reference Numeric matrices.
+#' @param methodDeconv Character. Deconvolution method.
+#' @param cibersortx_email,cibersortx_token Credentials.
+#' @param out_Decon Optional precomputed matrix.
+#'
+#' @return Numeric matrix (cell types x samples).
+#'
+#' @keywords internal
+#' @noRd
+.get_deconvolution <- function(bulk,
+                               reference,
+                               methodDeconv,
+                               cibersortx_email,
+                               cibersortx_token,
+                               out_Decon) {
+
+  valid_methods <- c("CSx", "DCQ", "CDSeq", "FARDEEP")
+
   if (is.null(out_Decon)) {
-    methodDeconv <- match.arg(methodDeconv, c("CSx", "DCQ", "CDSeq", "FARDEEP"))
+
+    methodDeconv <- tryCatch(
+      match.arg(methodDeconv, valid_methods),
+      error = function(e) {
+        stop(sprintf(
+          "Invalid 'methodDeconv': '%s'. Must be one of: %s.",
+          methodDeconv,
+          paste(valid_methods, collapse = ", ")
+        ), call. = FALSE)
+      }
+    )
 
     if (methodDeconv == "CSx" &&
-        (is.null(cibersortx_token) || is.null(cibersortx_email))) {
-      stop("CIBERSORTx credentials are required for methodDeconv = 'CSx'. ",
-           "Please provide both 'cibersortx_email' and 'cibersortx_token'.")
+        (is.null(cibersortx_email) || is.null(cibersortx_token))) {
+      stop("CIBERSORTx credentials required for CSx.", call. = FALSE)
     }
 
-    out_Dec <- t(running_method(
-      bulk, reference, methodDeconv,
-      cibersortx_email, cibersortx_token
-    ))
+    out_Decon <- running_method(
+      bulk, reference,
+      methodDeconv,
+      cibersortx_email,
+      cibersortx_token
+    )
 
   } else {
 
     out_Decon <- as.matrix(out_Decon)
 
-    if (ncol(out_Decon) != ncol(reference))
-      stop(sprintf(
-        "'out_Decon' has %d cell type(s) but 'reference' has %d.",
-        ncol(out_Decon), ncol(reference)
-      ))
+    if (ncol(out_Decon) != ncol(reference)) {
+      stop("Mismatch: cell types vs reference.", call. = FALSE)
+    }
 
-    if (nrow(out_Decon) != ncol(bulk))
-      stop(sprintf(
-        "'out_Decon' has %d sample(s) but 'bulk' has %d columns.",
-        nrow(out_Decon), ncol(bulk)
-      ))
-
-    message(sprintf(
-      "Using provided 'out_Decon' -- skipping running_method(). Dimensions: %d samples x %d cell types.",
-      nrow(out_Decon), ncol(out_Decon)
-    ))
-
-    out_Dec <- t(out_Decon)
+    if (nrow(out_Decon) != ncol(bulk)) {
+      stop("Mismatch: samples vs bulk.", call. = FALSE)
+    }
   }
 
-  # ---- Build dataset list ----------------------------------------------------
-  dataset <- list(B = bulk, W = reference, P = out_Dec)
+  t(out_Decon)
+}
 
-  # ---- Output directory ------------------------------------------------------
-  dirName    <- paste0("dicepro_", bulkName, "_", refName)
-  if (is.null(output_path)) output_path <- getwd()
-  output_dir <- file.path(output_path, dirName)
 
-  # ---- Hyperparameter column names for the report plot ----------------------
-  hp_params <- switch(
-    hspaceTechniqueChoose,
-    all               = c("gamma", "lambda_",      "p_prime"),
-    restrictionEspace = c("gamma", "lambda_factor", "p_prime")
-  )
+# -----------------------------------------------------------------------------
+# Hyperparameter optimization (internal)
+# -----------------------------------------------------------------------------
 
-  # ---- Hyperparameter optimisation -------------------------------------------
-  out <- run_experiment(
+#' Run hyperparameter optimization pipeline
+#'
+#' Internal wrapper that executes the full hyperparameter search via
+#' \code{run_experiment()} and selects the best configuration using
+#' Pareto-front analysis through \code{best_hyperParams()}.
+#'
+#' @details
+#' This function is part of the internal dicepro pipeline. It:
+#' \enumerate{
+#'   \item Runs hyperparameter exploration (\code{run_experiment})
+#'   \item Collects all evaluated configurations (trials)
+#'   \item Computes Pareto-optimal solutions
+#'   \item Selects the best configuration via knee-point detection
+#' }
+#'
+#' The selection criterion is handled internally by
+#' \code{best_hyperParams()}.
+#'
+#' @param dataset Named list containing:
+#'   \describe{
+#'     \item{B}{Bulk expression matrix}
+#'     \item{W}{Reference expression matrix}
+#'     \item{P}{Initial deconvolution matrix}
+#'   }
+#' @param W_prime Numeric matrix or scalar.
+#' Initial signature matrix for unknown cell types.
+#' @param bulkName Character. Label for bulk dataset.
+#' @param refName Character. Label for reference dataset.
+#' @param hp_max_evals Integer. Number of hyperparameter configurations to evaluate.
+#' @param algo_select Character. Sampling strategy for hyperparameter search:
+#'   \code{"random"}, \code{"tpe"}, \code{"atpe"}, \code{"anneal"}.
+#' @param output_base_dir Character. Root directory for all outputs.
+#' @param hspaceTechniqueChoose Character. Hyperparameter space definition:
+#'   \code{"all"} or \code{"restrictionEspace"}.
+#' @param output_dir Character. Directory where final reports are saved.
+#'
+#' @return A list containing the best model configuration:
+#' \describe{
+#'   \item{hyperparameters}{Selected hyperparameters (lambda, gamma, etc.)}
+#'   \item{metrics}{Loss and constraint values of the best solution}
+#'   \item{trials}{Full hyperparameter search results}
+#'   \item{W}{Estimated signature matrix}
+#'   \item{H}{Estimated proportion matrix}
+#'   \item{plot}{Pareto frontier visualization}
+#' }
+#'
+#' @seealso
+#' \code{\link{run_experiment}}, \code{\link{best_hyperParams}}
+#'
+#' @keywords internal
+#' @noRd
+.run_hyperopt <- function(dataset,
+                          W_prime,
+                          bulkName,
+                          refName,
+                          hp_max_evals,
+                          algo_select,
+                          output_base_dir,
+                          hspaceTechniqueChoose,
+                          output_dir) {
+
+  res <- run_experiment(
     dataset               = dataset,
     W_prime               = W_prime,
     bulkName              = bulkName,
     refName               = refName,
     hp_max_evals          = hp_max_evals,
     algo_select           = algo_select,
-    output_base_dir       = output_path,
+    output_base_dir       = output_base_dir,
     hspaceTechniqueChoose = hspaceTechniqueChoose
-  ) |>
-    (\(res) best_hyperParams(
-      trials_df = res$trials,
-      W         = res$W,
-      H         = res$H,
-      savePaths = output_dir
-    ))()
+  )
 
-  # ---- Guard: all trials failed ----------------------------------------------
-  if (is.null(out)) {
-    warning(
-      "dicepro: no valid hyperparameter configuration found. ",
-      "Try increasing 'hp_max_evals' or checking dataset dimensions."
-    )
-    return(invisible(NULL))
+  best_hyperParams(
+    trials_df = res$trials,
+    W         = res$W,
+    H         = res$H,
+    savePaths = output_dir
+  )
+}
+
+# -----------------------------------------------------------------------------
+# Output persistence (internal)
+# -----------------------------------------------------------------------------
+
+#' Save hyperparameter optimization outputs
+#'
+#' Internal helper that generates and saves diagnostic plots from the
+#' hyperparameter optimization step.
+#'
+#' @details
+#' This function performs the following operations:
+#' \enumerate{
+#'   \item Creates a reporting directory under \code{output_dir/report}
+#'   \item Generates a hyperparameter exploration plot using
+#'     \code{plot_hyperopt()}
+#'   \item Saves the hyperparameter optimization plot to PDF
+#'   \item Saves the Pareto frontier plot to PDF
+#'   \item Attaches the generated plot to the output object
+#' }
+#'
+#' The function has side effects (file writing to disk).
+#'
+#' @param out List. Output object returned by the optimization pipeline.
+#' Must contain at least:
+#' \describe{
+#'   \item{plot}{Pareto frontier ggplot object}
+#' }
+#'
+#' @param output_dir Character. Root directory where results are stored.
+#' A subdirectory \code{report/} will be created if it does not exist.
+#'
+#' @param hp_params Character vector. Names of hyperparameters used for
+#' visualization (e.g. \code{c("gamma", "lambda_", "p_prime")}).
+#'
+#' @return The modified \code{out} object with an additional element:
+#' \describe{
+#'   \item{plot_hyperopt}{ggplot object of hyperparameter exploration}
+#' }
+#'
+#' @seealso
+#' \code{\link{plot_hyperopt}}
+#'
+#' @keywords internal
+#' @noRd
+.save_outputs <- function(out, output_dir, hp_params) {
+
+  report_dir <- file.path(output_dir, "report")
+
+  if (!dir.exists(report_dir)) {
+    dir.create(report_dir, recursive = TRUE)
   }
 
-  # ---- Hyperparameter optimisation plot --------------------------------------
   out$plot_hyperopt <- plot_hyperopt(
     x      = structure(out, class = "dicepro"),
     params = hp_params
   )
-
-  # ---- Persist plots ---------------------------------------------------------
-  report_dir <- file.path(output_dir, "report")
-  if (!dir.exists(report_dir)) dir.create(report_dir, recursive = TRUE)
 
   ggplot2::ggsave(
     filename = file.path(report_dir, "hyperopt_report.pdf"),
     plot     = out$plot_hyperopt,
     width    = 4L * length(hp_params),
     height   = 4L * length(hp_params) + 2L,
-    units    = "in",
     device   = grDevices::cairo_pdf
   )
+
   ggplot2::ggsave(
     filename = file.path(report_dir, "pareto_frontier.pdf"),
     plot     = out$plot,
     width    = 8L,
     height   = 6L,
-    units    = "in",
     device   = grDevices::cairo_pdf
   )
 
   message(sprintf("Results saved to: %s", report_dir))
+
+  out
+}
+
+#' Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization
+#'
+#' @description
+#' Performs semi-supervised deconvolution of bulk RNA-seq data by combining:
+#' a supervised estimation of known cell types and an unsupervised discovery
+#' of latent components, with automatic hyperparameter optimization.
+#'
+#' @details
+#' If \code{out_Decon} is provided, the supervised deconvolution step is skipped.
+#' Otherwise, the method specified in \code{methodDeconv} is executed.
+#'
+#' Gene expression matrices are optionally normalized using z-score scaling
+#' per gene, and only intersecting genes are retained.
+#'
+#' Hyperparameters are optimized using a Pareto-frontier-based strategy.
+#'
+#' @param reference Numeric matrix (genes × cell types)
+#' @param bulk Numeric matrix (genes × samples)
+#' @param methodDeconv Character. One of:
+#'   \code{"CSx"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}
+#' @param cibersortx_email CIBERSORTx email (required for CSx)
+#' @param cibersortx_token CIBERSORTx token (required for CSx)
+#' @param W_prime Initial unknown signature matrix or 0
+#' @param bulkName Label for bulk dataset
+#' @param refName Label for reference dataset
+#' @param hp_max_evals Number of hyperparameter evaluations
+#' @param N_unknownCT Number of unknown cell types
+#' @param algo_select Hyperparameter search strategy:
+#'   \code{"random"}, \code{"tpe"}, \code{"atpe"}, \code{"anneal"}
+#' @param output_path Output directory
+#' @param hspaceTechniqueChoose Hyperparameter space:
+#'   \code{"all"} or \code{"restrictionEspace"}
+#' @param out_Decon Optional precomputed deconvolution matrix
+#' @param normalize Logical. Apply z-score normalization per gene
+#'
+#' @return A list of class \code{"dicepro"} containing:
+#' \itemize{
+#'   \item \code{hyperparameters} selected lambda and gamma
+#'   \item \code{metrics} loss and constraint values
+#'   \item \code{trials} all evaluated configurations
+#'   \item \code{W} estimated signatures
+#'   \item \code{H} estimated proportions
+#'   \item \code{plot} Pareto frontier plot
+#'   \item \code{plot_hyperopt} hyperparameter space visualization
+#' }
+#'
+#' @seealso
+#' \code{\link{running_method}}, \code{\link{run_experiment}},
+#' \code{\link{best_hyperParams}}
+#'
+#' @examples
+#' \dontrun{
+#' res <- dicepro(reference = ref_mat,
+#'                 bulk = bulk_mat,
+#'                 methodDeconv = "CSx",
+#'                 cibersortx_email = "xxx",
+#'                 cibersortx_token = "xxx")
+#' }
+#'
+#' @export
+dicepro <- function(reference, bulk,
+                    methodDeconv = "CSx",
+                    cibersortx_email = NULL,
+                    cibersortx_token = NULL,
+                    W_prime = 0,
+                    bulkName = "Bulk",
+                    refName = "Reference",
+                    hp_max_evals = 100,
+                    N_unknownCT = 1,
+                    algo_select = "random",
+                    output_path = NULL,
+                    hspaceTechniqueChoose = "all",
+                    out_Decon = NULL,
+                    normalize = TRUE) {
+
+  # ---- validation ----
+  args <- .validate_inputs(normalize, algo_select, hspaceTechniqueChoose)
+  normalize             <- args$normalize
+  algo_select           <- args$algo_select
+  hspaceTechniqueChoose <- args$hspaceTechniqueChoose
+
+  # ---- preprocessing ----
+  data <- .prepare_data(reference, bulk, normalize)
+  reference <- data$reference
+  bulk      <- data$bulk
+
+  # ---- deconvolution ----
+  out_Dec <- .get_deconvolution(
+    bulk, reference,
+    methodDeconv,
+    cibersortx_email,
+    cibersortx_token,
+    out_Decon
+  )
+
+  # ---- dataset ----
+  dataset <- list(B = bulk, W = reference, P = out_Dec)
+
+  # ---- output dir ----
+  dirName <- paste0("dicepro_", bulkName, "_", refName)
+  if (is.null(output_path)) output_path <- getwd()
+  output_dir <- file.path(output_path, dirName)
+
+  hp_params <- switch(
+    hspaceTechniqueChoose,
+    all               = c("gamma", "lambda_", "p_prime"),
+    restrictionEspace = c("gamma", "lambda_factor", "p_prime")
+  )
+
+  # ---- hyperopt ----
+  out <- .run_hyperopt(
+    dataset, W_prime,
+    bulkName, refName,
+    hp_max_evals,
+    algo_select,
+    output_path,
+    hspaceTechniqueChoose,
+    output_dir
+  )
+
+  if (is.null(out)) {
+    warning("No valid hyperparameter configuration found.", call. = FALSE)
+    return(invisible(NULL))
+  }
+
+  # ---- save ----
+  out <- .save_outputs(out, output_dir, hp_params)
 
   structure(out, class = "dicepro")
 }

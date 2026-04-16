@@ -2,8 +2,7 @@
 % Please edit documentation in R/dicepro.R
 \name{dicepro}
 \alias{dicepro}
-\title{Semi-supervised bulk RNA-seq deconvolution with NMF hyperparameter
-optimisation}
+\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization}
 \usage{
 dicepro(
   reference,
@@ -24,110 +23,76 @@ dicepro(
 )
 }
 \arguments{
-\item{reference}{Numeric matrix of reference gene expression profiles,
-dimensions \eqn{G \times K} (genes \eqn{\times} known cell types).
-Row names must be gene symbols.}
+\item{reference}{Numeric matrix (genes × cell types)}
 
-\item{bulk}{Numeric matrix of bulk RNA-seq expression,
-dimensions \eqn{G \times N} (genes \eqn{\times} samples).
-Row names must be gene symbols matching \code{reference}.}
+\item{bulk}{Numeric matrix (genes × samples)}
 
-\item{methodDeconv}{Character scalar. Deconvolution method to use for
-the supervised step. One of \code{"CSx"}, \code{"DCQ"},
-\code{"CDSeq"}, or \code{"FARDEEP"} (default \code{"CSx"}).}
+\item{methodDeconv}{Character. One of:
+\code{"CSx"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}}
 
-\item{cibersortx_email}{Character scalar. Registered email for the
-CIBERSORTx web service. Required when \code{methodDeconv = "CSx"};
-ignored otherwise.}
+\item{cibersortx_email}{CIBERSORTx email (required for CSx)}
 
-\item{cibersortx_token}{Character scalar. API token for the CIBERSORTx
-web service. Required when \code{methodDeconv = "CSx"};
-ignored otherwise.}
+\item{cibersortx_token}{CIBERSORTx token (required for CSx)}
 
-\item{W_prime}{Either \code{0} (default, initialise a single unknown
-cell-type column automatically) or a numeric matrix of dimensions
-\eqn{G \times U} providing initial signatures for \eqn{U} unknown cell
-types.}
+\item{W_prime}{Initial unknown signature matrix or 0}
 
-\item{bulkName}{Character scalar. Label for the bulk dataset, used in
-the output directory name and plot titles (default \code{"Bulk"}).}
+\item{bulkName}{Label for bulk dataset}
 
-\item{refName}{Character scalar. Label for the reference dataset,
-used in the output directory name and plot titles
-(default \code{"Reference"}).}
+\item{refName}{Label for reference dataset}
 
-\item{hp_max_evals}{Positive integer. Number of hyperparameter
-configurations to evaluate during the search
-(default \code{100}). Increase to \eqn{\geq 200} for production use.}
+\item{hp_max_evals}{Number of hyperparameter evaluations}
 
-\item{N_unknownCT}{Positive integer. Number of unknown cell types to
-estimate when \code{W_prime = 0} (default \code{1}).}
+\item{N_unknownCT}{Number of unknown cell types}
 
-\item{algo_select}{Character scalar. Hyperparameter sampling strategy.
-\describe{
-\item{\code{"random"}}{Pure random search (default).}
-\item{\code{"tpe"}}{Tree-structured Parzen Estimator.}
-\item{\code{"atpe"}}{Accepted alias for \code{"tpe"}.}
-\item{\code{"anneal"}}{Accepted in config; currently falls back to
-\code{"random"}.}
-}}
+\item{algo_select}{Hyperparameter search strategy:
+\code{"random"}, \code{"tpe"}, \code{"atpe"}, \code{"anneal"}}
 
-\item{output_path}{Character scalar. Root directory for all outputs.
-Defaults to \code{getwd()} when \code{NULL}.}
+\item{output_path}{Output directory}
 
-\item{hspaceTechniqueChoose}{Character scalar. Hyperparameter space
-parameterisation (\code{"all"} or \code{"restrictionEspace"}).}
+\item{hspaceTechniqueChoose}{Hyperparameter space:
+\code{"all"} or \code{"restrictionEspace"}}
 
-\item{out_Decon}{Optional numeric matrix. Pre-computed deconvolution
-result. When provided, \code{\link{running_method}} is skipped.}
+\item{out_Decon}{Optional precomputed deconvolution matrix}
 
-\item{normalize}{Logical scalar. When \code{TRUE} (default), both
-matrices are z-score normalised per gene before deconvolution.}
+\item{normalize}{Logical. Apply z-score normalization per gene}
 }
 \value{
-An object of class \code{"dicepro"} (a named list), or
-\code{invisible(NULL)} when no valid hyperparameter configuration is
-found. The list contains:
-\describe{
-\item{hyperparameters}{Named list with \code{lambda} and \code{gamma}.}
-\item{metrics}{Named list with \code{loss} and \code{constraint}.}
-\item{trials}{data.frame of all successful trial results.}
-\item{W}{Signature matrix of the selected trial.}
-\item{H}{Proportion matrix of the selected trial.}
-\item{plot}{ggplot2 figure of the Pareto frontier.}
-\item{plot_hyperopt}{ggplot2 scatter-matrix of all hyperparameter
-configurations.}
+A list of class \code{"dicepro"} containing:
+\itemize{
+\item \code{hyperparameters} selected lambda and gamma
+\item \code{metrics} loss and constraint values
+\item \code{trials} all evaluated configurations
+\item \code{W} estimated signatures
+\item \code{H} estimated proportions
+\item \code{plot} Pareto frontier plot
+\item \code{plot_hyperopt} hyperparameter space visualization
 }
 }
 \description{
-\code{dicepro} performs cell-type deconvolution of bulk RNA-seq data by
-combining a supervised deconvolution step (estimating proportions of
-\emph{known} cell types) with an unsupervised NMF step (discovering and
-quantifying \emph{unknown} cell types). Hyperparameters
-\eqn{(\lambda, \gamma, p')} are selected automatically via Pareto-frontier
-analysis and knee-point detection.
+Performs semi-supervised deconvolution of bulk RNA-seq data by combining:
+a supervised estimation of known cell types and an unsupervised discovery
+of latent components, with automatic hyperparameter optimization.
 }
-\section{Pipeline}{
+\details{
+If \code{out_Decon} is provided, the supervised deconvolution step is skipped.
+Otherwise, the method specified in \code{methodDeconv} is executed.
 
-\enumerate{
-\item \strong{Normalisation} (optional): z-score per gene applied to
-both \code{reference} and \code{bulk} via
-\code{.normalize_zscore_per_gene()}.
-\item \strong{Gene intersection}: only genes present in both matrices
-are retained.
-\item \strong{Supervised deconvolution}: \code{\link{running_method}}
-estimates known cell-type proportions.
-\item \strong{Hyperparameter search}: \code{\link{run_experiment}}
-evaluates \code{hp_max_evals} configurations using the chosen
-\code{algo_select} strategy.
-\item \strong{Best configuration}: \code{\link{best_hyperParams}}
-selects the knee point on the Pareto frontier.
-\item \strong{Report}: plots are saved under
-\code{output_path/dicepro_<bulkName>_<refName>/report/}.
+Gene expression matrices are optionally normalized using z-score scaling
+per gene, and only intersecting genes are retained.
+
+Hyperparameters are optimized using a Pareto-frontier-based strategy.
 }
+\examples{
+\dontrun{
+res <- dicepro(reference = ref_mat,
+                bulk = bulk_mat,
+                methodDeconv = "CSx",
+                cibersortx_email = "xxx",
+                cibersortx_token = "xxx")
 }
 
+}
 \seealso{
 \code{\link{running_method}}, \code{\link{run_experiment}},
-\code{\link{best_hyperParams}}, \code{\link{plot_hyperopt}}.
+\code{\link{best_hyperParams}}
 }
