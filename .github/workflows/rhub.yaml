@@ -52,15 +52,19 @@ jobs:
 
     steps:
       - uses: r-hub/actions/checkout@v1
+
+      - name: Fix Ubuntu mirror (inside container)
+        run: |
+          sed -i 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+          echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80retries
+          apt-get update -o Acquire::Retries=5
+
       - uses: r-hub/actions/platform-info@v1
         with:
           token: ${{ secrets.RHUB_TOKEN }}
           job-config: ${{ matrix.config.job-config }}
+
       - uses: r-hub/actions/setup-deps@v1
-        with:
-          token: ${{ secrets.RHUB_TOKEN }}
-          job-config: ${{ matrix.config.job-config }}
-      - uses: r-hub/actions/run-check@v1
         with:
           token: ${{ secrets.RHUB_TOKEN }}
           job-config: ${{ matrix.config.job-config }}
