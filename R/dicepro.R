@@ -2,9 +2,50 @@
 # dicepro Main Function
 #
 # Public API  : dicepro()
-# Private fns : .normalize_zscore_per_gene()
+# Private fns :  .validate_inputs(), .normalize_zscore_per_gene()
 # =============================================================================
 
+
+# -----------------------------------------------------------------------------
+# Internal input validation
+# -----------------------------------------------------------------------------
+
+#' Validate dicepro inputs
+#'
+#' Internal helper that validates and normalizes user parameters.
+#'
+#' @param normalize Logical. Whether to apply z-score normalization.
+#' @param algo_select Character. Hyperparameter search strategy.
+#' @param hspaceTechniqueChoose Character. Hyperparameter space strategy.
+#'
+#' @return A named list with validated parameters.
+#'
+#' @keywords internal
+#' @noRd
+.validate_inputs <- function(normalize,
+                             algo_select,
+                             hspaceTechniqueChoose) {
+
+  if (!is.logical(normalize) || length(normalize) != 1L) {
+    stop("'normalize' must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  algo_select <- match.arg(
+    tolower(algo_select),
+    c("random", "tpe", "atpe", "anneal")
+  )
+
+  hspaceTechniqueChoose <- match.arg(
+    hspaceTechniqueChoose,
+    c("restrictionEspace", "all")
+  )
+
+  list(
+    normalize = normalize,
+    algo_select = algo_select,
+    hspaceTechniqueChoose = hspaceTechniqueChoose
+  )
+}
 
 # -----------------------------------------------------------------------------
 # .normalize_zscore_per_gene  [private]
