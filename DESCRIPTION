@@ -26,10 +26,10 @@ LazyDataCompression: xz
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 LinkingTo:
-    Rcpp,
+    Rcpp (>= 1.0.12),
     RcppEigen
 Imports:
-    Rcpp,
+    Rcpp (>= 1.0.12),
     RcppEigen,
     lbfgsb3c,
     KraljicMatrix,
@@ -42,3 +42,5 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
+Remotes:
+    RcppCore/Rcpp
