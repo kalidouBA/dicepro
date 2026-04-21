@@ -1,11 +1,5 @@
-# FIX: declare NSE symbols used in KraljicMatrix::get_frontier() to silence
-# R CMD CHECK "no visible binding for global variable" NOTEs.
-# These are column names of the data.frame passed to get_frontier(), not
-# actual R variables — globalVariables() is the standard pattern for this.
-utils::globalVariables(c("frob_H", "loss"))
-
 # =============================================================================
-# NMF Hyperparameter Selection -- Pareto Frontier & Knee Point
+# hyperopt_selection.R
 #
 # Public API  : best_hyperParams()
 # Private fns : .select_knee_pareto()
@@ -15,35 +9,35 @@ utils::globalVariables(c("frob_H", "loss"))
 # Pipeline:
 #   1. Filter valid hyperparameter trials
 #   2. Compute constraint deviation
-#   3. Extract Pareto frontier
+#   3. Extract Pareto frontier (KraljicMatrix::get_frontier)
 #   4. Detect the knee point (best compromise)
 #   5. Generate a ggplot2 visualisation
+#
+# NOTE: globalVariables(c("frob_H", "loss")) declared in utils.R
 # =============================================================================
 
 
 # -----------------------------------------------------------------------------
-# .select_knee_pareto
+# .select_knee_pareto  [private]
 # -----------------------------------------------------------------------------
 
 #' Select the knee point on a Pareto frontier
 #'
 #' Identifies the configuration that maximises the perpendicular distance to
-#' the line connecting the *utopia* \eqn{(0,0)} and *nadir* \eqn{(1,1)} points
+#' the line connecting the utopia \eqn{(0,0)} and nadir \eqn{(1,1)} points
 #' in a bi-objective space. Both objectives are min-max normalised before
 #' scoring, making the procedure fully scale-free.
 #'
 #' @param df             data.frame of Pareto-optimal solutions.
-#' @param loss_col       Character scalar. Column name of the loss objective
-#'   (minimised).
+#' @param loss_col       Character scalar. Column name of the loss objective.
 #' @param constraint_col Character scalar. Column name of the constraint
-#'   deviation objective (minimised).
-#' @param eps            Numeric scalar. Guard against division by zero when
-#'   the range of an objective is effectively zero (default \code{1e-12}).
-#' @param return_scores  Logical. If \code{TRUE} (default), returns a list with
-#'   diagnostic scores; otherwise returns only the selected row.
+#'   deviation objective.
+#' @param eps            Numeric scalar. Guard against zero-range objectives
+#'   (default \code{1e-12}).
+#' @param return_scores  Logical. Return diagnostic scores when \code{TRUE}
+#'   (default); return only \code{best_row} otherwise.
 #'
-#' @return
-#' When \code{return_scores = TRUE}, a named list:
+#' @return Named list (when \code{return_scores = TRUE}):
 #' \describe{
 #'   \item{best_row}{One-row data.frame of the selected configuration.}
 #'   \item{best_index}{Integer row index within \code{df}.}
@@ -62,8 +56,10 @@ utils::globalVariables(c("frob_H", "loss"))
                                 return_scores  = TRUE) {
 
   stopifnot(is.data.frame(df))
-  if (!loss_col       %in% names(df)) stop("Column not found: ", loss_col)
-  if (!constraint_col %in% names(df)) stop("Column not found: ", constraint_col)
+  if (!loss_col       %in% names(df))
+    stop("Column not found: ", loss_col,       call. = FALSE)
+  if (!constraint_col %in% names(df))
+    stop("Column not found: ", constraint_col, call. = FALSE)
 
   norm01 <- function(x) {
     rng <- range(x, na.rm = TRUE)
@@ -71,11 +67,8 @@ utils::globalVariables(c("frob_H", "loss"))
     (x - rng[1L]) / diff(rng)
   }
 
-  f1_norm <- norm01(df[[loss_col]])
-  f2_norm <- norm01(df[[constraint_col]])
-
-  # Utopia = (0,0), Nadir = (1,1) after normalisation.
-  # Perpendicular distance to the line y = x: d = |f1 - f2| / sqrt(2).
+  f1_norm    <- norm01(df[[loss_col]])
+  f2_norm    <- norm01(df[[constraint_col]])
   knee_score <- abs(f1_norm - f2_norm) / sqrt(2)
   best_index <- which.max(knee_score)
   best_row   <- df[best_index, , drop = FALSE]
@@ -95,24 +88,20 @@ utils::globalVariables(c("frob_H", "loss"))
 
 
 # -----------------------------------------------------------------------------
-# .plot_pareto_kraljic
+# .plot_pareto_kraljic  [private]
 # -----------------------------------------------------------------------------
 
-#' Generate a Pareto frontier plot
+#' Generate a Pareto frontier ggplot2 figure
 #'
-#' Builds a ggplot2 scatter plot showing all valid configurations, the Pareto
-#' frontier, and the selected knee-point solution.
+#' Scatter plot showing all valid configurations (grey), the Pareto frontier
+#' (red line + diamonds), and the selected knee point (blue star).
 #'
 #' @param data_all             data.frame of all valid trials.
 #' @param data_frontier        data.frame of Pareto-frontier points.
-#' @param bestPareto           One-row data.frame of the selected configuration.
-#' @param constraint_threshold Numeric scalar. Constraint threshold shown in
-#'   plot title metadata.
+#' @param bestPareto           One-row data.frame of the selected solution.
+#' @param constraint_threshold Numeric scalar. Shown in the plot title.
 #'
-#' @return A ggplot2 object.
-#'
-#' @importFrom ggplot2 ggplot aes geom_point geom_line scale_x_log10
-#'   scale_y_log10 labs theme_bw theme element_text
+#' @return A \code{ggplot2} object.
 #' @keywords internal
 #' @noRd
 .plot_pareto_kraljic <- function(data_all,
@@ -123,76 +112,70 @@ utils::globalVariables(c("frob_H", "loss"))
   frontier_ordered <- data_frontier[order(data_frontier$frobNorm), ]
 
   ggplot2::ggplot() +
-    # All valid solutions
     ggplot2::geom_point(
-      data   = data_all,
+      data    = data_all,
       mapping = ggplot2::aes(x = frobNorm, y = abs_constraint),
       colour  = "grey60",
-      size    = 2,
+      size    = 2L,
       alpha   = 0.6
     ) +
-    # Pareto frontier line
     ggplot2::geom_line(
-      data    = frontier_ordered,
-      mapping = ggplot2::aes(x = frobNorm, y = abs_constraint),
-      colour  = "red",
+      data      = frontier_ordered,
+      mapping   = ggplot2::aes(x = frobNorm, y = abs_constraint),
+      colour    = "red",
       linewidth = 0.8
     ) +
-    # Pareto frontier points
     ggplot2::geom_point(
       data    = frontier_ordered,
       mapping = ggplot2::aes(x = frobNorm, y = abs_constraint),
       colour  = "red",
-      shape   = 18,   # diamond
-      size    = 3
+      shape   = 18L,
+      size    = 3L
     ) +
-    # Knee-point (best solution)
     ggplot2::geom_point(
       data    = bestPareto,
       mapping = ggplot2::aes(x = frobNorm, y = abs_constraint),
       colour  = "blue",
-      shape   = 8,    # star
-      size    = 5,
+      shape   = 8L,
+      size    = 5L,
       stroke  = 1.2
     ) +
     ggplot2::scale_x_log10(trans = "reverse") +
     ggplot2::scale_y_log10(trans = "reverse") +
     ggplot2::labs(
-      title = "Frobenius Norm vs Constraint Deviation - Pareto Frontier",
+      title = "Frobenius Norm vs Constraint Deviation \u2014 Pareto Frontier",
       x     = "Frobenius Norm (log scale reversed)",
       y     = "|1 - Constraint| (log scale reversed)"
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(face = "bold", size = 11)
+      plot.title = ggplot2::element_text(face = "bold", size = 11L)
     )
 }
 
 
 # -----------------------------------------------------------------------------
-# .make_preddata_fname
+# .make_preddata_fname  [private]
 # -----------------------------------------------------------------------------
 
 #' Build standard hyperparameter result filenames
 #'
 #' @param lambda Numeric vector of \eqn{\lambda} values.
 #' @param gamma  Numeric vector of \eqn{\gamma} values.
-#'
-#' @return Character vector of filenames (same length as \code{lambda}).
-#'
+#' @return Character vector (same length as \code{lambda}).
 #' @keywords internal
 #' @noRd
 .make_preddata_fname <- function(lambda, gamma) {
   paste0(
-    "hyperopt_results_lambda_", round(lambda, 2),
-    "_gamma_",                  round(gamma,  2),
+    "hyperopt_results_lambda_", round(lambda, 2L),
+    "_gamma_",                  round(gamma,  2L),
     ".RData"
   )
 }
 
 
 # -----------------------------------------------------------------------------
-# best_hyperParams  (public API)
+# best_hyperParams  [public]
 # -----------------------------------------------------------------------------
 
 #' Select optimal hyperparameters using a Pareto frontier
@@ -200,39 +183,33 @@ utils::globalVariables(c("frob_H", "loss"))
 #' Identifies the best \eqn{(\lambda, \gamma)} pair from a set of
 #' optimisation trials by:
 #' \enumerate{
-#'   \item Filtering trials that violate the constraint threshold.
+#'   \item Filtering trials that exceed the constraint threshold.
 #'   \item Computing constraint deviation (\code{abs_constraint}).
-#'   \item Extracting the Pareto frontier (Frobenius norm vs. loss).
-#'   \item Selecting the knee point -- the best loss/constraint trade-off.
-#'   \item Generating a Pareto plot saved under
-#'         \code{savePaths/report/}.
+#'   \item Extracting the Pareto frontier (Frobenius norm vs. loss) via
+#'     \code{KraljicMatrix::get_frontier}.
+#'   \item Selecting the knee point — the best loss/constraint trade-off.
 #' }
 #'
-#' The \code{W} and \code{H} matrices produced by the winning trial are
-#' returned directly, avoiding any file I/O for the result matrices.
-#'
-#' @param trials_df          data.frame of optimisation trials as returned by
-#'   \code{\link{research_hyperOpt}} (\code{$trials}).
-#' @param W                  List of \eqn{W} matrices, one per trial, as
-#'   returned by \code{research_hyperOpt} (\code{$w_unknown}).
-#' @param H                  List of deconvolution outputs (\eqn{H} matrices),
-#'   one per trial, as returned by \code{research_hyperOpt}
-#'   (\code{$out_deconvolution}).
-#' @param savePaths          Character scalar. Root directory for all outputs
-#'   (plot saved under \code{savePaths/report/}).
-#' @param constraint_threshold Numeric scalar. Maximum allowed value of
-#'   \eqn{|1 - \text{constraint}|}; trials exceeding this are discarded
+#' @param trials_df            data.frame of optimisation trials as returned
+#'   by \code{\link{research_hyperOpt}} (\code{$trials}).
+#' @param W                    List of \eqn{W} matrices, one per trial.
+#' @param H                    List of \eqn{H} matrices, one per trial.
+#' @param savePaths            Character scalar. Root directory (kept for
+#'   API compatibility; no file I/O performed here).
+#' @param constraint_threshold Numeric scalar. Maximum allowed
+#'   \eqn{|1 - \text{constraint}|}; trials above this are discarded
 #'   (default \code{0.1}).
 #'
-#' @return
-#' A named list, or \code{invisible(NULL)} when no valid configuration
-#' survives filtering:
+#' @return Named list, or \code{invisible(NULL)} when no valid configuration
+#'   survives filtering:
 #' \describe{
-#'   \item{hyperparameters}{List with \code{lambda} and \code{gamma} scalars.}
-#'   \item{metrics}{List with \code{loss} and \code{constraint} scalars.}
+#'   \item{hyperparameters}{List with \code{lambda} and \code{gamma}.}
+#'   \item{metrics}{List with \code{loss} and \code{constraint}.}
+#'   \item{trials}{Filtered trials data.frame.}
 #'   \item{W}{The \eqn{W} matrix of the selected trial.}
-#'   \item{H}{The \eqn{H} (deconvolution) matrix of the selected trial.}
-#'   \item{plot}{ggplot2 figure of the Pareto frontier.}
+#'   \item{H}{The \eqn{H} matrix of the selected trial (first column
+#'     dropped — the \code{Mixture} label column).}
+#'   \item{plot}{ggplot2 Pareto frontier figure.}
 #' }
 #'
 #' @export
@@ -244,27 +221,34 @@ best_hyperParams <- function(trials_df,
 
   # ---- Guard: empty input --------------------------------------------------
   if (nrow(trials_df) == 0L) {
-    warning("trials_df is empty -- no configurations to evaluate.")
+    warning("trials_df is empty -- no configurations to evaluate.",
+            call. = FALSE)
     return(invisible(NULL))
   }
 
-  # ---- Attach trial index before any filtering -----------------------------
-  trials_df$trial_index <- seq_len(nrow(trials_df))
-
+  # ---- Derived columns (attach index before any row removal) ---------------
+  trials_df$trial_index    <- seq_len(nrow(trials_df))
   trials_df$log_lambda     <- log10(trials_df$lambda_ + 1)
   trials_df$log_gamma      <- log10(trials_df$gamma   + 1)
   trials_df$log_frob       <- log10(trials_df$frobNorm)
   trials_df$abs_constraint <- abs(1 - trials_df$constraint)
 
-  trials_df <- trials_df[trials_df$abs_constraint <= constraint_threshold, , drop = FALSE]
+  # ---- Constraint filter ---------------------------------------------------
+  trials_df <- trials_df[
+    trials_df$abs_constraint <= constraint_threshold, , drop = FALSE
+  ]
 
   if (nrow(trials_df) == 0L) {
     warning(sprintf(
       "No trials pass the constraint filter (abs_constraint <= %g).",
       constraint_threshold
-    ))
+    ), call. = FALSE)
     return(invisible(NULL))
   }
+
+  # ---- Pareto frontier -----------------------------------------------------
+  # frob_H and loss are column names of trials_df; declared in utils.R via
+  # utils::globalVariables() to silence R CMD CHECK NSE notes.
   frontier_result <- KraljicMatrix::get_frontier(
     data     = trials_df,
     x        = frob_H,
@@ -274,12 +258,12 @@ best_hyperParams <- function(trials_df,
   frontier_df <- trials_df[rownames(frontier_result), , drop = FALSE]
 
   # ---- Knee-point selection ------------------------------------------------
-  knee_res <- .select_knee_pareto(
+  # Uses frob_H (x-axis) and var_H (y-axis) as the two objectives.
+  knee_res   <- .select_knee_pareto(
     df             = frontier_df,
     loss_col       = "frob_H",
     constraint_col = "var_H"
   )
-
   best_row   <- knee_res$best_row
   best_trial <- best_row$trial_index
 
@@ -291,8 +275,8 @@ best_hyperParams <- function(trials_df,
     constraint_threshold = constraint_threshold
   )
 
-  # ---- Assemble output -----------------------------------------------------
-  return(list(
+  # ---- Output --------------------------------------------------------------
+  list(
     hyperparameters = list(
       lambda = best_row$lambda_,
       gamma  = best_row$gamma
@@ -303,7 +287,7 @@ best_hyperParams <- function(trials_df,
     ),
     trials = trials_df,
     W      = W[[best_trial]],
-    H      = H[[best_trial]][, -1],
+    H      = H[[best_trial]],
     plot   = plot_res
-  ))
+  )
 }

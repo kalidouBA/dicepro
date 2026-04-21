@@ -15,22 +15,28 @@ running_method(
 \arguments{
 \item{bulk}{A numeric matrix of bulk RNA-seq data (rows = genes, columns = samples).}
 
-\item{reference}{A numeric matrix of reference cell type gene expression profiles (rows = genes, columns = cell types).}
+\item{reference}{A numeric matrix of reference cell type gene expression profiles
+(rows = genes, columns = cell types).}
 
-\item{methodDeconv}{Character. The deconvolution method to use: "CSx", "DCQ", "FARDEEP", or "BayesPrism".}
+\item{methodDeconv}{Character. The deconvolution method to use:
+"CSx", "DCQ", "FARDEEP", or "BayesPrism".}
 
-\item{cibersortx_email}{Optional. Email for CIBERSORTx account (required if \code{methodDeconv = "CSx"}).}
+\item{cibersortx_email}{Optional. Email for CIBERSORTx account
+(required if methodDeconv = "CSx").}
 
-\item{cibersortx_token}{Optional. Token for CIBERSORTx account (required if \code{methodDeconv = "CSx"}).}
+\item{cibersortx_token}{Optional. Token for CIBERSORTx account
+(required if methodDeconv = "CSx").}
 }
 \value{
 A numeric matrix with estimated cell type proportions for each sample.
 }
 \description{
-Performs cell deconvolution on bulk RNA-seq data using multiple methods such as CSx, DCQ, FARDEEP, and BayesPrism.
+Performs cell deconvolution on bulk RNA-seq data using multiple methods
+such as CSx, DCQ, FARDEEP, and BayesPrism.
 }
 \details{
-This function allows selection among different deconvolution algorithms. The output is a matrix with normalized estimated cell fractions per sample.
+This function allows selection among different deconvolution algorithms.
+The output is a matrix with normalized estimated cell fractions per sample.
 }
 \seealso{
 \code{run_CSx}, \code{dcq}, \code{fardeep}

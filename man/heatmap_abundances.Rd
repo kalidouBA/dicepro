@@ -2,28 +2,46 @@
 % Please edit documentation in R/Heatmap_error.R
 \name{heatmap_abundances}
 \alias{heatmap_abundances}
-\title{Heatmap of Cell Abundances Across Iterations}
+\title{Heatmap of cell-type abundances}
 \usage{
-heatmap_abundances(res2plot, base_size = 9)
+heatmap_abundances(res2plot, base_size = 9, title = NULL, midpoint = NULL)
 }
 \arguments{
-\item{res2plot}{A data.frame with one column named \code{Iterate} (iteration
-index) and one column per cell type containing numeric abundance values.}
+\item{res2plot}{A \code{data.frame} with:
+\itemize{
+\item one column named \code{Iterate} (iteration or sample index,
+numeric or integer);
+\item one column per cell type containing non-negative numeric
+abundance values.
+}}
 
 \item{base_size}{Numeric. Base font size in points (default \code{9}).}
+
+\item{title}{Character. Plot title (default \code{NULL}, no title).}
+
+\item{midpoint}{Numeric or \code{NULL}. When not \code{NULL}, a
+diverging viridis scale is used with this value as the midpoint,
+useful for highlighting deviations from a reference abundance.
+Default \code{NULL} (sequential scale).}
 }
 \value{
-A \code{ggplot} object. Print it or save it with
+A \code{ggplot} object. Print or save with
 \code{ggplot2::ggsave()}.
 }
 \description{
-Generates a raster heatmap showing the abundance of each cell type at every
-NMF iteration. Colour encodes abundance level using the viridis scale
-(reversed: dark = high abundance).
+Generates a raster heatmap showing the estimated abundance of each cell
+type across NMF iterations (or samples). Colour encodes abundance using
+the viridis scale (reversed: dark = high abundance).
 }
 \examples{
 \dontrun{
+df <- data.frame(
+  Iterate   = 1:10,
+  CellTypeA = runif(10),
+  CellTypeB = runif(10)
+)
 heatmap_abundances(df)
+heatmap_abundances(df, title = "Estimated abundances", midpoint = 0.5)
 }
 
 }

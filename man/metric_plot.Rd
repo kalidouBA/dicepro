@@ -2,28 +2,46 @@
 % Please edit documentation in R/Heatmap_error.R
 \name{metric_plot}
 \alias{metric_plot}
-\title{Performance Metric Line Plot Across Iterations}
+\title{Performance metric line plot across iterations}
 \usage{
-metric_plot(perf2plot, ylab = "Error between folds", base_size = 9)
+metric_plot(
+  perf2plot,
+  ylab = "Error between folds",
+  title = NULL,
+  base_size = 9,
+  add_smooth = FALSE,
+  show_points = FALSE
+)
 }
 \arguments{
-\item{perf2plot}{A data.frame with at least two columns:
+\item{perf2plot}{A \code{data.frame} with at least two columns:
 \itemize{
 \item \code{Iterate} — iteration index (numeric or integer).
 \item \code{metric}  — scalar performance value at each iteration.
-}}
+}
+Optionally a \code{group} column (character or factor) to draw
+multiple coloured lines, one per group.}
 
-\item{ylab}{Character. Y-axis label (default \code{"Error between folds"}).}
+\item{ylab}{Character. Y-axis label
+(default \code{"Error between folds"}).}
+
+\item{title}{Character. Plot title (default \code{NULL}).}
 
 \item{base_size}{Numeric. Base font size in points (default \code{9}).}
+
+\item{add_smooth}{Logical. When \code{TRUE}, overlays a LOESS smoothing
+line. Useful for noisy convergence curves (default \code{FALSE}).}
+
+\item{show_points}{Logical. When \code{TRUE}, adds individual data points
+on top of the line (default \code{FALSE}).}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Plots the evolution of a scalar performance metric (e.g., NRMSE, R²) over
-NMF iterations. Useful for monitoring convergence and diagnosing early
-stopping.
+Plots the evolution of one or more scalar performance metrics (e.g.,
+NRMSE, R\eqn{^2}, loss) over NMF iterations. Useful for monitoring
+convergence and diagnosing early stopping.
 }
 \examples{
 \dontrun{
@@ -32,7 +50,15 @@ df <- data.frame(
   metric  = cumsum(runif(50, -0.01, 0.1))
 )
 metric_plot(df)
-metric_plot(df, ylab = "NRMSE")
+metric_plot(df, ylab = "NRMSE", add_smooth = TRUE)
+
+# Multi-group
+df2 <- data.frame(
+  Iterate = rep(1:20, 2),
+  metric  = c(cumsum(runif(20, 0, 0.1)), cumsum(runif(20, 0, 0.05))),
+  group   = rep(c("Fold 1", "Fold 2"), each = 20)
+)
+metric_plot(df2)
 }
 
 }

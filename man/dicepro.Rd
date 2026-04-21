@@ -2,7 +2,7 @@
 % Please edit documentation in R/dicepro.R
 \name{dicepro}
 \alias{dicepro}
-\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization}
+\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimisation}
 \usage{
 dicepro(
   reference,
@@ -13,8 +13,8 @@ dicepro(
   W_prime = 0,
   bulkName = "Bulk",
   refName = "Reference",
-  hp_max_evals = 100,
-  N_unknownCT = 1,
+  hp_max_evals = 100L,
+  N_unknownCT = 1L,
   algo_select = "random",
   output_path = NULL,
   hspaceTechniqueChoose = "all",
@@ -23,72 +23,73 @@ dicepro(
 )
 }
 \arguments{
-\item{reference}{Numeric matrix (genes × cell types)}
+\item{reference}{Numeric matrix (genes × cell types).}
 
-\item{bulk}{Numeric matrix (genes × samples)}
+\item{bulk}{Numeric matrix (genes × samples).}
 
-\item{methodDeconv}{Character. One of:
-\code{"CSx"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}}
+\item{methodDeconv}{Character. One of \code{"CSx"}, \code{"DCQ"},
+\code{"CDSeq"}, \code{"FARDEEP"}.}
 
-\item{cibersortx_email}{CIBERSORTx email (required for CSx)}
+\item{cibersortx_email}{CIBERSORTx email (required for \code{"CSx"}).}
 
-\item{cibersortx_token}{CIBERSORTx token (required for CSx)}
+\item{cibersortx_token}{CIBERSORTx token (required for \code{"CSx"}).}
 
-\item{W_prime}{Initial unknown signature matrix or 0}
+\item{W_prime}{Initial unknown-signature matrix or \code{0}.}
 
-\item{bulkName}{Label for bulk dataset}
+\item{bulkName}{Character scalar. Label for the bulk dataset.}
 
-\item{refName}{Label for reference dataset}
+\item{refName}{Character scalar. Label for the reference.}
 
-\item{hp_max_evals}{Number of hyperparameter evaluations}
+\item{hp_max_evals}{Positive integer. Number of hyperparameter trials.}
 
-\item{N_unknownCT}{Number of unknown cell types}
+\item{N_unknownCT}{Positive integer. Number of unknown cell types.}
 
-\item{algo_select}{Hyperparameter search strategy:
-\code{"random"}, \code{"tpe"}, \code{"atpe"}, \code{"anneal"}}
+\item{algo_select}{Character. One of \code{"random"}, \code{"tpe"},
+\code{"atpe"}, \code{"anneal"}.}
 
-\item{output_path}{Output directory}
+\item{output_path}{Character scalar. Root output directory
+(\code{getwd()} by default).}
 
-\item{hspaceTechniqueChoose}{Hyperparameter space:
-\code{"all"} or \code{"restrictionEspace"}}
+\item{hspaceTechniqueChoose}{Character. \code{"all"} or
+\code{"restrictionEspace"}.}
 
-\item{out_Decon}{Optional precomputed deconvolution matrix}
+\item{out_Decon}{Optional precomputed deconvolution matrix
+(samples × cell types).}
 
-\item{normalize}{Logical. Apply z-score normalization per gene}
+\item{normalize}{Logical. Apply z-score normalisation per gene.}
 }
 \value{
-A list of class \code{"dicepro"} containing:
+An object of class \code{"dicepro"} (a named list) containing:
 \itemize{
-\item \code{hyperparameters} selected lambda and gamma
-\item \code{metrics} loss and constraint values
-\item \code{trials} all evaluated configurations
-\item \code{W} estimated signatures
-\item \code{H} estimated proportions
-\item \code{plot} Pareto frontier plot
-\item \code{plot_hyperopt} hyperparameter space visualization
+\item \code{hyperparameters} — selected \eqn{\lambda} and \eqn{\gamma}
+\item \code{metrics}         — loss and constraint of the best trial
+\item \code{trials}          — all evaluated configurations
+\item \code{W}               — estimated unknown signature matrix
+\item \code{H}               — estimated proportion matrix
+\item \code{plot}            — Pareto frontier ggplot2 figure
+\item \code{plot_hyperopt}   — hyperparameter space ggplot2 figure
 }
+Returns \code{invisible(NULL)} with a warning when no valid configuration
+is found.
 }
 \description{
-Performs semi-supervised deconvolution of bulk RNA-seq data by combining:
-a supervised estimation of known cell types and an unsupervised discovery
-of latent components, with automatic hyperparameter optimization.
+Combines supervised estimation of known cell types with unsupervised
+discovery of latent components, with automatic Pareto-frontier-based
+hyperparameter optimisation.
 }
 \details{
-If \code{out_Decon} is provided, the supervised deconvolution step is skipped.
-Otherwise, the method specified in \code{methodDeconv} is executed.
-
-Gene expression matrices are optionally normalized using z-score scaling
-per gene, and only intersecting genes are retained.
-
-Hyperparameters are optimized using a Pareto-frontier-based strategy.
+When \code{out_Decon} is provided the supervised step is skipped.
+Gene matrices are optionally z-score normalised per gene, and only
+intersecting genes are retained before optimisation.
 }
 \examples{
 \dontrun{
-res <- dicepro(reference = ref_mat,
-                bulk = bulk_mat,
-                methodDeconv = "CSx",
-                cibersortx_email = "xxx",
-                cibersortx_token = "xxx")
+res <- dicepro(
+  reference    = BlueCode,
+  bulk         = CellMixtures,
+  methodDeconv = "FARDEEP",
+  hp_max_evals = 50L
+)
 }
 
 }

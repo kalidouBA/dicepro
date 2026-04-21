@@ -7,47 +7,41 @@
 best_hyperParams(trials_df, W, H, savePaths, constraint_threshold = 0.1)
 }
 \arguments{
-\item{trials_df}{data.frame of optimisation trials as returned by
-\code{\link{research_hyperOpt}} (\code{$trials}).}
+\item{trials_df}{data.frame of optimisation trials as returned
+by \code{\link{research_hyperOpt}} (\code{$trials}).}
 
-\item{W}{List of \eqn{W} matrices, one per trial, as
-returned by \code{research_hyperOpt} (\code{$w_unknown}).}
+\item{W}{List of \eqn{W} matrices, one per trial.}
 
-\item{H}{List of deconvolution outputs (\eqn{H} matrices),
-one per trial, as returned by \code{research_hyperOpt}
-(\code{$out_deconvolution}).}
+\item{H}{List of \eqn{H} matrices, one per trial.}
 
-\item{savePaths}{Character scalar. Root directory for all outputs
-(plot saved under \code{savePaths/report/}).}
+\item{savePaths}{Character scalar. Root directory (kept for
+API compatibility; no file I/O performed here).}
 
-\item{constraint_threshold}{Numeric scalar. Maximum allowed value of
-\eqn{|1 - \text{constraint}|}; trials exceeding this are discarded
+\item{constraint_threshold}{Numeric scalar. Maximum allowed
+\eqn{|1 - \text{constraint}|}; trials above this are discarded
 (default \code{0.1}).}
 }
 \value{
-A named list, or \code{invisible(NULL)} when no valid configuration
+Named list, or \code{invisible(NULL)} when no valid configuration
 survives filtering:
 \describe{
-\item{hyperparameters}{List with \code{lambda} and \code{gamma} scalars.}
-\item{metrics}{List with \code{loss} and \code{constraint} scalars.}
+\item{hyperparameters}{List with \code{lambda} and \code{gamma}.}
+\item{metrics}{List with \code{loss} and \code{constraint}.}
+\item{trials}{Filtered trials data.frame.}
 \item{W}{The \eqn{W} matrix of the selected trial.}
-\item{H}{The \eqn{H} (deconvolution) matrix of the selected trial.}
-\item{plot}{ggplot2 figure of the Pareto frontier.}
+\item{H}{The \eqn{H} matrix of the selected trial (first column
+dropped — the \code{Mixture} label column).}
+\item{plot}{ggplot2 Pareto frontier figure.}
 }
 }
 \description{
 Identifies the best \eqn{(\lambda, \gamma)} pair from a set of
 optimisation trials by:
 \enumerate{
-\item Filtering trials that violate the constraint threshold.
+\item Filtering trials that exceed the constraint threshold.
 \item Computing constraint deviation (\code{abs_constraint}).
-\item Extracting the Pareto frontier (Frobenius norm vs. loss).
-\item Selecting the knee point -- the best loss/constraint trade-off.
-\item Generating a Pareto plot saved under
-\code{savePaths/report/}.
+\item Extracting the Pareto frontier (Frobenius norm vs. loss) via
+\code{KraljicMatrix::get_frontier}.
+\item Selecting the knee point — the best loss/constraint trade-off.
 }
-}
-\details{
-The \code{W} and \code{H} matrices produced by the winning trial are
-returned directly, avoiding any file I/O for the result matrices.
 }

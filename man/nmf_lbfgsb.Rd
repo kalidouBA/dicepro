@@ -2,7 +2,7 @@
 % Please edit documentation in R/NMF_optim.R
 \name{nmf_lbfgsb}
 \alias{nmf_lbfgsb}
-\title{NMF with L-BFGS-B Optimization}
+\title{NMF with L-BFGS-B optimisation}
 \usage{
 nmf_lbfgsb(
   r_dataset,
@@ -11,53 +11,68 @@ nmf_lbfgsb(
   lambda_ = 10,
   gamma_par = 100,
   path2save = "",
-  N_unknownCT = 1,
-  con = list(maxit = 3000)
+  N_unknownCT = 1L,
+  con = list(maxit = 3000L)
 )
 }
 \arguments{
-\item{r_dataset}{A list containing the dataset for the factorization, including:
-\itemize{
-\item \code{B}: A matrix of size (N_gene x N_sample), the input matrix to factorize (gene expression data).
-\item \code{P_cb}: A matrix of size (N_sample x N_cellsType), cell type proportions for the samples.
-\item \code{W_cb}: A matrix of size (N_gene x N_cellsType), initial matrix W (gene-cell type matrix).
+\item{r_dataset}{Named list with three elements:
+\describe{
+\item{B}{Numeric matrix (N_gene × N_sample). Bulk expression to
+factorise.}
+\item{P_cb}{Numeric matrix (N_sample × N_cellsType). Known cell-type
+proportion estimates from a supervised deconvolution step.}
+\item{W_cb}{Numeric matrix (N_gene × N_cellsType). Reference signature
+matrix for known cell types.}
 }}
 
-\item{W_prime}{Initial value for W (optional, defaults to 0). It is a scalar.}
+\item{W_prime}{Numeric scalar or matrix. Initial value(s) for the
+unknown cell-type column(s) in \eqn{W}. Default \code{0}.}
 
-\item{p_prime}{Initial value for p_cb (optional, defaults to 0). It is a scalar.}
+\item{p_prime}{Numeric scalar or matrix. Initial value(s) for the
+unknown cell-type column(s) in \eqn{H}. Default \code{0}.}
 
-\item{lambda_}{Regularization parameter (optional, defaults to 10). It is a scalar.}
+\item{lambda_}{Numeric scalar. Augmented-Lagrangian multiplier
+initialisation (default \code{10}).}
 
-\item{gamma_par}{Penalty factor for the sum of cell type proportions (optional, defaults to 100). It is a scalar.}
+\item{gamma_par}{Numeric scalar. Penalty coefficient for the sum-to-one
+constraint (default \code{100}). Reduce if the optimiser returns
+infinite values.}
 
-\item{path2save}{path to save H}
+\item{path2save}{Character scalar. Directory where intermediate results
+may be saved (currently unused; reserved for future use).}
 
-\item{N_unknownCT}{Number of unknown cell types to model (optional, defaults to 1). It is a scalar.}
+\item{N_unknownCT}{Positive integer. Number of latent cell types to
+estimate (default \code{1}).}
 
-\item{con}{A list of control parameters for the optimization process passed to \code{lbfgs3c} (optional).
-\itemize{
-\item \code{fnscale}: Scaling factor for the objective function (optional, defaults to 1).
-\item \code{maxit}: Maximum number of iterations (optional, defaults to 5000).
-\item \code{tmax}: Maximum number of function evaluations (optional, defaults to 50).
-}}
+\item{con}{Named list of control parameters forwarded to
+\code{lbfgsb3c::lbfgsb3c}. Default: \code{list(maxit = 3000)}.}
 }
 \value{
-A list containing:
-\itemize{
-\item \code{w}: The optimized matrix W, a vector of length N_gene.
-\item \code{H}: The optimized matrix H (cell type proportions), a matrix of size (N_sample x N_cellsType).
-\item \code{loss}: The final value of the objective function (scalar).
-\item \code{constraint}: The final value of the constraint term (penalty for sum of cell type proportions), a scalar.
+A named list on success:
+\describe{
+\item{W}{Optimised signature matrix (N_gene × N_cellsType).}
+\item{frob_W}{Frobenius norm of \code{W}.}
+\item{var_W}{Variance of the unknown column of \code{W}.}
+\item{H}{Optimised proportion data.frame (N_sample × N_cellsType + 1),
+with a leading \code{Mixture} column.}
+\item{frob_H}{Frobenius norm of \code{H}.}
+\item{var_H}{Variance of the unknown column of \code{H}.}
+\item{loss}{Gaussian log-likelihood (objective terms 1 + 2).}
+\item{frobNorm}{Objective term 1 (data-fit component).}
+\item{constNorm}{Objective term 2 (log-normalisation component).}
+\item{c1}{Penalty term 1 (linear Lagrangian).}
+\item{c2}{Penalty term 2 (quadratic penalty).}
+\item{objectiveValue}{Total objective value (\code{loss}).}
+\item{penalty}{Total penalty (\code{c1 + c2}).}
+\item{cvrge}{Convergence code from \code{lbfgsb3c}.}
+\item{constraint}{\eqn{|1 - \sum h_i|} — constraint satisfaction.}
 }
+Returns \code{NULL} when the optimiser fails or the solution is degenerate.
 }
 \description{
-Perform non-negative matrix factorization (NMF) using L-BFGS-B optimization. This method uses an iterative approach
-to solve a regularized least-squares problem for the factorization of a matrix into non-negative matrices W and H.
-It incorporates a regularization term to ensure that the solution meets certain constraints, such as cell type composition.
-}
-\details{
-This function applies the L-BFGS-B optimization method to solve the NMF problem with a regularized objective
-function. The regularization includes a penalty for the sum of cell type proportions and a scaling factor.
-The optimization minimizes the objective function subject to constraints on the cell type proportions.
+Performs non-negative matrix factorisation (NMF) using L-BFGS-B
+optimisation. The objective combines a Gaussian log-likelihood with an
+augmented-Lagrangian penalty that enforces the sum-to-one constraint on
+cell-type proportions.
 }

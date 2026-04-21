@@ -2,7 +2,7 @@
 % Please edit documentation in R/hypersearch.R
 \name{objective_opt}
 \alias{objective_opt}
-\title{Objective function for hyperparameter optimization}
+\title{Objective function for hyperparameter optimisation}
 \usage{
 objective_opt(
   dataset,
@@ -15,23 +15,31 @@ objective_opt(
 )
 }
 \arguments{
-\item{dataset}{List. Dataset containing matrices \code{B}, \code{W}, and \code{P}.}
+\item{dataset}{List with matrices \code{B}, \code{W}, and \code{P}.}
 
-\item{config}{List. Configuration for the experiment.}
+\item{config}{List. Configuration object (needs \code{$exp} for the
+output directory).}
 
-\item{lambda_}{Numeric. Regularization parameter lambda.}
+\item{lambda_}{Numeric. Regularisation parameter \eqn{\lambda}.}
 
-\item{gamma_factor}{Numeric or NULL. If provided: gamma = lambda_ * gamma_factor.}
+\item{gamma_factor}{Numeric or \code{NULL}. When not \code{NULL},
+\eqn{\gamma} is derived as \code{lambda_ * gamma_factor}.}
 
-\item{gamma}{Numeric. Regularization parameter gamma (used directly when gamma_factor is NULL).}
+\item{gamma}{Numeric. \eqn{\gamma} used directly when
+\code{gamma_factor} is \code{NULL}.}
 
-\item{p_prime}{Numeric matrix (nrow = n_samples, ncol = n_unknown_ct).}
+\item{p_prime}{Numeric matrix (\code{nrow = n_samples},
+\code{ncol = n_unknown_ct}).}
 
-\item{W_prime}{Numeric. Optional matrix for initialization.}
+\item{W_prime}{Numeric matrix or scalar. Initial \eqn{W'}.}
 }
 \value{
-List with loss, constraint, status, current_params, W, H. NULL if invalid.
+A named list with elements \code{loss}, \code{constraint},
+\code{status}, \code{current_params}, \code{W}, \code{H}, \code{cvrge};
+or \code{NULL} when the trial is invalid.
 }
 \description{
-Objective function for hyperparameter optimization
+Runs one NMF trial for a given \eqn{(\lambda, \gamma, p')} configuration
+and returns a structured result list, or \code{NULL} when the trial
+produces invalid values.
 }

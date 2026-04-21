@@ -103,6 +103,20 @@ plot(
 )
 abline(0, 1, col = "firebrick", lwd = 1.5)
 ```
+```{r}
+ reference             = as.matrix(sim_data$W)
+  bulk                  = as.matrix(sim_data$B)
+  methodDeconv          = "FARDEEP"
+  W_prime               = 0
+  bulkName              = "SimBulk"
+  refName               = "SimRef"
+  hp_max_evals          = 150L
+  algo_select           = "random"
+  output_path           = tempdir()
+  hspaceTechniqueChoose = "all"
+  normalize             = FALSE
+  out_Decon = NULL
+```
 
 ## Deconvolution
 

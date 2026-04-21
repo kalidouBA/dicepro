@@ -2,7 +2,7 @@
 % Please edit documentation in R/hypersearch.R
 \name{nmf_lbfgsb_hyperOpt}
 \alias{nmf_lbfgsb_hyperOpt}
-\title{NMF LBFGSB Hyperparameter Optimization}
+\title{NMF L-BFGS-B wrapper for hyperparameter optimisation}
 \usage{
 nmf_lbfgsb_hyperOpt(
   dataset,
@@ -16,19 +16,22 @@ nmf_lbfgsb_hyperOpt(
 \arguments{
 \item{dataset}{List containing matrices \code{B}, \code{W}, and \code{P}.}
 
-\item{W_prime}{Optional numeric matrix. Initial W'.}
+\item{W_prime}{Optional numeric matrix. Initial \eqn{W'}.}
 
-\item{p_prime}{Optional numeric matrix. Initial P'.}
+\item{p_prime}{Optional numeric matrix or scalar. Initial \eqn{P'}.
+If \code{NULL}, defaults to a matrix of \code{0.1}.}
 
-\item{lambda_}{Numeric. Regularization parameter lambda.}
+\item{lambda_}{Numeric. Regularisation parameter \eqn{\lambda}.}
 
-\item{gamma_par}{Numeric. Regularization parameter gamma.}
+\item{gamma_par}{Numeric. Regularisation parameter \eqn{\gamma}.}
 
-\item{path2save}{Character. Path to save results.}
+\item{path2save}{Character. Path passed to \code{nmf_lbfgsb}.}
 }
 \value{
-List. Output from \code{nmf_lbfgsb}.
+List output from \code{\link{nmf_lbfgsb}} with \code{H} and
+\code{W} cleaned by \code{.clean_nmf_matrix}.
 }
 \description{
-NMF LBFGSB Hyperparameter Optimization
+Thin wrapper around \code{\link{nmf_lbfgsb}} that normalises the
+\code{p_prime} argument and cleans the returned matrices.
 }

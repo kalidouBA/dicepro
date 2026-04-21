@@ -2,7 +2,7 @@
 % Please edit documentation in R/lambda_gamma_initialize.R
 \name{create_gamma_lambda_plot}
 \alias{create_gamma_lambda_plot}
-\title{Create a gamma-lambda hyperparameter plot}
+\title{Visualise the gamma–lambda hyperparameter search space}
 \usage{
 create_gamma_lambda_plot(
   hspaceTechniqueChoose = c("all", "restrictionEspace"),
@@ -10,39 +10,30 @@ create_gamma_lambda_plot(
 )
 }
 \arguments{
-\item{hspaceTechniqueChoose}{Character scalar. Search-space strategy:
+\item{hspaceTechniqueChoose}{Character scalar.
 \describe{
 \item{\code{"all"}}{Full independent log-uniform grid for
-\code{lambda_}, \code{gamma}, \code{p_prime}.
-No constraint between \eqn{\lambda} and \eqn{\gamma} — feasibility
-bounds are not shown.}
-\item{\code{"restrictionEspace"}}{Restricted space where \code{gamma}
-is the base variable and \code{lambda_} is derived as
-\code{lambda_ = gamma * lambda_factor} with
-\code{lambda_factor} in \eqn{[2, 100]}.
-The lower (\eqn{\lambda = 2\gamma}) and upper
-(\eqn{\lambda = 100\gamma}) feasibility bounds are drawn.}
+\code{lambda_}, \code{gamma}, \code{p_prime}. No constraint lines.}
+\item{\code{"restrictionEspace"}}{Restricted space with
+\code{lambda_ = gamma * lambda_factor},
+\code{lambda_factor} \eqn{\in [2, 100]}.
+Lower (\eqn{\lambda = 2\gamma}) and upper
+(\eqn{\lambda = 100\gamma}) bounds are drawn.}
 }}
 
-\item{n_samples}{Positive integer. Number of configurations to draw.
-Default: \code{200L}.}
+\item{n_samples}{Positive integer. Configurations to draw (default \code{200L}).}
 }
 \value{
-A ggplot2 figure object (invisibly also saved as
-\code{gamma_lambda_plot.pdf} in the working directory).
+A \code{ggplot2} figure object.
 }
 \description{
-Generates a ggplot2 scatter plot showing the relationship between
-\eqn{\gamma} and \eqn{\lambda} sampled from the search space defined by
-\code{hspaceTechniqueChoose}, overlaid with the feasibility bounds when
-applicable.
+Generates a ggplot2 scatter plot of \eqn{\gamma} vs \eqn{\lambda}
+sampled from the search space defined by \code{hspaceTechniqueChoose},
+with feasibility bounds overlaid for \code{"restrictionEspace"}.
 }
 \examples{
 \dontrun{
-# Independent sampling — no constraint lines
 create_gamma_lambda_plot(hspaceTechniqueChoose = "all")
-
-# Restricted space — lambda_ = gamma * lambda_factor, factor in [2, 100]
 create_gamma_lambda_plot(hspaceTechniqueChoose = "restrictionEspace")
 }
 }

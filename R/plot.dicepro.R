@@ -158,7 +158,7 @@ plot_hyperopt.dicepro <- function(x,
   scores <- scores[keep]
   trials <- trials[keep, , drop = FALSE]
 
-  values <- lapply(setNames(params, params), function(p) trials[[p]])
+  values <- lapply(stats::setNames(params, params), function(p) trials[[p]])
 
   if (!is.null(max_deviation)) {
     ok     <- abs(loss - mean(loss, na.rm = TRUE)) < max_deviation

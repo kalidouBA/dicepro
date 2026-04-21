@@ -1,3 +1,20 @@
+# =============================================================================
+# hypersearch.R
+#
+# Public API  : contains_nan_or_inf(), nmf_lbfgsb_hyperOpt(),
+#               objective_opt(), research_hyperOpt()
+# Private fns : .clean_nmf_matrix(), objective_wrapper(),
+#               .sample_from_space(), .custom_progress_bar(),
+#               .tpe_sample(), .kde_log_density(),
+#               .parse_config(), .parse_hyperopt_searchspace(),
+#               .get_report_path()
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# contains_nan_or_inf  [public]
+# -----------------------------------------------------------------------------
+
 #' Check if a value contains NaN or Inf
 #'
 #' @param value Numeric, vector, matrix, or data frame to check.
@@ -12,58 +29,101 @@ contains_nan_or_inf <- function(value) {
   return(FALSE)
 }
 
-# ---------------------------------------------------------------------------
-# Internal helper: clean an H or W matrix returned by nmf_lbfgsb.
-# ---------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# .clean_nmf_matrix  [private]
+# -----------------------------------------------------------------------------
+
+#' Clean an H or W matrix returned by nmf_lbfgsb
+#'
+#' Strips any character columns (e.g. row-name columns stored as data),
+#' promotes them to \code{rownames}, and coerces all remaining entries to
+#' numeric.
+#'
+#' @param mat Matrix or data frame returned by \code{nmf_lbfgsb}.
+#' @return A numeric matrix with correct \code{rownames} and \code{colnames}.
+#' @keywords internal
+#' @noRd
 .clean_nmf_matrix <- function(mat) {
   if (is.data.frame(mat)) mat <- as.matrix(mat)
   if (!is.matrix(mat)) return(mat)
 
-  char_cols <- which(apply(mat, 2, function(x) !suppressWarnings(all(!is.na(as.numeric(x))))))
+  char_cols <- which(
+    apply(mat, 2L, function(x)
+      !suppressWarnings(all(!is.na(as.numeric(x))))
+    )
+  )
 
   if (length(char_cols) > 0L) {
-    rn      <- mat[, char_cols[1L]]
-    mat     <- mat[, -char_cols, drop = FALSE]
+    rn  <- mat[, char_cols[1L]]
+    mat <- mat[, -char_cols, drop = FALSE]
     rownames(mat) <- rn
   }
 
-  rn <- rownames(mat)
-  cn <- colnames(mat)
-  mat <- matrix(as.numeric(mat), nrow = nrow(mat), ncol = ncol(mat),
-                dimnames = list(rn, cn))
+  rn  <- rownames(mat)
+  cn  <- colnames(mat)
+  mat <- matrix(
+    as.numeric(mat),
+    nrow     = nrow(mat),
+    ncol     = ncol(mat),
+    dimnames = list(rn, cn)
+  )
   mat
 }
 
-#' NMF LBFGSB Hyperparameter Optimization
+
+# -----------------------------------------------------------------------------
+# nmf_lbfgsb_hyperOpt  [public]
+# -----------------------------------------------------------------------------
+
+#' NMF L-BFGS-B wrapper for hyperparameter optimisation
 #'
-#' @param dataset List containing matrices `B`, `W`, and `P`.
-#' @param W_prime Optional numeric matrix. Initial W'.
-#' @param p_prime Optional numeric matrix. Initial P'.
-#' @param lambda_ Numeric. Regularization parameter lambda.
-#' @param gamma_par Numeric. Regularization parameter gamma.
-#' @param path2save Character. Path to save results.
-#' @return List. Output from `nmf_lbfgsb`.
-#' @import dicepro
+#' Thin wrapper around \code{\link{nmf_lbfgsb}} that normalises the
+#' \code{p_prime} argument and cleans the returned matrices.
+#'
+#' @param dataset   List containing matrices \code{B}, \code{W}, and \code{P}.
+#' @param W_prime   Optional numeric matrix. Initial \eqn{W'}.
+#' @param p_prime   Optional numeric matrix or scalar. Initial \eqn{P'}.
+#'   If \code{NULL}, defaults to a matrix of \code{0.1}.
+#' @param lambda_   Numeric. Regularisation parameter \eqn{\lambda}.
+#' @param gamma_par Numeric. Regularisation parameter \eqn{\gamma}.
+#' @param path2save Character. Path passed to \code{nmf_lbfgsb}.
+#'
+#' @return List output from \code{\link{nmf_lbfgsb}} with \code{H} and
+#'   \code{W} cleaned by \code{.clean_nmf_matrix}.
+#'
 #' @export
-nmf_lbfgsb_hyperOpt <- function(dataset, W_prime = NULL, p_prime = NULL,
-                                lambda_ = 10, gamma_par = 100, path2save = "") {
+nmf_lbfgsb_hyperOpt <- function(dataset,
+                                W_prime   = NULL,
+                                p_prime   = NULL,
+                                lambda_   = 10,
+                                gamma_par = 100,
+                                path2save = "") {
+
   B    <- as.data.frame(dataset$B)
   W_cb <- as.data.frame(dataset$W)
   P_cb <- as.data.frame(dataset$P)
 
+  # --- Normalise p_prime to a matrix ----------------------------------------
   if (is.null(p_prime)) {
     N_sample    <- ncol(B)
     N_unknownCT <- 1L
     p_prime     <- matrix(0.1, nrow = N_sample, ncol = N_unknownCT)
+
   } else if (is.numeric(p_prime) && is.vector(p_prime)) {
     N_sample    <- ncol(B)
     N_unknownCT <- 1L
     p_prime     <- matrix(p_prime, nrow = N_sample, ncol = N_unknownCT)
+
   } else if (is.matrix(p_prime)) {
     N_sample    <- nrow(p_prime)
     N_unknownCT <- ncol(p_prime)
+
+  } else {
+    stop("'p_prime' must be NULL, a numeric vector, or a matrix.", call. = FALSE)
   }
 
+  # --- Ensure P_cb is (samples x cell_types) --------------------------------
   if (nrow(P_cb) != ncol(B)) P_cb <- t(P_cb)
 
   r_dataset <- list(B = B, W_cb = W_cb, P_cb = P_cb)
@@ -84,22 +144,43 @@ nmf_lbfgsb_hyperOpt <- function(dataset, W_prime = NULL, p_prime = NULL,
   return(result)
 }
 
-#' Objective function for hyperparameter optimization
-#'
-#' @param dataset List. Dataset containing matrices `B`, `W`, and `P`.
-#' @param config List. Configuration for the experiment.
-#' @param lambda_ Numeric. Regularization parameter lambda.
-#' @param gamma_factor Numeric or NULL. If provided: gamma = lambda_ * gamma_factor.
-#' @param gamma Numeric. Regularization parameter gamma (used directly when gamma_factor is NULL).
-#' @param p_prime Numeric matrix (nrow = n_samples, ncol = n_unknown_ct).
-#' @param W_prime Numeric. Optional matrix for initialization.
-#' @return List with loss, constraint, status, current_params, W, H. NULL if invalid.
-#' @export
-objective_opt <- function(dataset, config = list(), lambda_ = NULL,
-                          gamma_factor = NULL, gamma = NULL,
-                          p_prime = NULL, W_prime = 0) {
 
-  exp_dir <- ifelse(!is.null(config$exp), config$exp, ".")
+# -----------------------------------------------------------------------------
+# objective_opt  [public]
+# -----------------------------------------------------------------------------
+
+#' Objective function for hyperparameter optimisation
+#'
+#' Runs one NMF trial for a given \eqn{(\lambda, \gamma, p')} configuration
+#' and returns a structured result list, or \code{NULL} when the trial
+#' produces invalid values.
+#'
+#' @param dataset      List with matrices \code{B}, \code{W}, and \code{P}.
+#' @param config       List. Configuration object (needs \code{$exp} for the
+#'   output directory).
+#' @param lambda_      Numeric. Regularisation parameter \eqn{\lambda}.
+#' @param gamma_factor Numeric or \code{NULL}. When not \code{NULL},
+#'   \eqn{\gamma} is derived as \code{lambda_ * gamma_factor}.
+#' @param gamma        Numeric. \eqn{\gamma} used directly when
+#'   \code{gamma_factor} is \code{NULL}.
+#' @param p_prime      Numeric matrix (\code{nrow = n_samples},
+#'   \code{ncol = n_unknown_ct}).
+#' @param W_prime      Numeric matrix or scalar. Initial \eqn{W'}.
+#'
+#' @return A named list with elements \code{loss}, \code{constraint},
+#'   \code{status}, \code{current_params}, \code{W}, \code{H}, \code{cvrge};
+#'   or \code{NULL} when the trial is invalid.
+#'
+#' @export
+objective_opt <- function(dataset,
+                          config       = list(),
+                          lambda_      = NULL,
+                          gamma_factor = NULL,
+                          gamma        = NULL,
+                          p_prime      = NULL,
+                          W_prime      = 0) {
+
+  exp_dir <- if (!is.null(config$exp)) config$exp else "."
 
   if (!is.null(gamma_factor)) {
     gamma <- lambda_ * gamma_factor
@@ -114,41 +195,46 @@ objective_opt <- function(dataset, config = list(), lambda_ = NULL,
     path2save = exp_dir
   )
 
+  # --- Coerce result components to plain scalars/matrices -------------------
   result_dict <- lapply(names(result), function(nm) {
     x <- result[[nm]]
     if (nm %in% c("H", "W", "p_prime_estm")) {
       if (is.data.frame(x)) as.matrix(x) else x
-    } else if (is.numeric(x) && (is.null(dim(x)) || length(dim(x)) == 0)) {
+    } else if (is.numeric(x) && (is.null(dim(x)) || length(dim(x)) == 0L)) {
       x
     } else if (is.matrix(x) || is.data.frame(x)) {
-      num_cols <- sapply(x, is.numeric)
-      as.numeric(as.matrix(x[, num_cols, drop = FALSE]))
+      num_cols <- vapply(as.data.frame(x), is.numeric, logical(1L))
+      as.numeric(as.matrix(as.data.frame(x)[, num_cols, drop = FALSE]))
     } else {
       x
     }
   })
   names(result_dict) <- names(result)
 
+  # Helper: safely extract first element as numeric scalar
   .sc <- function(x) {
     if (is.null(x) || length(x) == 0L) return(NA_real_)
     as.numeric(x[[1L]])
   }
 
+  # --- Guard: discard trials with non-finite values -------------------------
   if (contains_nan_or_inf(.sc(result_dict$objectiveValue)) ||
-      contains_nan_or_inf(.sc(result_dict$constraint)) ||
-      any(is.na(c(.sc(result_dict$frob_H), .sc(result_dict$var_H),
-                  .sc(result_dict$frob_W), .sc(result_dict$var_W))))) {
+      contains_nan_or_inf(.sc(result_dict$constraint))     ||
+      any(is.na(c(
+        .sc(result_dict$frob_H), .sc(result_dict$var_H),
+        .sc(result_dict$frob_W), .sc(result_dict$var_W)
+      )))) {
     return(NULL)
   }
 
-  return(list(
+  list(
     loss       = .sc(result_dict$objectiveValue),
     constraint = .sc(result_dict$constraint),
     status     = "OK",
     current_params = list(
       gamma          = gamma,
       lambda_        = lambda_,
-      p_prime        = p_prime[1, 1],
+      p_prime        = p_prime[1L, 1L],
       frob_H         = .sc(result_dict$frob_H),
       var_H          = .sc(result_dict$var_H),
       frob_W         = .sc(result_dict$frob_W),
@@ -163,46 +249,65 @@ objective_opt <- function(dataset, config = list(), lambda_ = NULL,
     W     = result_dict$W,
     H     = result_dict$H,
     cvrge = result_dict$cvrge
-  ))
+  )
 }
 
-#' Objective wrapper for hyperparameter optimization
+
+# -----------------------------------------------------------------------------
+# objective_wrapper  [private]
+# -----------------------------------------------------------------------------
+
+#' Objective wrapper for one hyperparameter trial
 #'
-#' @param objective_opt Function. The objective function to optimize.
-#' @param dataset List. Dataset used for optimization.
-#' @param config List. Parsed configuration object.
-#' @param params List. Must contain `lambda_`, `gamma`, `p_prime`; optionally `gamma_factor`.
-#' @param W_prime Matrix or scalar. Optional initial W matrix for NMF.
-#' @return list(df, W, H) or NULL if trial failed.
+#' Calls \code{objective_opt()} inside a \code{tryCatch}, suppresses console
+#' output, records timing, and returns a tidy \code{list(df, W, H)} or
+#' \code{NULL} on failure.
+#'
+#' @param objective_opt Function. The objective to call (passed explicitly to
+#'   avoid relying on lexical scoping across files).
+#' @param dataset       List with \code{$B}, \code{$W}, \code{$P}.
+#' @param config        List. Parsed configuration object.
+#' @param params        List. Must contain \code{lambda_}, \code{gamma},
+#'   \code{p_prime}; optionally \code{gamma_factor}.
+#' @param W_prime       Matrix or scalar. Optional initial \eqn{W} for NMF.
+#'
+#' @return \code{list(df, W, H)} on success; \code{NULL} on failure.
+#'
 #' @importFrom utils capture.output
 #' @keywords internal
-objective_wrapper <- function(objective_opt, dataset, config, params, W_prime = NULL) {
-
+#' @noRd
+objective_wrapper <- function(objective_opt, dataset, config, params,
+                              W_prime = NULL) {
   tryCatch(
     {
       start_time <- Sys.time()
 
       n_samples    <- ncol(dataset$B)
-      n_unknown_ct <- if (!is.null(W_prime) && is.matrix(W_prime) && ncol(W_prime) > 0L)
-        ncol(W_prime) else 1L
+      n_unknown_ct <- if (
+        !is.null(W_prime) && is.matrix(W_prime) && ncol(W_prime) > 0L
+      ) ncol(W_prime) else 1L
 
       if (!is.matrix(params$p_prime)) {
-        params$p_prime <- matrix(params$p_prime, nrow = n_samples, ncol = n_unknown_ct)
+        params$p_prime <- matrix(
+          params$p_prime,
+          nrow = n_samples,
+          ncol = n_unknown_ct
+        )
       }
 
-      gamma_factor_arg <- params$gamma_factor
-
       suppressMessages(
-        capture.output(
-          invisible(returned_dict <- objective_opt(
-            dataset      = dataset,
-            config       = config,
-            lambda_      = params$lambda_,
-            gamma_factor = gamma_factor_arg,
-            gamma        = params$gamma,
-            p_prime      = params$p_prime,
-            W_prime      = W_prime
-          )),
+        utils::capture.output(
+          invisible(
+            returned_dict <- objective_opt(
+              dataset      = dataset,
+              config       = config,
+              lambda_      = params$lambda_,
+              gamma_factor = params$gamma_factor,
+              gamma        = params$gamma,
+              p_prime      = params$p_prime,
+              W_prime      = W_prime
+            )
+          ),
           file = "/dev/null"
         )
       )
@@ -236,66 +341,83 @@ objective_wrapper <- function(objective_opt, dataset, config, params, W_prime = 
         row <- c(row, cp)
       }
 
-      list(df = as.data.frame(row, check.names = FALSE),
-           W  = returned_dict$W,
-           H  = returned_dict$H)
-
+      list(
+        df = as.data.frame(row, check.names = FALSE),
+        W  = returned_dict$W,
+        H  = returned_dict$H
+      )
     },
     error = function(e) {
       message("objective_wrapper error: ", conditionMessage(e))
-      return(NULL)
-    })
+      NULL
+    }
+  )
 }
 
 
-#' Sample from hyperparameter space
+# -----------------------------------------------------------------------------
+# .sample_from_space  [private]
+# -----------------------------------------------------------------------------
+
+#' Sample one configuration from a hyperparameter search space
 #'
-#' @param space Named list. Each element is a named list with `type` and bounds.
-#' @return List of sampled parameter values.
+#' Each element of \code{space} is a named list with a \code{type} field and
+#' the corresponding bounds/parameters. Atomic vectors of the form
+#' \code{c(type, low, high)} are also accepted and parsed automatically.
+#'
+#' When both \code{lambda_factor} and \code{gamma} are present in the sampled
+#' configuration, \code{lambda_} is derived as
+#' \code{lambda_ = gamma * lambda_factor}.
+#'
+#' @param space Named list. Each element describes one hyperparameter.
+#' @return Named list of sampled values.
+#' @keywords internal
 #' @noRd
 .sample_from_space <- function(space) {
+
   space_names <- names(space)
   if (is.null(space_names) || length(space_names) == 0L)
     stop(".sample_from_space: `space` must be a *named* list.")
 
+  # Normalise atomic-vector specs to named lists
   space <- stats::setNames(
     lapply(space, function(spec) {
       if (!is.list(spec)) spec <- as.list(spec)
       if (!is.null(names(spec)) && "type" %in% names(spec)) return(spec)
-      type <- spec[[1]]
+      type <- spec[[1L]]
       switch(type,
-             "choice"      = list(type = type, choices = spec[-1]),
-             "randint"     = list(type = type,
-                                  low  = as.integer(spec[[2]]),
-                                  high = as.integer(spec[[3]])),
-             "uniform"     = list(type = type,
-                                  low  = as.numeric(spec[[2]]),
-                                  high = as.numeric(spec[[3]])),
-             "quniform"    = list(type = type,
-                                  low  = as.numeric(spec[[2]]),
-                                  high = as.numeric(spec[[3]]),
-                                  q    = as.numeric(spec[[4]])),
-             "loguniform"  = list(type = type,
-                                  low  = as.numeric(spec[[2]]),
-                                  high = as.numeric(spec[[3]])),
-             "qloguniform" = list(type = type,
-                                  low  = as.numeric(spec[[2]]),
-                                  high = as.numeric(spec[[3]]),
-                                  q    = as.numeric(spec[[4]])),
-             "normal"      = list(type = type,
-                                  mu    = as.numeric(spec[[2]]),
-                                  sigma = as.numeric(spec[[3]])),
-             "qnormal"     = list(type = type,
-                                  mu    = as.numeric(spec[[2]]),
-                                  sigma = as.numeric(spec[[3]]),
-                                  q     = as.numeric(spec[[4]])),
-             "lognormal"   = list(type = type,
-                                  mu    = as.numeric(spec[[2]]),
-                                  sigma = as.numeric(spec[[3]])),
-             "qlognormal"  = list(type = type,
-                                  mu    = as.numeric(spec[[2]]),
-                                  sigma = as.numeric(spec[[3]]),
-                                  q     = as.numeric(spec[[4]])),
+             choice      = list(type = type, choices = spec[-1L]),
+             randint     = list(type = type,
+                                low  = as.integer(spec[[2L]]),
+                                high = as.integer(spec[[3L]])),
+             uniform     = list(type = type,
+                                low  = as.numeric(spec[[2L]]),
+                                high = as.numeric(spec[[3L]])),
+             quniform    = list(type = type,
+                                low  = as.numeric(spec[[2L]]),
+                                high = as.numeric(spec[[3L]]),
+                                q    = as.numeric(spec[[4L]])),
+             loguniform  = list(type = type,
+                                low  = as.numeric(spec[[2L]]),
+                                high = as.numeric(spec[[3L]])),
+             qloguniform = list(type = type,
+                                low  = as.numeric(spec[[2L]]),
+                                high = as.numeric(spec[[3L]]),
+                                q    = as.numeric(spec[[4L]])),
+             normal      = list(type = type,
+                                mu    = as.numeric(spec[[2L]]),
+                                sigma = as.numeric(spec[[3L]])),
+             qnormal     = list(type = type,
+                                mu    = as.numeric(spec[[2L]]),
+                                sigma = as.numeric(spec[[3L]]),
+                                q     = as.numeric(spec[[4L]])),
+             lognormal   = list(type = type,
+                                mu    = as.numeric(spec[[2L]]),
+                                sigma = as.numeric(spec[[3L]])),
+             qlognormal  = list(type = type,
+                                mu    = as.numeric(spec[[2L]]),
+                                sigma = as.numeric(spec[[3L]]),
+                                q     = as.numeric(spec[[4L]])),
              stop(sprintf("Unknown search space type: '%s'", type))
       )
     }),
@@ -306,55 +428,66 @@ objective_wrapper <- function(objective_opt, dataset, config, params, W_prime = 
 
   for (param_name in space_names) {
     spec <- space[[param_name]]
-
     params[[param_name]] <- switch(spec$type,
-                                   "choice"      = sample(spec$choices, 1L)[[1L]],
-                                   "randint"     = sample(seq.int(spec$low, spec$high), 1L),
-                                   "uniform"     = runif(1L, spec$low, spec$high),
-                                   "quniform"    = {
-                                     v <- runif(1L, spec$low, spec$high)
+                                   choice      = sample(spec$choices, 1L)[[1L]],
+                                   randint     = sample(seq.int(spec$low, spec$high), 1L),
+                                   uniform     = stats::runif(1L, spec$low, spec$high),
+                                   quniform    = {
+                                     v <- stats::runif(1L, spec$low, spec$high)
                                      round(v / spec$q) * spec$q
                                    },
-                                   "loguniform"  = exp(runif(1L, log(spec$low), log(spec$high))),
-                                   "qloguniform" = {
-                                     v <- exp(runif(1L, log(spec$low), log(spec$high)))
+                                   loguniform  = exp(stats::runif(1L, log(spec$low), log(spec$high))),
+                                   qloguniform = {
+                                     v <- exp(stats::runif(1L, log(spec$low), log(spec$high)))
                                      round(v / spec$q) * spec$q
                                    },
-                                   "normal"      = rnorm(1L, spec$mu, spec$sigma),
-                                   "qnormal"     = {
-                                     v <- rnorm(1L, spec$mu, spec$sigma)
+                                   normal      = stats::rnorm(1L, spec$mu, spec$sigma),
+                                   qnormal     = {
+                                     v <- stats::rnorm(1L, spec$mu, spec$sigma)
                                      round(v / spec$q) * spec$q
                                    },
-                                   "lognormal"   = rlnorm(1L, spec$mu, spec$sigma),
-                                   "qlognormal"  = {
-                                     v <- rlnorm(1L, spec$mu, spec$sigma)
+                                   lognormal   = stats::rlnorm(1L, spec$mu, spec$sigma),
+                                   qlognormal  = {
+                                     v <- stats::rlnorm(1L, spec$mu, spec$sigma)
                                      round(v / spec$q) * spec$q
                                    },
                                    stop(paste("Unknown search space type:", spec$type))
     )
   }
 
+  # Derive lambda_ from gamma * lambda_factor when using restrictionEspace
   if ("lambda_factor" %in% names(params) && "gamma" %in% names(params)) {
     params$lambda_ <- params$gamma * params$lambda_factor
   }
 
-  return(params)
+  params
 }
 
 
-#' Custom progress bar
+# -----------------------------------------------------------------------------
+# .custom_progress_bar  [private]
+# -----------------------------------------------------------------------------
+
+#' Minimal console progress bar
+#'
+#' @param total Positive integer. Total number of ticks.
+#' @param width Integer. Bar width in characters (default \code{60}).
+#' @return A list with one element \code{tick()}.
+#' @keywords internal
 #' @noRd
-.custom_progress_bar <- function(total, format = "Progress [:bar] :percent", width = 60) {
-  current <- 0
+.custom_progress_bar <- function(total, width = 60L) {
+  current <- 0L
   list(
     tick = function() {
-      current <<- current + 1
+      current  <<- current + 1L
       percent  <- current / total
       bars     <- round(width * percent)
       spaces   <- width - bars
-      bar_text <- paste0("[", paste(rep("=", bars), collapse = ""),
-                         paste(rep(" ", spaces), collapse = ""),
-                         "] ", sprintf("%3.0f%%", percent * 100))
+      bar_text <- paste0(
+        "[", paste(rep("=", bars),   collapse = ""),
+        paste(rep(" ", spaces), collapse = ""),
+        "] ", sprintf("%3.0f%%", percent * 100)
+      )
       message("\r", bar_text, appendLF = FALSE)
       if (current == total) message()
     }
@@ -362,26 +495,46 @@ objective_wrapper <- function(objective_opt, dataset, config, params, W_prime = 
 }
 
 
-#' Hyperparameter optimisation for dicepro
+# -----------------------------------------------------------------------------
+# research_hyperOpt  [public]
+# -----------------------------------------------------------------------------
+
+#' Hyperparameter optimisation loop for dicepro
 #'
-#' @param objective_opt  Function passed verbatim to \code{objective_wrapper()}.
-#' @param dataset        List with \code{$B}, \code{$W}, \code{$P}.
-#' @param config         List. Configuration object (replaces config_path).
-#' @param hp_space       Pre-built space list; if NULL, built from config$hp_space.
-#' @param W_prime        Optional initial W matrix.
-#' @return list(trials, W, H).
+#' Runs \code{hp_max_evals} NMF trials by sampling from \code{hp_space},
+#' using either random or TPE sampling, and collects results.
+#'
+#' @param objective_opt Function passed verbatim to
+#'   \code{objective_wrapper()}.
+#' @param dataset       List with \code{$B}, \code{$W}, \code{$P}.
+#' @param config        List. Configuration object; must contain
+#'   \code{exp}, \code{hp_max_evals}, \code{hp_method}.
+#' @param hp_space      Pre-built named list of parsed hyperparameter specs.
+#'   If \code{NULL}, built from \code{config$hp_space}.
+#' @param W_prime       Optional initial \eqn{W} matrix.
+#'
+#' @return A named list:
+#' \describe{
+#'   \item{trials}{data.frame of all successful trial results.}
+#'   \item{W}{List of \eqn{W} matrices, one per successful trial.}
+#'   \item{H}{List of \eqn{H} matrices, one per successful trial.}
+#' }
+#'
 #' @export
-research_hyperOpt <- function(objective_opt, dataset,
-                              config,                # <-- plus config_path
+research_hyperOpt <- function(objective_opt,
+                              dataset,
+                              config,
                               hp_space = NULL,
-                              W_prime = NULL) {
+                              W_prime  = NULL) {
+
   config <- .parse_config(config)
   set.seed(config$seed %||% 42L)
 
   search_space <- if (is.null(hp_space)) {
     stats::setNames(
-      lapply(names(config$hp_space), function(arg)
-        .parse_hyperopt_searchspace(arg, config$hp_space[[arg]])
+      lapply(
+        names(config$hp_space),
+        function(arg) .parse_hyperopt_searchspace(arg, config$hp_space[[arg]])
       ),
       names(config$hp_space)
     )
@@ -461,20 +614,30 @@ research_hyperOpt <- function(objective_opt, dataset,
 }
 
 
-#' TPE: sample one set of hyperparameters guided by past trials
+# -----------------------------------------------------------------------------
+# .tpe_sample  [private]
+# -----------------------------------------------------------------------------
+
+#' TPE: sample one configuration guided by past trials
+#'
+#' Partitions the history into good and bad trials at the \code{gamma}
+#' quantile of observed losses, fits a Gaussian KDE to each partition, and
+#' returns the candidate that maximises \eqn{\log p_{bad} - \log p_{good}}.
 #'
 #' @param search_space Named list of parsed hyperparameter specs.
-#' @param history List of past trials.
-#' @param gamma Quantile threshold (default 0.25).
-#' @param n_candidates Number of random candidates to score (default 24).
+#' @param history      List of past trials (each a list with \code{params}
+#'   and \code{loss}).
+#' @param gamma        Numeric. Quantile threshold (default \code{0.25}).
+#' @param n_candidates Integer. Random candidates to score (default \code{24}).
+#'
 #' @return Named list of sampled hyperparameter values.
+#' @keywords internal
 #' @noRd
 .tpe_sample <- function(search_space, history,
                         gamma        = 0.25,
                         n_candidates = 24L) {
 
-  losses <- vapply(history, `[[`, numeric(1L), "loss")
-
+  losses    <- vapply(history, `[[`, numeric(1L), "loss")
   threshold <- stats::quantile(losses, probs = gamma, names = FALSE)
 
   good_idx <- which(losses <= threshold)
@@ -492,107 +655,169 @@ research_hyperOpt <- function(objective_opt, dataset,
       x_val <- cand[[pname]]
       if (is.null(x_val)) next
 
-      good_vals <- vapply(history[good_idx], function(h) h$params[[pname]] %||% NA_real_,
+      good_vals <- vapply(history[good_idx],
+                          function(h) h$params[[pname]] %||% NA_real_,
                           numeric(1L))
-      bad_vals  <- vapply(history[bad_idx],  function(h) h$params[[pname]] %||% NA_real_,
+      bad_vals  <- vapply(history[bad_idx],
+                          function(h) h$params[[pname]] %||% NA_real_,
                           numeric(1L))
 
       good_vals <- good_vals[!is.na(good_vals)]
       bad_vals  <- bad_vals[!is.na(bad_vals)]
       if (length(good_vals) < 2L || length(bad_vals) < 2L) next
 
-      use_log <- spec$type %in% c("loguniform", "qloguniform", "lognormal", "qlognormal")
+      use_log <- spec$type %in%
+        c("loguniform", "qloguniform", "lognormal", "qlognormal")
+
       if (use_log) {
         x_val     <- log(max(x_val,     .Machine$double.eps))
         good_vals <- log(pmax(good_vals, .Machine$double.eps))
         bad_vals  <- log(pmax(bad_vals,  .Machine$double.eps))
       }
 
-      log_p_good <- .kde_log_density(x_val, good_vals)
-      log_p_bad  <- .kde_log_density(x_val, bad_vals)
-
-      log_ratio <- log_ratio + (log_p_bad - log_p_good)
+      log_ratio <- log_ratio +
+        .kde_log_density(x_val, bad_vals) -
+        .kde_log_density(x_val, good_vals)
     }
     log_ratio
   }, numeric(1L))
 
-  best_idx <- which.max(scores)
-  candidates[[best_idx]]
+  candidates[[which.max(scores)]]
 }
 
 
+# -----------------------------------------------------------------------------
+# .kde_log_density  [private]
+# -----------------------------------------------------------------------------
+
 #' Gaussian KDE log-density at a single point
 #'
-#' @param x   Scalar query point.
-#' @param obs Numeric vector of observations.
+#' Uses Silverman's rule of thumb for bandwidth selection.
+#'
+#' @param x   Numeric scalar. Query point.
+#' @param obs Numeric vector. Observations.
 #' @return Numeric scalar (log density).
+#' @keywords internal
 #' @noRd
 .kde_log_density <- function(x, obs) {
   n      <- length(obs)
   sd_obs <- stats::sd(obs)
 
-  if (sd_obs < .Machine$double.eps) {
-    bw <- 1e-3
-  } else {
-    bw <- 1.06 * sd_obs * n^(-0.2)
-  }
+  bw <- if (sd_obs < .Machine$double.eps) 1e-3 else 1.06 * sd_obs * n^(-0.2)
 
   log_contribs <- stats::dnorm(x, mean = obs, sd = bw, log = TRUE)
-
-  max_lc  <- max(log_contribs)
-  log_sum <- max_lc + log(sum(exp(log_contribs - max_lc)))
+  max_lc       <- max(log_contribs)
+  log_sum      <- max_lc + log(sum(exp(log_contribs - max_lc)))
 
   log_sum - log(n)
 }
 
 
-#' Parse configuration list
+# -----------------------------------------------------------------------------
+# .parse_config  [private]
+# -----------------------------------------------------------------------------
+
+#' Validate and return a configuration list
+#'
+#' @param config Named list. Must contain \code{exp}, \code{hp_max_evals},
+#'   and \code{hp_method}.
+#' @return The validated \code{config} list (unchanged).
+#' @keywords internal
 #' @noRd
 .parse_config <- function(config) {
   required_args <- c("exp", "hp_max_evals", "hp_method")
   for (arg in required_args) {
     if (is.null(config[[arg]]))
-      stop(paste("No", arg, "argument found in configuration file."))
+      stop(paste("No", arg, "argument found in configuration file."),
+           call. = FALSE)
   }
+
   valid_methods <- c("tpe", "random", "atpe", "anneal")
   if (!config$hp_method %in% valid_methods)
-    stop(paste("Unknown hyperopt algorithm:", config$hp_method,
-               "-- valid options:", paste(valid_methods, collapse = ", ")))
-  return(config)
+    stop(
+      paste("Unknown hyperopt algorithm:", config$hp_method,
+            "-- valid options:", paste(valid_methods, collapse = ", ")),
+      call. = FALSE
+    )
+
+  config
 }
 
-#' Parse hyperopt search space specification
+
+# -----------------------------------------------------------------------------
+# .parse_hyperopt_searchspace  [private]
+# -----------------------------------------------------------------------------
+
+#' Parse one hyperparameter search-space specification
+#'
+#' Converts an atomic vector \code{c(type, low, high, ...)} or an already
+#' structured list into a fully named spec list consumed by
+#' \code{.sample_from_space}.
+#'
+#' @param arg   Character scalar. Parameter name (used in error messages).
+#' @param specs Atomic vector or list.
+#' @return Named list with \code{type} and bounds/parameters.
+#' @keywords internal
 #' @noRd
 .parse_hyperopt_searchspace <- function(arg, specs) {
   if (!is.list(specs)) specs <- as.list(specs)
-  type <- specs[[1]]
-  .n   <- function(x) as.numeric(x)
+  type <- specs[[1L]]
+  .n   <- as.numeric
 
   switch(type,
-         "choice"      = list(type = "choice",      choices = lapply(specs[-1], .n)),
-         "randint"     = list(type = "randint",      low = as.integer(specs[[2]]),
-                              high = as.integer(specs[[3]])),
-         "uniform"     = list(type = "uniform",      low = .n(specs[[2]]), high = .n(specs[[3]])),
-         "quniform"    = list(type = "quniform",     low = .n(specs[[2]]), high = .n(specs[[3]]),
-                              q = .n(specs[[4]])),
-         "loguniform"  = list(type = "loguniform",   low = .n(specs[[2]]), high = .n(specs[[3]])),
-         "qloguniform" = list(type = "qloguniform",  low = .n(specs[[2]]), high = .n(specs[[3]]),
-                              q = .n(specs[[4]])),
-         "normal"      = list(type = "normal",       mu = .n(specs[[2]]), sigma = .n(specs[[3]])),
-         "qnormal"     = list(type = "qnormal",      mu = .n(specs[[2]]), sigma = .n(specs[[3]]),
-                              q = .n(specs[[4]])),
-         "lognormal"   = list(type = "lognormal",    mu = .n(specs[[2]]), sigma = .n(specs[[3]])),
-         "qlognormal"  = list(type = "qlognormal",   mu = .n(specs[[2]]), sigma = .n(specs[[3]]),
-                              q = .n(specs[[4]])),
-         stop(sprintf("Unknown search space type '%s' for parameter '%s'.", type, arg))
+         choice      = list(type = "choice",
+                            choices = lapply(specs[-1L], .n)),
+         randint     = list(type = "randint",
+                            low  = as.integer(specs[[2L]]),
+                            high = as.integer(specs[[3L]])),
+         uniform     = list(type = "uniform",
+                            low  = .n(specs[[2L]]),
+                            high = .n(specs[[3L]])),
+         quniform    = list(type = "quniform",
+                            low  = .n(specs[[2L]]),
+                            high = .n(specs[[3L]]),
+                            q    = .n(specs[[4L]])),
+         loguniform  = list(type = "loguniform",
+                            low  = .n(specs[[2L]]),
+                            high = .n(specs[[3L]])),
+         qloguniform = list(type = "qloguniform",
+                            low  = .n(specs[[2L]]),
+                            high = .n(specs[[3L]]),
+                            q    = .n(specs[[4L]])),
+         normal      = list(type = "normal",
+                            mu    = .n(specs[[2L]]),
+                            sigma = .n(specs[[3L]])),
+         qnormal     = list(type = "qnormal",
+                            mu    = .n(specs[[2L]]),
+                            sigma = .n(specs[[3L]]),
+                            q     = .n(specs[[4L]])),
+         lognormal   = list(type = "lognormal",
+                            mu    = .n(specs[[2L]]),
+                            sigma = .n(specs[[3L]])),
+         qlognormal  = list(type = "qlognormal",
+                            mu    = .n(specs[[2L]]),
+                            sigma = .n(specs[[3L]]),
+                            q     = .n(specs[[4L]])),
+         stop(sprintf(
+           "Unknown search space type '%s' for parameter '%s'.", type, arg
+         ), call. = FALSE)
   )
 }
 
 
-#' Get report path
+# -----------------------------------------------------------------------------
+# .get_report_path  [private]
+# -----------------------------------------------------------------------------
+
+#' Ensure a results subdirectory exists and return its path
+#'
+#' @param exp_dir Character scalar. Experiment output directory.
+#' @return Character scalar. Path to \code{exp_dir/results/}.
+#' @keywords internal
 #' @noRd
 .get_report_path <- function(exp_dir) {
   report_path <- file.path(exp_dir, "results")
-  if (!dir.exists(report_path)) dir.create(report_path, recursive = TRUE)
-  return(report_path)
+  if (!dir.exists(report_path))
+    dir.create(report_path, recursive = TRUE, showWarnings = FALSE)
+  report_path
 }

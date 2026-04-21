@@ -2,7 +2,7 @@
 % Please edit documentation in R/hypersearch.R
 \name{research_hyperOpt}
 \alias{research_hyperOpt}
-\title{Hyperparameter optimisation for dicepro}
+\title{Hyperparameter optimisation loop for dicepro}
 \usage{
 research_hyperOpt(
   objective_opt,
@@ -13,19 +13,28 @@ research_hyperOpt(
 )
 }
 \arguments{
-\item{objective_opt}{Function passed verbatim to \code{objective_wrapper()}.}
+\item{objective_opt}{Function passed verbatim to
+\code{objective_wrapper()}.}
 
 \item{dataset}{List with \code{$B}, \code{$W}, \code{$P}.}
 
-\item{config}{List. Configuration object (replaces config_path).}
+\item{config}{List. Configuration object; must contain
+\code{exp}, \code{hp_max_evals}, \code{hp_method}.}
 
-\item{hp_space}{Pre-built space list; if NULL, built from config$hp_space.}
+\item{hp_space}{Pre-built named list of parsed hyperparameter specs.
+If \code{NULL}, built from \code{config$hp_space}.}
 
-\item{W_prime}{Optional initial W matrix.}
+\item{W_prime}{Optional initial \eqn{W} matrix.}
 }
 \value{
-list(trials, W, H).
+A named list:
+\describe{
+\item{trials}{data.frame of all successful trial results.}
+\item{W}{List of \eqn{W} matrices, one per successful trial.}
+\item{H}{List of \eqn{H} matrices, one per successful trial.}
+}
 }
 \description{
-Hyperparameter optimisation for dicepro
+Runs \code{hp_max_evals} NMF trials by sampling from \code{hp_space},
+using either random or TPE sampling, and collects results.
 }

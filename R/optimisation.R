@@ -1,3 +1,13 @@
+# =============================================================================
+# optimisation.R
+#
+# Public API  : run_experiment()
+# Private fns : .custom_space()
+#
+# NOTE: .parse_hyperopt_searchspace() is defined in hypersearch.R
+#       .generate_experiment_paths() is defined in utils.R
+# =============================================================================
+
 #' Run a dicepro hyperparameter optimisation experiment
 #'
 #' Builds the hyperparameter search space from \code{hspaceTechniqueChoose},
@@ -40,18 +50,17 @@ run_experiment <- function(dataset,
                            output_base_dir = ".",
                            hspaceTechniqueChoose) {
 
-  # ---- Output paths ----------------------------------------------------------
   paths <- .generate_experiment_paths(
     output_base_dir,
     bulkName,
     refName
   )
 
-  # ---- Search-space configuration --------------------------------------------
   hspaceTechniqueChoose <- match.arg(
     hspaceTechniqueChoose,
     c("all", "restrictionEspace")
   )
+
   base_config <- list(
     exp          = paths$data_dir,
     hp_max_evals = hp_max_evals,
@@ -70,21 +79,28 @@ run_experiment <- function(dataset,
   )
 
   parsed_space <- lapply(
-    stats::setNames(names(raw_space), names(raw_space)),
+    names(raw_space),
     function(arg) .parse_hyperopt_searchspace(arg, raw_space[[arg]])
   )
+  names(parsed_space) <- names(raw_space)
 
-  hyperopt_config <- c(base_config, list(hp_space = raw_space))
-  resHyperOpt <- research_hyperOpt( objective_opt = objective_opt,
-                                    dataset       = dataset,
-                                    config        = hyperopt_config,
-                                    hp_space      = parsed_space,
-                                    W_prime       = W_prime)
-  return(resHyperOpt)
+  hyperopt_config <- c(base_config, list(hp_space = parsed_space))
+
+  research_hyperOpt(
+    objective_opt = objective_opt,
+    dataset       = dataset,
+    config        = hyperopt_config,
+    hp_space      = parsed_space,
+    W_prime       = W_prime
+  )
 }
 
 
-#' Define custom (restricted) hyperparameter search space
+# -----------------------------------------------------------------------------
+# .custom_space  [private]
+# -----------------------------------------------------------------------------
+
+#' Default restricted hyperparameter search space
 #'
 #' Returns the \code{restrictionEspace} search space where \code{gamma} is
 #' the base variable and \code{lambda_} is derived as
@@ -92,6 +108,7 @@ run_experiment <- function(dataset,
 #'
 #' @return Named list of atomic vectors \code{c(type, low, high)}.
 #' @keywords internal
+#' @noRd
 .custom_space <- function() {
   list(
     gamma         = c("loguniform", 1,    1e5),
