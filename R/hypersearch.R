@@ -295,21 +295,19 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
         )
       }
 
-      suppressMessages(
-        utils::capture.output(
-          invisible(
-            returned_dict <- objective_opt(
-              dataset      = dataset,
-              config       = config,
-              lambda_      = params$lambda_,
-              gamma_factor = params$gamma_factor,
-              gamma        = params$gamma,
-              p_prime      = params$p_prime,
-              W_prime      = W_prime
-            )
-          ),
-          file = "/dev/null"
-        )
+      utils::capture.output(
+        invisible(
+          returned_dict <- objective_opt(
+            dataset      = dataset,
+            config       = config,
+            lambda_      = params$lambda_,
+            gamma_factor = params$gamma_factor,
+            gamma        = params$gamma,
+            p_prime      = params$p_prime,
+            W_prime      = W_prime
+          )
+        ),
+        file = nullfile()
       )
 
       if (is.null(returned_dict) ||
@@ -488,8 +486,8 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
         paste(rep(" ", spaces), collapse = ""),
         "] ", sprintf("%3.0f%%", percent * 100)
       )
-      message("\r", bar_text, appendLF = FALSE)
-      if (current == total) message()
+      cat("\r", bar_text, sep = "", file = stderr())
+      if (current == total) cat("\n", file = stderr())
     }
   )
 }
