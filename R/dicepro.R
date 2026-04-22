@@ -14,18 +14,19 @@
 
 #' Validate and normalise dicepro user parameters
 #'
-#' @param normalize           Logical.
-#' @param algo_select         Character. Hyperparameter search strategy.
-#' @param hspaceTechniqueChoose Character. Search-space strategy.
+#' @param normalize               Logical.
+#' @param algo_select             Character. Hyperparameter search strategy.
+#' @param hspaceTechniqueChoose   Character. Search-space strategy.
+#' @param gamma_ratio_min         Numeric or \code{NULL}.
 #'
-#' @return Named list with validated \code{normalize}, \code{algo_select},
-#'   and \code{hspaceTechniqueChoose}.
+#' @return Named list with validated fields.
 #'
 #' @keywords internal
 #' @noRd
 .validate_inputs <- function(normalize,
                              algo_select,
-                             hspaceTechniqueChoose) {
+                             hspaceTechniqueChoose,
+                             gamma_ratio_min = NULL) {
 
   if (!is.logical(normalize) || length(normalize) != 1L)
     stop("'normalize' must be TRUE or FALSE.", call. = FALSE)
@@ -37,13 +38,23 @@
 
   hspaceTechniqueChoose <- match.arg(
     hspaceTechniqueChoose,
-    c("all", "restrictionEspace")
+    c("all", "restrictionEspace", "all_gamma_dominant")
   )
+
+  if (hspaceTechniqueChoose == "all_gamma_dominant") {
+    if (is.null(gamma_ratio_min)) gamma_ratio_min <- 10
+    if (!is.numeric(gamma_ratio_min) ||
+        length(gamma_ratio_min) != 1L ||
+        gamma_ratio_min <= 0) {
+      stop("'gamma_ratio_min' must be a single positive numeric.", call. = FALSE)
+    }
+  }
 
   list(
     normalize             = normalize,
     algo_select           = algo_select,
-    hspaceTechniqueChoose = hspaceTechniqueChoose
+    hspaceTechniqueChoose = hspaceTechniqueChoose,
+    gamma_ratio_min       = gamma_ratio_min
   )
 }
 
@@ -185,19 +196,16 @@
 
 #' Execute the full hyperparameter optimisation pipeline
 #'
-#' Calls \code{\link{run_experiment}} then \code{\link{best_hyperParams}}.
-#'
-#' @param dataset             Named list: \code{B}, \code{W}, \code{P}.
-#' @param W_prime             Numeric matrix or scalar.
-#' @param bulkName,refName    Character scalars.
-#' @param hp_max_evals        Positive integer.
-#' @param algo_select         Character scalar.
-#' @param output_base_dir     Character scalar.
+#' @param dataset               Named list: \code{B}, \code{W}, \code{P}.
+#' @param W_prime               Numeric matrix or scalar.
+#' @param bulkName,refName      Character scalars.
+#' @param hp_max_evals          Positive integer.
+#' @param algo_select           Character scalar.
+#' @param output_base_dir       Character scalar.
 #' @param hspaceTechniqueChoose Character scalar.
-#' @param output_dir          Character scalar.
-#' @param seed Integer. Random seed used for full pipeline reproducibility.
-#'   Ensures deterministic behaviour of the
-#'   hyperparameter optimisation and downstream stochastic components.
+#' @param output_dir            Character scalar.
+#' @param gamma_ratio_min       Numeric or \code{NULL}.
+#' @param seed                  Integer. Random seed.
 #'
 #' @return Output of \code{\link{best_hyperParams}}, or \code{NULL}.
 #'
@@ -212,6 +220,7 @@
                           output_base_dir,
                           hspaceTechniqueChoose,
                           output_dir,
+                          gamma_ratio_min,
                           seed) {
 
   res <- run_experiment(
@@ -223,6 +232,7 @@
     algo_select           = algo_select,
     output_base_dir       = output_base_dir,
     hspaceTechniqueChoose = hspaceTechniqueChoose,
+    gamma_ratio_min       = gamma_ratio_min,
     seed                  = seed
   )
 
@@ -233,7 +243,6 @@
     savePaths = output_dir
   )
 }
-
 
 # -----------------------------------------------------------------------------
 # .save_outputs  [private]
@@ -300,30 +309,35 @@
 #' Gene matrices are optionally z-score normalised per gene, and only
 #' intersecting genes are retained before optimisation.
 #'
-#' @param reference           Numeric matrix (genes × cell types).
-#' @param bulk                Numeric matrix (genes × samples).
-#' @param methodDeconv        Character. One of \code{"CSx"}, \code{"DCQ"},
+#' @param reference             Numeric matrix (genes × cell types).
+#' @param bulk                  Numeric matrix (genes × samples).
+#' @param methodDeconv          Character. One of \code{"CSx"}, \code{"DCQ"},
 #'   \code{"CDSeq"}, \code{"FARDEEP"}.
-#' @param cibersortx_email    CIBERSORTx email (required for \code{"CSx"}).
-#' @param cibersortx_token    CIBERSORTx token (required for \code{"CSx"}).
-#' @param W_prime             Initial unknown-signature matrix or \code{0}.
-#' @param bulkName            Character scalar. Label for the bulk dataset.
-#' @param refName             Character scalar. Label for the reference.
-#' @param hp_max_evals        Positive integer. Number of hyperparameter trials.
-#' @param N_unknownCT         Positive integer. Number of unknown cell types.
-#' @param algo_select         Character. One of \code{"random"}, \code{"tpe"},
+#' @param cibersortx_email      CIBERSORTx email (required for \code{"CSx"}).
+#' @param cibersortx_token      CIBERSORTx token (required for \code{"CSx"}).
+#' @param W_prime               Initial unknown-signature matrix or \code{0}.
+#' @param bulkName              Character scalar. Label for the bulk dataset.
+#' @param refName               Character scalar. Label for the reference.
+#' @param hp_max_evals          Positive integer. Number of hyperparameter trials.
+#' @param N_unknownCT           Positive integer. Number of unknown cell types.
+#' @param algo_select           Character. One of \code{"random"}, \code{"tpe"},
 #'   \code{"atpe"}, \code{"anneal"}.
-#' @param output_path         Character scalar. Root output directory
+#' @param output_path           Character scalar. Root output directory
 #'   (\code{getwd()} by default).
-#' @param hspaceTechniqueChoose Character. \code{"all"} or
-#'   \code{"restrictionEspace"}.
-#' @param out_Decon           Optional precomputed deconvolution matrix
+#' @param hspaceTechniqueChoose Character. One of \code{"all"},
+#'   \code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
+#'   \code{"all_gamma_dominant"} utilise le même espace libre que \code{"all"}
+#'   mais rejette tout candidat tel que
+#'   \code{gamma <= gamma_ratio_min * lambda_}, garantissant ainsi
+#'   \code{gamma >> lambda_}.
+#' @param gamma_ratio_min       Positive numeric. Ratio minimal
+#'   \code{gamma / lambda_} imposé lorsque
+#'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (défaut \code{10}).
+#'   Ignoré pour les autres stratégies.
+#' @param out_Decon             Optional precomputed deconvolution matrix
 #'   (samples × cell types).
-#' @param normalize           Logical. Apply z-score normalisation per gene.
-#' @param seed Integer. Random seed used for full pipeline reproducibility.
-#'   Defaults to \code{42L}. Ensures deterministic behaviour of the
-#'   hyperparameter optimisation and downstream stochastic components.
-#'   Set to \code{NULL} if you explicitly want non-reproducible runs.
+#' @param normalize             Logical. Apply z-score normalisation per gene.
+#' @param seed                  Integer. Random seed (default \code{42L}).
 #'
 #' @return An object of class \code{"dicepro"} (a named list) containing:
 #' \itemize{
@@ -349,6 +363,25 @@
 #'   methodDeconv = "FARDEEP",
 #'   hp_max_evals = 50L
 #' )
+#'
+#' # gamma >> lambda
+#' res <- dicepro(
+#'   reference             = BlueCode,
+#'   bulk                  = CellMixtures,
+#'   methodDeconv          = "FARDEEP",
+#'   hp_max_evals          = 50L,
+#'   hspaceTechniqueChoose = "all_gamma_dominant"
+#' )
+#'
+#' gamma >> 50x lambda
+#' res <- dicepro(
+#'   reference             = BlueCode,
+#'   bulk                  = CellMixtures,
+#'   methodDeconv          = "FARDEEP",
+#'   hp_max_evals          = 50L,
+#'   hspaceTechniqueChoose = "all_gamma_dominant",
+#'   gamma_ratio_min       = 50
+#' )
 #' }
 #'
 #' @export
@@ -365,15 +398,18 @@ dicepro <- function(reference,
                     algo_select           = "random",
                     output_path           = NULL,
                     hspaceTechniqueChoose = "all",
+                    gamma_ratio_min       = 10,
                     out_Decon             = NULL,
                     normalize             = TRUE,
                     seed                  = NULL) {
 
   # ---- Validation ----------------------------------------------------------
-  args                  <- .validate_inputs(normalize, algo_select, hspaceTechniqueChoose)
+  args                  <- .validate_inputs(normalize, algo_select,
+                                            hspaceTechniqueChoose, gamma_ratio_min)
   normalize             <- args$normalize
   algo_select           <- args$algo_select
   hspaceTechniqueChoose <- args$hspaceTechniqueChoose
+  gamma_ratio_min       <- args$gamma_ratio_min
 
   # ---- Preprocessing -------------------------------------------------------
   data      <- .prepare_data(reference, bulk, normalize)
@@ -401,8 +437,9 @@ dicepro <- function(reference,
 
   hp_params <- switch(
     hspaceTechniqueChoose,
-    all               = c("gamma", "lambda_", "p_prime"),
-    restrictionEspace = c("gamma", "lambda_factor", "p_prime")
+    all                = c("gamma", "lambda_", "p_prime"),
+    all_gamma_dominant = c("gamma", "lambda_", "p_prime"),
+    restrictionEspace  = c("gamma", "lambda_factor", "p_prime")
   )
 
   seed <- seed %||% 42L
@@ -418,6 +455,7 @@ dicepro <- function(reference,
     output_base_dir       = output_path,
     hspaceTechniqueChoose = hspaceTechniqueChoose,
     output_dir            = output_dir,
+    gamma_ratio_min       = gamma_ratio_min,
     seed                  = seed
   )
 

@@ -18,6 +18,7 @@ dicepro(
   algo_select = "random",
   output_path = NULL,
   hspaceTechniqueChoose = "all",
+  gamma_ratio_min = 10,
   out_Decon = NULL,
   normalize = TRUE,
   seed = NULL
@@ -51,18 +52,24 @@ dicepro(
 \item{output_path}{Character scalar. Root output directory
 (\code{getwd()} by default).}
 
-\item{hspaceTechniqueChoose}{Character. \code{"all"} or
-\code{"restrictionEspace"}.}
+\item{hspaceTechniqueChoose}{Character. One of \code{"all"},
+\code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
+\code{"all_gamma_dominant"} utilise le même espace libre que \code{"all"}
+mais rejette tout candidat tel que
+\code{gamma <= gamma_ratio_min * lambda_}, garantissant ainsi
+\code{gamma >> lambda_}.}
+
+\item{gamma_ratio_min}{Positive numeric. Ratio minimal
+\code{gamma / lambda_} imposé lorsque
+\code{hspaceTechniqueChoose = "all_gamma_dominant"} (défaut \code{10}).
+Ignoré pour les autres stratégies.}
 
 \item{out_Decon}{Optional precomputed deconvolution matrix
 (samples × cell types).}
 
 \item{normalize}{Logical. Apply z-score normalisation per gene.}
 
-\item{seed}{Integer. Random seed used for full pipeline reproducibility.
-Defaults to \code{42L}. Ensures deterministic behaviour of the
-hyperparameter optimisation and downstream stochastic components.
-Set to \code{NULL} if you explicitly want non-reproducible runs.}
+\item{seed}{Integer. Random seed (default \code{42L}).}
 }
 \value{
 An object of class \code{"dicepro"} (a named list) containing:
@@ -95,6 +102,25 @@ res <- dicepro(
   bulk         = CellMixtures,
   methodDeconv = "FARDEEP",
   hp_max_evals = 50L
+)
+
+# gamma >> lambda
+res <- dicepro(
+  reference             = BlueCode,
+  bulk                  = CellMixtures,
+  methodDeconv          = "FARDEEP",
+  hp_max_evals          = 50L,
+  hspaceTechniqueChoose = "all_gamma_dominant"
+)
+
+gamma >> 50x lambda
+res <- dicepro(
+  reference             = BlueCode,
+  bulk                  = CellMixtures,
+  methodDeconv          = "FARDEEP",
+  hp_max_evals          = 50L,
+  hspaceTechniqueChoose = "all_gamma_dominant",
+  gamma_ratio_min       = 50
 )
 }
 

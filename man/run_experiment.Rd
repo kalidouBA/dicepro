@@ -13,6 +13,7 @@ run_experiment(
   algo_select,
   output_base_dir = ".",
   hspaceTechniqueChoose,
+  gamma_ratio_min = 10,
   seed
 )
 }
@@ -46,11 +47,18 @@ the config (e.g. \code{"random"}).}
 is the base variable and \code{lambda_} is derived as
 \code{lambda_ = gamma * lambda_factor} with
 \code{lambda_factor} in (2, 100).}
+\item{\code{"all_gamma_dominant"}}{Même espace libre que \code{"all"}
+mais tout candidat tel que
+\code{gamma <= gamma_ratio_min * lambda_} est rejeté et retitré.
+Garantit \code{gamma >> lambda_} sans contraindre les bornes.}
 }}
 
-\item{seed}{Integer. Random seed used for full pipeline reproducibility.
-Ensures deterministic behaviour of the
-hyperparameter optimisation and downstream stochastic components.}
+\item{gamma_ratio_min}{Positive numeric. Minimum ratio
+\code{gamma / lambda_} enforced when
+\code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+Ignored for the other two strategies.}
+
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.}
 }
 \value{
 The list returned by \code{\link{research_hyperOpt}}: \code{trials},
@@ -59,8 +67,4 @@ The list returned by \code{\link{research_hyperOpt}}: \code{trials},
 \description{
 Builds the hyperparameter search space from \code{hspaceTechniqueChoose},
 and runs \code{research_hyperOpt()}, returning the collected trials.
-}
-\details{
-The random number generator state is preserved (no side effects on the
-global RNG). Results are fully reproducible given the same seed.
 }

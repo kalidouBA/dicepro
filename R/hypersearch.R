@@ -367,17 +367,28 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #' configuration, \code{lambda_} is derived as
 #' \code{lambda_ = gamma * lambda_factor}.
 #'
-#' @param space Named list. Each element describes one hyperparameter.
+#' When \code{config$gamma_ratio_min} is set (mode \code{"all_gamma_dominant"}),
+#' candidates where \code{gamma <= gamma_ratio_min * lambda_} are rejected and
+#' resampled. After \code{max_tries} attempts the last candidate is returned
+#' with a warning.
+#'
+#' @param space         Named list. Each element describes one hyperparameter.
+#' @param gamma_ratio_min Numeric or \code{NULL}. Minimum ratio
+#'   \code{gamma / lambda_} required. \code{NULL} disables the constraint
+#'   (equivalent to the plain \code{"all"} mode).
+#' @param max_tries     Positive integer. Maximum rejection-sampling attempts
+#'   before falling back (default \code{100L}).
+#'
 #' @return Named list of sampled values.
 #' @keywords internal
 #' @noRd
-.sample_from_space <- function(space) {
+.sample_from_space <- function(space,
+                               gamma_ratio_min = NULL,
+                               max_tries       = 100L) {
 
   space_names <- names(space)
   if (is.null(space_names) || length(space_names) == 0L)
     stop(".sample_from_space: `space` must be a *named* list.")
-
-  # Normalise atomic-vector specs to named lists
   space <- stats::setNames(
     lapply(space, function(spec) {
       if (!is.list(spec)) spec <- as.list(spec)
@@ -422,41 +433,67 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
     space_names
   )
 
-  params <- list()
+  # Sampler interne ---------------------------------------------------------
+  .draw_once <- function() {
+    params <- list()
+    for (param_name in space_names) {
+      spec <- space[[param_name]]
+      params[[param_name]] <- switch(spec$type,
+                                     choice      = sample(spec$choices, 1L)[[1L]],
+                                     randint     = sample(seq.int(spec$low, spec$high), 1L),
+                                     uniform     = stats::runif(1L, spec$low, spec$high),
+                                     quniform    = {
+                                       v <- stats::runif(1L, spec$low, spec$high)
+                                       round(v / spec$q) * spec$q
+                                     },
+                                     loguniform  = exp(stats::runif(1L, log(spec$low), log(spec$high))),
+                                     qloguniform = {
+                                       v <- exp(stats::runif(1L, log(spec$low), log(spec$high)))
+                                       round(v / spec$q) * spec$q
+                                     },
+                                     normal      = stats::rnorm(1L, spec$mu, spec$sigma),
+                                     qnormal     = {
+                                       v <- stats::rnorm(1L, spec$mu, spec$sigma)
+                                       round(v / spec$q) * spec$q
+                                     },
+                                     lognormal   = stats::rlnorm(1L, spec$mu, spec$sigma),
+                                     qlognormal  = {
+                                       v <- stats::rlnorm(1L, spec$mu, spec$sigma)
+                                       round(v / spec$q) * spec$q
+                                     },
+                                     stop(paste("Unknown search space type:", spec$type))
+      )
+    }
+    if ("lambda_factor" %in% names(params) && "gamma" %in% names(params)) {
+      params$lambda_ <- params$gamma * params$lambda_factor
+    }
 
-  for (param_name in space_names) {
-    spec <- space[[param_name]]
-    params[[param_name]] <- switch(spec$type,
-                                   choice      = sample(spec$choices, 1L)[[1L]],
-                                   randint     = sample(seq.int(spec$low, spec$high), 1L),
-                                   uniform     = stats::runif(1L, spec$low, spec$high),
-                                   quniform    = {
-                                     v <- stats::runif(1L, spec$low, spec$high)
-                                     round(v / spec$q) * spec$q
-                                   },
-                                   loguniform  = exp(stats::runif(1L, log(spec$low), log(spec$high))),
-                                   qloguniform = {
-                                     v <- exp(stats::runif(1L, log(spec$low), log(spec$high)))
-                                     round(v / spec$q) * spec$q
-                                   },
-                                   normal      = stats::rnorm(1L, spec$mu, spec$sigma),
-                                   qnormal     = {
-                                     v <- stats::rnorm(1L, spec$mu, spec$sigma)
-                                     round(v / spec$q) * spec$q
-                                   },
-                                   lognormal   = stats::rlnorm(1L, spec$mu, spec$sigma),
-                                   qlognormal  = {
-                                     v <- stats::rlnorm(1L, spec$mu, spec$sigma)
-                                     round(v / spec$q) * spec$q
-                                   },
-                                   stop(paste("Unknown search space type:", spec$type))
-    )
+    params
+  }
+  if (is.null(gamma_ratio_min)) {
+    return(.draw_once())
+  }
+  stopifnot(is.numeric(gamma_ratio_min), gamma_ratio_min > 0)
+
+  params <- NULL
+  for (attempt in seq_len(max_tries)) {
+    candidate <- .draw_once()
+    if (!("gamma" %in% names(candidate) && "lambda_" %in% names(candidate))) {
+      return(candidate)
+    }
+
+    if (candidate$gamma > gamma_ratio_min * candidate$lambda_) {
+      return(candidate)
+    }
+    params <- candidate
   }
 
-  # Derive lambda_ from gamma * lambda_factor when using restrictionEspace
-  if ("lambda_factor" %in% names(params) && "gamma" %in% names(params)) {
-    params$lambda_ <- params$gamma * params$lambda_factor
-  }
+  warning(sprintf(
+    paste0(".sample_from_space: No satisfactory candidate found ",
+           "Gamma > %.4g * lambda_ found in %d attempts.",
+           "The last draw was returned as is"),
+    gamma_ratio_min, max_tries
+  ), call. = FALSE)
 
   params
 }
@@ -507,12 +544,12 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #' @param dataset       List with \code{$B}, \code{$W}, \code{$P}.
 #' @param config        List. Configuration object; must contain
 #'   \code{exp}, \code{hp_max_evals}, \code{hp_method}.
+#'   Optionally contains \code{gamma_ratio_min} (positive numeric) to
+#'   activate rejection sampling (mode \code{"all_gamma_dominant"}).
 #' @param hp_space      Pre-built named list of parsed hyperparameter specs.
 #'   If \code{NULL}, built from \code{config$hp_space}.
 #' @param W_prime       Optional initial \eqn{W} matrix.
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
-#'   Ensures deterministic behaviour of the
-#'   hyperparameter optimisation and downstream stochastic components.
 #'
 #' @return A named list:
 #' \describe{
@@ -545,6 +582,9 @@ research_hyperOpt <- function(objective_opt,
     }
   }, add = TRUE)
 
+  # Ratio minimal gamma/lambda_ pour le mode all_gamma_dominant (NULL = inactif)
+  gamma_ratio_min <- config$gamma_ratio_min
+
   {
     search_space <- if (is.null(hp_space)) {
       stats::setNames(
@@ -575,9 +615,11 @@ research_hyperOpt <- function(objective_opt,
       use_tpe <- method == "tpe" && length(tpe_history) >= n_startup
 
       params <- if (use_tpe) {
-        .tpe_sample(search_space, tpe_history)
+        .tpe_sample(search_space, tpe_history,
+                    gamma_ratio_min = gamma_ratio_min)
       } else {
-        .sample_from_space(search_space)
+        .sample_from_space(search_space,
+                           gamma_ratio_min = gamma_ratio_min)
       }
 
       res <- tryCatch(
@@ -629,29 +671,27 @@ research_hyperOpt <- function(objective_opt,
     )
   }
 }
-
 # -----------------------------------------------------------------------------
 # .tpe_sample  [private]
 # -----------------------------------------------------------------------------
 
 #' TPE: sample one configuration guided by past trials
 #'
-#' Partitions the history into good and bad trials at the \code{gamma}
-#' quantile of observed losses, fits a Gaussian KDE to each partition, and
-#' returns the candidate that maximises \eqn{\log p_{bad} - \log p_{good}}.
-#'
-#' @param search_space Named list of parsed hyperparameter specs.
-#' @param history      List of past trials (each a list with \code{params}
+#' @param search_space    Named list of parsed hyperparameter specs.
+#' @param history         List of past trials (each a list with \code{params}
 #'   and \code{loss}).
-#' @param gamma        Numeric. Quantile threshold (default \code{0.25}).
-#' @param n_candidates Integer. Random candidates to score (default \code{24}).
+#' @param gamma           Numeric. Quantile threshold (default \code{0.25}).
+#' @param n_candidates    Integer. Random candidates to score (default \code{24}).
+#' @param gamma_ratio_min Numeric or \code{NULL}. Transmitted to
+#'   \code{.sample_from_space()} for rejection sampling.
 #'
 #' @return Named list of sampled hyperparameter values.
 #' @keywords internal
 #' @noRd
 .tpe_sample <- function(search_space, history,
-                        gamma        = 0.25,
-                        n_candidates = 24L) {
+                        gamma           = 0.25,
+                        n_candidates    = 24L,
+                        gamma_ratio_min = NULL) {
 
   losses    <- vapply(history, `[[`, numeric(1L), "loss")
   threshold <- stats::quantile(losses, probs = gamma, names = FALSE)
@@ -662,7 +702,11 @@ research_hyperOpt <- function(objective_opt,
   if (length(good_idx) < 2L) good_idx <- order(losses)[seq_len(2L)]
   if (length(bad_idx)  < 2L) bad_idx  <- order(losses, decreasing = TRUE)[seq_len(2L)]
 
-  candidates <- lapply(seq_len(n_candidates), function(.) .sample_from_space(search_space))
+  candidates <- lapply(
+    seq_len(n_candidates),
+    function(.) .sample_from_space(search_space,
+                                   gamma_ratio_min = gamma_ratio_min)
+  )
 
   scores <- vapply(candidates, function(cand) {
     log_ratio <- 0
@@ -736,7 +780,8 @@ research_hyperOpt <- function(objective_opt,
 #' Validate and return a configuration list
 #'
 #' @param config Named list. Must contain \code{exp}, \code{hp_max_evals},
-#'   and \code{hp_method}.
+#'   and \code{hp_method}. Optionally contains \code{gamma_ratio_min}
+#'   (positive numeric) used by the \code{"all_gamma_dominant"} mode.
 #' @return The validated \code{config} list (unchanged).
 #' @keywords internal
 #' @noRd
@@ -755,6 +800,15 @@ research_hyperOpt <- function(objective_opt,
             "-- valid options:", paste(valid_methods, collapse = ", ")),
       call. = FALSE
     )
+
+  # Validation of the optional ratio (all_gamma_dominant mode)
+  if (!is.null(config$gamma_ratio_min)) {
+    if (!is.numeric(config$gamma_ratio_min) ||
+        length(config$gamma_ratio_min) != 1L ||
+        config$gamma_ratio_min <= 0) {
+      stop("'gamma_ratio_min' must be a single positive numeric.", call. = FALSE)
+    }
+  }
 
   config
 }

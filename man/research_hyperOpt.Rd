@@ -20,16 +20,16 @@ research_hyperOpt(
 \item{dataset}{List with \code{$B}, \code{$W}, \code{$P}.}
 
 \item{config}{List. Configuration object; must contain
-\code{exp}, \code{hp_max_evals}, \code{hp_method}.}
+\code{exp}, \code{hp_max_evals}, \code{hp_method}.
+Optionally contains \code{gamma_ratio_min} (positive numeric) to
+activate rejection sampling (mode \code{"all_gamma_dominant"}).}
 
 \item{hp_space}{Pre-built named list of parsed hyperparameter specs.
 If \code{NULL}, built from \code{config$hp_space}.}
 
 \item{W_prime}{Optional initial \eqn{W} matrix.}
 
-\item{seed}{Integer. Random seed used for full pipeline reproducibility.
-Ensures deterministic behaviour of the
-hyperparameter optimisation and downstream stochastic components.}
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.}
 }
 \value{
 A named list:

@@ -35,16 +35,16 @@
 #'       is the base variable and \code{lambda_} is derived as
 #'       \code{lambda_ = gamma * lambda_factor} with
 #'       \code{lambda_factor} in (2, 100).}
+#'     \item{\code{"all_gamma_dominant"}}{Même espace libre que \code{"all"}
+#'       mais tout candidat tel que
+#'       \code{gamma <= gamma_ratio_min * lambda_} est rejeté et retitré.
+#'       Garantit \code{gamma >> lambda_} sans contraindre les bornes.}
 #'   }
-#'
+#' @param gamma_ratio_min Positive numeric. Minimum ratio
+#'   \code{gamma / lambda_} enforced when
+#'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+#'   Ignored for the other two strategies.
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
-#'   Ensures deterministic behaviour of the
-#'   hyperparameter optimisation and downstream stochastic components.
-#'
-#' @details
-#' The random number generator state is preserved (no side effects on the
-#' global RNG). Results are fully reproducible given the same seed.
-#'
 #'
 #' @return The list returned by \code{\link{research_hyperOpt}}: \code{trials},
 #'   \code{W}, and \code{H}.
@@ -56,8 +56,9 @@ run_experiment <- function(dataset,
                            refName,
                            hp_max_evals,
                            algo_select,
-                           output_base_dir = ".",
+                           output_base_dir       = ".",
                            hspaceTechniqueChoose,
+                           gamma_ratio_min        = 10,
                            seed) {
 
   paths <- .generate_experiment_paths(
@@ -68,19 +69,28 @@ run_experiment <- function(dataset,
 
   hspaceTechniqueChoose <- match.arg(
     hspaceTechniqueChoose,
-    c("all", "restrictionEspace")
+    c("all", "restrictionEspace", "all_gamma_dominant")
   )
 
   base_config <- list(
-    exp          = paths$data_dir,
-    hp_max_evals = hp_max_evals,
-    hp_method    = algo_select,
-    seed         = seed
+    exp           = paths$data_dir,
+    hp_max_evals  = hp_max_evals,
+    hp_method     = algo_select,
+    seed          = seed,
+    gamma_ratio_min = if (hspaceTechniqueChoose == "all_gamma_dominant")
+      gamma_ratio_min
+    else
+      NULL
   )
 
   raw_space <- switch(
     hspaceTechniqueChoose,
     all = list(
+      lambda_ = c("loguniform", 1,    1e8),
+      gamma   = c("loguniform", 1,    1e8),
+      p_prime = c("loguniform", 1e-6, 1)
+    ),
+    all_gamma_dominant = list(
       lambda_ = c("loguniform", 1,    1e8),
       gamma   = c("loguniform", 1,    1e8),
       p_prime = c("loguniform", 1e-6, 1)
@@ -105,7 +115,6 @@ run_experiment <- function(dataset,
     seed          = seed
   )
 }
-
 
 # -----------------------------------------------------------------------------
 # .custom_space  [private]
