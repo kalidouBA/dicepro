@@ -19,7 +19,8 @@ dicepro(
   output_path = NULL,
   hspaceTechniqueChoose = "all",
   out_Decon = NULL,
-  normalize = TRUE
+  normalize = TRUE,
+  seed = NULL
 )
 }
 \arguments{
@@ -57,6 +58,11 @@ dicepro(
 (samples × cell types).}
 
 \item{normalize}{Logical. Apply z-score normalisation per gene.}
+
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.
+Defaults to \code{42L}. Ensures deterministic behaviour of the
+hyperparameter optimisation and downstream stochastic components.
+Set to \code{NULL} if you explicitly want non-reproducible runs.}
 }
 \value{
 An object of class \code{"dicepro"} (a named list) containing:

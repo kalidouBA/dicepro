@@ -30,7 +30,8 @@
 #'       (\eqn{\lambda = 100\gamma}) bounds are drawn.}
 #'   }
 #' @param n_samples Positive integer. Configurations to draw (default \code{200L}).
-#'
+#' @param seed Integer. Random seed used for full pipeline reproducibility.
+#'   Defaults to \code{42L}.
 #' @return A \code{ggplot2} figure object.
 #'
 #' @export
@@ -41,9 +42,12 @@
 #' }
 create_gamma_lambda_plot <- function(
     hspaceTechniqueChoose = c("all", "restrictionEspace"),
-    n_samples             = 200L) {
+    n_samples             = 200L,
+    seed                  = NULL) {
 
   hspaceTechniqueChoose <- match.arg(hspaceTechniqueChoose)
+
+  if (is.null(seed)) seed <- 42L
 
   raw_space <- switch(
     hspaceTechniqueChoose,
@@ -52,11 +56,14 @@ create_gamma_lambda_plot <- function(
       gamma   = c("loguniform", 1,    1e8),
       p_prime = c("loguniform", 1e-6, 1)
     ),
-    restrictionEspace = .custom_space()   # defined in optimisation.R
+    restrictionEspace = .custom_space()
   )
 
-  # .sample_from_space() is defined in hypersearch.R
-  samples <- lapply(seq_len(n_samples), function(i) .sample_from_space(raw_space))
+  samples <- withr::with_seed(seed, {
+    lapply(seq_len(n_samples), function(i) {
+      .sample_from_space(raw_space)
+    })
+  })
 
   plot_df <- data.frame(
     gamma   = vapply(samples, function(s) as.numeric(s$gamma),   numeric(1L)),
@@ -71,8 +78,8 @@ create_gamma_lambda_plot <- function(
   if (hspaceTechniqueChoose == "restrictionEspace") {
 
     gamma_range <- exp(seq(
-      log(min(plot_df$gamma)),
-      log(max(plot_df$gamma)),
+      log(min(plot_df$gamma, na.rm = TRUE)),
+      log(max(plot_df$gamma, na.rm = TRUE)),
       length.out = 100L
     ))
 
@@ -102,19 +109,19 @@ create_gamma_lambda_plot <- function(
       )
 
     title_str <- paste0(
-      "gamma vs lambda \u2014 restrictionEspace ",
-      "(lambda = gamma \u00d7 lambda_factor, factor \u2208 [2, 100])"
+      "gamma vs lambda - restrictionEspace ",
+      "(lambda = gamma * lambda_factor, factor in [2, 100])"
     )
 
   } else {
-    title_str <- "gamma vs lambda \u2014 all (independent log-uniform sampling)"
+    title_str <- "gamma vs lambda - all (independent log-uniform sampling)"
   }
 
   p +
     ggplot2::labs(
-      title = title_str,
-      x     = expression(gamma ~ "(log scale)"),
-      y     = expression(lambda ~ "(log scale)")
+      title = "gamma vs lambda - restrictionEspace",
+      x = expression(gamma),
+      y = expression(lambda)
     ) +
     ggplot2::theme_bw()
 }

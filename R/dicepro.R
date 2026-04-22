@@ -195,6 +195,9 @@
 #' @param output_base_dir     Character scalar.
 #' @param hspaceTechniqueChoose Character scalar.
 #' @param output_dir          Character scalar.
+#' @param seed Integer. Random seed used for full pipeline reproducibility.
+#'   Ensures deterministic behaviour of the
+#'   hyperparameter optimisation and downstream stochastic components.
 #'
 #' @return Output of \code{\link{best_hyperParams}}, or \code{NULL}.
 #'
@@ -208,7 +211,8 @@
                           algo_select,
                           output_base_dir,
                           hspaceTechniqueChoose,
-                          output_dir) {
+                          output_dir,
+                          seed) {
 
   res <- run_experiment(
     dataset               = dataset,
@@ -218,7 +222,8 @@
     hp_max_evals          = hp_max_evals,
     algo_select           = algo_select,
     output_base_dir       = output_base_dir,
-    hspaceTechniqueChoose = hspaceTechniqueChoose
+    hspaceTechniqueChoose = hspaceTechniqueChoose,
+    seed                  = seed
   )
 
   best_hyperParams(
@@ -315,6 +320,10 @@
 #' @param out_Decon           Optional precomputed deconvolution matrix
 #'   (samples × cell types).
 #' @param normalize           Logical. Apply z-score normalisation per gene.
+#' @param seed Integer. Random seed used for full pipeline reproducibility.
+#'   Defaults to \code{42L}. Ensures deterministic behaviour of the
+#'   hyperparameter optimisation and downstream stochastic components.
+#'   Set to \code{NULL} if you explicitly want non-reproducible runs.
 #'
 #' @return An object of class \code{"dicepro"} (a named list) containing:
 #' \itemize{
@@ -357,7 +366,8 @@ dicepro <- function(reference,
                     output_path           = NULL,
                     hspaceTechniqueChoose = "all",
                     out_Decon             = NULL,
-                    normalize             = TRUE) {
+                    normalize             = TRUE,
+                    seed                  = NULL) {
 
   # ---- Validation ----------------------------------------------------------
   args                  <- .validate_inputs(normalize, algo_select, hspaceTechniqueChoose)
@@ -395,6 +405,8 @@ dicepro <- function(reference,
     restrictionEspace = c("gamma", "lambda_factor", "p_prime")
   )
 
+  seed <- seed %||% 42L
+
   # ---- Hyperparameter optimisation -----------------------------------------
   out <- .run_hyperopt(
     dataset               = dataset,
@@ -405,7 +417,8 @@ dicepro <- function(reference,
     algo_select           = algo_select,
     output_base_dir       = output_path,
     hspaceTechniqueChoose = hspaceTechniqueChoose,
-    output_dir            = output_dir
+    output_dir            = output_dir,
+    seed                  = seed
   )
 
   if (is.null(out)) {

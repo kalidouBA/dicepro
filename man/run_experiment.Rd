@@ -12,7 +12,8 @@ run_experiment(
   hp_max_evals,
   algo_select,
   output_base_dir = ".",
-  hspaceTechniqueChoose
+  hspaceTechniqueChoose,
+  seed
 )
 }
 \arguments{
@@ -46,6 +47,10 @@ is the base variable and \code{lambda_} is derived as
 \code{lambda_ = gamma * lambda_factor} with
 \code{lambda_factor} in (2, 100).}
 }}
+
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.
+Ensures deterministic behaviour of the
+hyperparameter optimisation and downstream stochastic components.}
 }
 \value{
 The list returned by \code{\link{research_hyperOpt}}: \code{trials},
@@ -54,4 +59,8 @@ The list returned by \code{\link{research_hyperOpt}}: \code{trials},
 \description{
 Builds the hyperparameter search space from \code{hspaceTechniqueChoose},
 and runs \code{research_hyperOpt()}, returning the collected trials.
+}
+\details{
+The random number generator state is preserved (no side effects on the
+global RNG). Results are fully reproducible given the same seed.
 }

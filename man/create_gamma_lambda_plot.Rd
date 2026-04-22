@@ -6,7 +6,8 @@
 \usage{
 create_gamma_lambda_plot(
   hspaceTechniqueChoose = c("all", "restrictionEspace"),
-  n_samples = 200L
+  n_samples = 200L,
+  seed = NULL
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ Lower (\eqn{\lambda = 2\gamma}) and upper
 }}
 
 \item{n_samples}{Positive integer. Configurations to draw (default \code{200L}).}
+
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.
+Defaults to \code{42L}.}
 }
 \value{
 A \code{ggplot2} figure object.

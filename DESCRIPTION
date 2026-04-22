@@ -37,7 +37,8 @@ Imports:
     patchwork,
     FARDEEP,
     ComICS,
-    lme4
+    lme4,
+    withr
 Suggests:
     knitr,
     rmarkdown,

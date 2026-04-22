@@ -9,7 +9,8 @@ research_hyperOpt(
   dataset,
   config,
   hp_space = NULL,
-  W_prime = NULL
+  W_prime = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ research_hyperOpt(
 If \code{NULL}, built from \code{config$hp_space}.}
 
 \item{W_prime}{Optional initial \eqn{W} matrix.}
+
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.
+Ensures deterministic behaviour of the
+hyperparameter optimisation and downstream stochastic components.}
 }
 \value{
 A named list:

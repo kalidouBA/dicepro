@@ -37,6 +37,15 @@
 #'       \code{lambda_factor} in (2, 100).}
 #'   }
 #'
+#' @param seed Integer. Random seed used for full pipeline reproducibility.
+#'   Ensures deterministic behaviour of the
+#'   hyperparameter optimisation and downstream stochastic components.
+#'
+#' @details
+#' The random number generator state is preserved (no side effects on the
+#' global RNG). Results are fully reproducible given the same seed.
+#'
+#'
 #' @return The list returned by \code{\link{research_hyperOpt}}: \code{trials},
 #'   \code{W}, and \code{H}.
 #'
@@ -48,7 +57,8 @@ run_experiment <- function(dataset,
                            hp_max_evals,
                            algo_select,
                            output_base_dir = ".",
-                           hspaceTechniqueChoose) {
+                           hspaceTechniqueChoose,
+                           seed) {
 
   paths <- .generate_experiment_paths(
     output_base_dir,
@@ -65,7 +75,7 @@ run_experiment <- function(dataset,
     exp          = paths$data_dir,
     hp_max_evals = hp_max_evals,
     hp_method    = algo_select,
-    seed         = 4L
+    seed         = seed
   )
 
   raw_space <- switch(
@@ -91,7 +101,8 @@ run_experiment <- function(dataset,
     dataset       = dataset,
     config        = hyperopt_config,
     hp_space      = parsed_space,
-    W_prime       = W_prime
+    W_prime       = W_prime,
+    seed          = seed
   )
 }
 

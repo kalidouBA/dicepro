@@ -104,7 +104,7 @@ plot(
 abline(0, 1, col = "firebrick", lwd = 1.5)
 ```
 ```{r}
- reference             = as.matrix(sim_data$W)
+  reference             = as.matrix(sim_data$W)
   bulk                  = as.matrix(sim_data$B)
   methodDeconv          = "FARDEEP"
   W_prime               = 0
@@ -115,7 +115,6 @@ abline(0, 1, col = "firebrick", lwd = 1.5)
   output_path           = tempdir()
   hspaceTechniqueChoose = "all"
   normalize             = FALSE
-  out_Decon = NULL
 ```
 
 ## Deconvolution
@@ -186,20 +185,29 @@ abline(0, 1, col = "firebrick", lwd = 1.5)
 ### Per-Cell-Type Correlation
 
 ```{r per-ct-cor-synthetic, fig.height=4}
-ct_cors <- vapply(common_ct, function(ct) {
-  cor(true_common[, ct], pred_common[, ct])
-}, numeric(1L))
+library(ggplot2)
 
-par(mar = c(5, 10, 3, 1))
-barplot(
-  sort(ct_cors),
-  horiz = TRUE, las = 1,
-  col   = ifelse(sort(ct_cors) > 0.7, "#2c7bb6", "#d7191c"),
-  xlab  = "Pearson r",
-  main  = "Per-cell-type correlation (synthetic)",
-  xlim  = c(-0.2, 1)
+df <- data.frame(
+  cell_type = common_ct,
+  cor = ct_cors
 )
-abline(v = 0.7, lty = 2, col = "gray40")
+
+df <- df[order(df$cor), ]
+df$cell_type <- factor(df$cell_type, levels = df$cell_type)
+
+ggplot(df, aes(
+  x = cor,
+  y = reorder(cell_type, cor)
+)) +
+  geom_segment(aes(x = 0, xend = cor, yend = cell_type),
+               color = "grey70") +
+  geom_point(aes(color = cor > 0.7), size = 2.5) +
+  scale_color_manual(values = c("#d7191c", "#2c7bb6"), guide = "none") +
+  geom_vline(xintercept = 0.7, linetype = "dashed", color = "gray40") +
+  xlim(-0.2, 1) +
+  labs(x = "Pearson r", y = NULL,
+       title = "Per-cell-type correlation (synthetic)") +
+  theme_minimal()
 ```
 
 ### Quantitative Performance Metrics
@@ -265,7 +273,6 @@ Visualising the compartment-level totals confirms the expected dominance of
 the Immune compartment.
 
 ```{r compartment-overview}
-# Cell-type to compartment mapping (mirrors .bluecode_cell_groups)
 compartment_map <- c(
   rep("Immune",      9),
   rep("Stromal",     8),

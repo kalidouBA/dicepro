@@ -512,6 +512,9 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #' @param hp_space      Pre-built named list of parsed hyperparameter specs.
 #'   If \code{NULL}, built from \code{config$hp_space}.
 #' @param W_prime       Optional initial \eqn{W} matrix.
+#' @param seed Integer. Random seed used for full pipeline reproducibility.
+#'   Ensures deterministic behaviour of the
+#'   hyperparameter optimisation and downstream stochastic components.
 #'
 #' @return A named list:
 #' \describe{
@@ -525,94 +528,109 @@ research_hyperOpt <- function(objective_opt,
                               dataset,
                               config,
                               hp_space = NULL,
-                              W_prime  = NULL) {
+                              W_prime = NULL,
+                              seed = NULL) {
 
   config <- .parse_config(config)
-  set.seed(config$seed %||% 42L)
 
-  search_space <- if (is.null(hp_space)) {
-    stats::setNames(
-      lapply(
-        names(config$hp_space),
-        function(arg) .parse_hyperopt_searchspace(arg, config$hp_space[[arg]])
-      ),
-      names(config$hp_space)
-    )
-  } else {
-    hp_space
-  }
+  seed <- seed %||% config$seed %||% 42L
 
-  method  <- tolower(config$hp_method %||% "random")
-  n_evals <- config$hp_max_evals
+  old_state <- if (exists(".Random.seed", .GlobalEnv)) .Random.seed else NULL
 
-  results_list    <- vector("list", n_evals)
-  W_list          <- vector("list", n_evals)
-  out_deconv_list <- vector("list", n_evals)
+  set.seed(seed)
 
-  n_startup   <- max(10L, ceiling(sqrt(n_evals)))
-  tpe_history <- list()
-
-  pb <- .custom_progress_bar(total = n_evals, width = 60L)
-
-  for (i in seq_len(n_evals)) {
-
-    use_tpe <- method == "tpe" && length(tpe_history) >= n_startup
-
-    params <- if (use_tpe) {
-      .tpe_sample(search_space, tpe_history)
+  on.exit({
+    if (!is.null(old_state)) {
+      .Random.seed <<- old_state
     } else {
-      .sample_from_space(search_space)
+      rm(".Random.seed", envir = .GlobalEnv)
+    }
+  }, add = TRUE)
+
+  {
+    search_space <- if (is.null(hp_space)) {
+      stats::setNames(
+        lapply(
+          names(config$hp_space),
+          function(arg) .parse_hyperopt_searchspace(arg, config$hp_space[[arg]])
+        ),
+        names(config$hp_space)
+      )
+    } else {
+      hp_space
     }
 
-    res <- tryCatch(
-      objective_wrapper(
-        objective_opt = objective_opt,
-        dataset       = dataset,
-        config        = config,
-        params        = params,
-        W_prime       = W_prime
-      ),
-      error = function(e) {
-        message(sprintf("Trial %d/%d failed: %s", i, n_evals, conditionMessage(e)))
-        NULL
+    method  <- tolower(config$hp_method %||% "random")
+    n_evals <- config$hp_max_evals
+
+    results_list    <- vector("list", n_evals)
+    W_list          <- vector("list", n_evals)
+    out_deconv_list <- vector("list", n_evals)
+
+    n_startup   <- max(10L, ceiling(sqrt(n_evals)))
+    tpe_history <- list()
+
+    pb <- .custom_progress_bar(total = n_evals, width = 60L)
+
+    for (i in seq_len(n_evals)) {
+
+      use_tpe <- method == "tpe" && length(tpe_history) >= n_startup
+
+      params <- if (use_tpe) {
+        .tpe_sample(search_space, tpe_history)
+      } else {
+        .sample_from_space(search_space)
       }
+
+      res <- tryCatch(
+        objective_wrapper(
+          objective_opt = objective_opt,
+          dataset       = dataset,
+          config        = config,
+          params        = params,
+          W_prime       = W_prime
+        ),
+        error = function(e) {
+          message(sprintf("Trial %d/%d failed: %s", i, n_evals, conditionMessage(e)))
+          NULL
+        }
+      )
+
+      if (!is.null(res)) {
+        results_list[[i]]    <- res$df
+        W_list[[i]]          <- res$W
+        out_deconv_list[[i]] <- res$H
+
+        if (method == "tpe") {
+          tpe_history <- c(tpe_history, list(list(
+            params = params,
+            loss   = res$df$loss
+          )))
+        }
+      }
+
+      pb$tick()
+    }
+
+    ok     <- !vapply(results_list, is.null, logical(1L))
+    n_ok   <- sum(ok)
+    n_fail <- n_evals - n_ok
+
+    if (n_fail > 0L)
+      message(sprintf("%d/%d trial(s) failed and were discarded.", n_fail, n_evals))
+
+    if (n_ok == 0L) {
+      warning("All ", n_evals, " trials failed -- returning empty results.")
+      return(list(trials = data.frame(), W = list(), H = list()))
+    }
+
+    list(
+      trials = do.call(rbind, results_list[ok]),
+      W      = W_list[ok],
+      H      = out_deconv_list[ok]
     )
-
-    if (!is.null(res)) {
-      results_list[[i]]    <- res$df
-      W_list[[i]]          <- res$W
-      out_deconv_list[[i]] <- res$H
-
-      if (method == "tpe") {
-        tpe_history <- c(tpe_history, list(list(
-          params = params,
-          loss   = res$df$loss
-        )))
-      }
-    }
-
-    pb$tick()
   }
-
-  ok     <- !vapply(results_list, is.null, logical(1L))
-  n_ok   <- sum(ok)
-  n_fail <- n_evals - n_ok
-
-  if (n_fail > 0L)
-    message(sprintf("%d/%d trial(s) failed and were discarded.", n_fail, n_evals))
-
-  if (n_ok == 0L) {
-    warning("All ", n_evals, " trials failed -- returning empty results.")
-    return(list(trials = data.frame(), W = list(), H = list()))
-  }
-
-  list(
-    trials = do.call(rbind, results_list[ok]),
-    W      = W_list[ok],
-    H      = out_deconv_list[ok]
-  )
 }
-
 
 # -----------------------------------------------------------------------------
 # .tpe_sample  [private]
