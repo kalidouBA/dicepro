@@ -6,9 +6,9 @@
 \title{BlueCode Reference Signature Matrix}
 \format{
 A numeric matrix of dimensions \eqn{G \times 34}, where \eqn{G}
-denotes the number of genes after quality filtering. Rows are labelled
-by HGNC gene symbol; columns are labelled by cell-type name. All values
-are non-negative read counts prior to normalisation; apply
+denotes the number of genes after quality filtering. Rows are labeled
+by HGNC gene symbol; columns are labeled by cell-type name. All values
+are non-negative read counts prior to normalization; apply
 \code{.normalize_zscore_per_gene} or TPM scaling before use in
 downstream analyses.
 }
@@ -17,14 +17,14 @@ BlueCode reference matrix constructed for the dicepro benchmarking
 framework from ENCODE (\url{https://www.encodeproject.org}) and GEO
 (\url{https://www.ncbi.nlm.nih.gov/geo}) sorted RNA-seq profiles.
 See the accompanying manuscript for full details on data sources,
-replicate averaging, quality filtering, and normalisation.
+replicate averaging, quality filtering, and normalization.
 }
 \usage{
 data(BlueCode)
 }
 \description{
 Gene expression reference matrix for bulk RNA-seq deconvolution,
-derived from sorted cell populations spanning immune, stromal, endothelial,
+derived from sorted cell populations spanning Immune, Stromal, Endothelial,
 epithelial, and muscle compartments. BlueCode serves as the default
 reference for dicepro and directly informs the hierarchical Dirichlet
 simulation framework.
@@ -34,7 +34,7 @@ simulation framework.
 
 BlueCode was built from publicly available sorted bulk RNA-seq profiles
 downloaded from the ENCODE and GEO repositories. For each cell population,
-replicate profiles were averaged after quantile normalisation. Genes with
+replicate profiles were averaged after quantile normalization. Genes with
 zero variance across all 34 profiles, or with missing values in more than
 10 \\% of replicates, were removed. The resulting matrix was \emph{not}
 log-transformed so that it can be used directly with both Gaussian and
@@ -111,7 +111,7 @@ The Dirichlet concentration parameters at each level
 \eqn{\alpha_\text{Endothelial} = \alpha_\text{Epithelial} = 1.5},
 \eqn{\alpha_\text{Muscle} = 1}) reflect the expected relative abundance
 of each compartment in mixed tissue samples, so that simulated proportions
-are biologically realistic with respect to BlueCode's cell-type coverage.
+are biologically realistic with respect to BlueCode cell-type coverage.
 }
 
 \subsection{Recommended usage}{

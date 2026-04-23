@@ -24,13 +24,13 @@ All fields are \code{NA} when computation is not possible.}
 }
 \description{
 Aligns predicted and observed matrices to their common populations,
-row-normalises both, then computes global and sample-wise agreement
+row-normalizes both, then computes global and sample-wise agreement
 metrics.
 }
 \details{
 Populations absent from \code{pred_mat} but present in \code{obs_mat}
 (and vice versa) are silently dropped after the intersection step.
-Both matrices are row-normalised via \code{\link{row_norm_pos}} before
+Both matrices are row-normalized via \code{\link{row_norm_pos}} before
 any metric is computed.
 }
 \seealso{

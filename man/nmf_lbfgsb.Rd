@@ -2,7 +2,7 @@
 % Please edit documentation in R/NMF_optim.R
 \name{nmf_lbfgsb}
 \alias{nmf_lbfgsb}
-\title{NMF with L-BFGS-B optimisation}
+\title{NMF with L-BFGS-B optimization}
 \usage{
 nmf_lbfgsb(
   r_dataset,
@@ -19,10 +19,10 @@ nmf_lbfgsb(
 \item{r_dataset}{Named list with three elements:
 \describe{
 \item{B}{Numeric matrix (N_gene × N_sample). Bulk expression to
-factorise.}
-\item{P_cb}{Numeric matrix (N_sample × N_cellsType). Known cell-type
+factorize.}
+\item{P_cb}{Numeric matrix (N_sample × N_cells_Type). Known cell-type
 proportion estimates from a supervised deconvolution step.}
-\item{W_cb}{Numeric matrix (N_gene × N_cellsType). Reference signature
+\item{W_cb}{Numeric matrix (N_gene × N_cells_Type). Reference signature
 matrix for known cell types.}
 }}
 
@@ -32,11 +32,11 @@ unknown cell-type column(s) in \eqn{W}. Default \code{0}.}
 \item{p_prime}{Numeric scalar or matrix. Initial value(s) for the
 unknown cell-type column(s) in \eqn{H}. Default \code{0}.}
 
-\item{lambda_}{Numeric scalar. Augmented-Lagrangian multiplier
-initialisation (default \code{10}).}
+\item{lambda_}{Numeric scalar. Augmented Lagrangian multiplier
+initialization (default \code{10}).}
 
 \item{gamma_par}{Numeric scalar. Penalty coefficient for the sum-to-one
-constraint (default \code{100}). Reduce if the optimiser returns
+constraint (default \code{100}). Reduce if the optimizer returns
 infinite values.}
 
 \item{path2save}{Character scalar. Directory where intermediate results
@@ -51,28 +51,28 @@ estimate (default \code{1}).}
 \value{
 A named list on success:
 \describe{
-\item{W}{Optimised signature matrix (N_gene × N_cellsType).}
+\item{W}{Optimized signature matrix (N_gene × N_cells_Type).}
 \item{frob_W}{Frobenius norm of \code{W}.}
 \item{var_W}{Variance of the unknown column of \code{W}.}
-\item{H}{Optimised proportion data.frame (N_sample × N_cellsType + 1),
+\item{H}{Optimized proportion data.frame (N_sample × N_cells_Type + 1),
 with a leading \code{Mixture} column.}
 \item{frob_H}{Frobenius norm of \code{H}.}
 \item{var_H}{Variance of the unknown column of \code{H}.}
 \item{loss}{Gaussian log-likelihood (objective terms 1 + 2).}
 \item{frobNorm}{Objective term 1 (data-fit component).}
-\item{constNorm}{Objective term 2 (log-normalisation component).}
+\item{constNorm}{Objective term 2 (log-normalization component).}
 \item{c1}{Penalty term 1 (linear Lagrangian).}
 \item{c2}{Penalty term 2 (quadratic penalty).}
 \item{objectiveValue}{Total objective value (\code{loss}).}
 \item{penalty}{Total penalty (\code{c1 + c2}).}
 \item{cvrge}{Convergence code from \code{lbfgsb3c}.}
-\item{constraint}{\eqn{|1 - \sum h_i|} — constraint satisfaction.}
+\item{constraint}{Absolute constraint violation: \eqn{|1 - \sum h_i|}.}
 }
-Returns \code{NULL} when the optimiser fails or the solution is degenerate.
+Returns \code{NULL} when the optimizer fails or the solution is degenerate.
 }
 \description{
-Performs non-negative matrix factorisation (NMF) using L-BFGS-B
-optimisation. The objective combines a Gaussian log-likelihood with an
-augmented-Lagrangian penalty that enforces the sum-to-one constraint on
+Performs non-negative matrix factorization (NMF) using L-BFGS-B
+optimization. The objective combines a Gaussian log-likelihood with an
+augmented Lagrangian penalty that enforces the sum-to-one constraint on
 cell-type proportions.
 }

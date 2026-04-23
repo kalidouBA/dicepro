@@ -1,5 +1,5 @@
 ---
-title: "dicepro - Hyperparameter Search Space Visualisation"
+title: "dicepro - Hyperparameter Search Space Visualization"
 author: "dicepro Team"
 date: "`r Sys.Date()`"
 output:
@@ -8,7 +8,7 @@ output:
     toc_depth: 3
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{dicepro - Hyperparameter Search Space Visualisation}
+  %\VignetteIndexEntry{dicepro - Hyperparameter Search Space Visualization}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -34,8 +34,8 @@ knitr::opts_chunk$set(
 
 # Overview
 
-This vignette explains the two **hyperparameter search space strategies**
-available in dicepro and shows how to visualise the resulting
+This vignette explains the two **hyper-parameter search space strategies**
+available in dicepro and shows how to visualize the resulting
 $(\gamma, \lambda)$ distributions with `create_gamma_lambda_plot()`.
 
 The `hspaceTechniqueChoose` argument controls which strategy is used, both
@@ -81,7 +81,7 @@ region is bounded by two diagonal lines in the log-log plane:
 
 ---
 
-# Visualising the Search Space
+# Visualizing the Search Space
 
 `create_gamma_lambda_plot()` samples 200 configurations (by default) and
 renders them as scatter plot on log-log axes.
@@ -106,14 +106,14 @@ p_restr
 ```
 
 All points fall within the diagonal band delimited by the two dashed lines.
-The log-log axes make the linear $\lambda = c \cdot \gamma$ relationship
+On log–log axes, the linear $\lambda = c * \gamma$ relationship
 appear as parallel straight lines.
 
 ---
 
 # Simulated Data
 
-Before running the optimisation, we simulate a self-consistent dataset
+Before running the optimization, we simulate a self-consistent data set
 using `simulation()`. The function returns a list with three elements:
 
 - **`$W`** - reference signature matrix (genes × cell types)
@@ -152,7 +152,7 @@ cat("Row sums of P (range):", round(range(rowSums(my_dataset$P)), 4), "\n")
 
 ---
 
-# Running the Optimisation
+# Running the optimization
 
 ## Strategy `"all"` - Independent sampling
 

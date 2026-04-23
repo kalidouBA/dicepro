@@ -25,12 +25,12 @@ useful for highlighting deviations from a reference abundance.
 Default \code{NULL} (sequential scale).}
 }
 \value{
-A \code{ggplot} object. Print or save with
+A \code{ggplot} object. It can be printed or saved using
 \code{ggplot2::ggsave()}.
 }
 \description{
 Generates a raster heatmap showing the estimated abundance of each cell
-type across NMF iterations (or samples). Colour encodes abundance using
+type across NMF iterations (or samples). Color encodes abundance using
 the viridis scale (reversed: dark = high abundance).
 }
 \examples{

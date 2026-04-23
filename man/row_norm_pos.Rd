@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics.R
 \name{row_norm_pos}
 \alias{row_norm_pos}
-\title{Row-normalise a matrix with non-negative clamping}
+\title{Row-normalize a matrix with non-negative clamping}
 \usage{
 row_norm_pos(mat)
 }

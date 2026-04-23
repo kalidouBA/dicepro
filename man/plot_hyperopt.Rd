@@ -3,7 +3,7 @@
 \name{plot_hyperopt}
 \alias{plot_hyperopt}
 \alias{plot_hyperopt.dicepro}
-\title{Plot hyperparameter optimisation report}
+\title{Plot hyperparameter optimization report}
 \usage{
 plot_hyperopt(x, ...)
 
@@ -39,24 +39,24 @@ display (e.g. \code{c("lambda_", "gamma", "p_prime")}).}
 \code{"min"} (default) or \code{"max"}.}
 
 \item{not_log}{Character vector of parameter names that should
-\emph{not} be log-scaled on their axis (default \code{NULL}).}
+not be log-scaled on their axis (default \code{NULL}).}
 
 \item{categorical}{Character vector of categorical parameter names;
 these are displayed as bar charts in the marginal row
 (default \code{NULL}).}
 
 \item{max_deviation}{Numeric scalar. Trials with
-\eqn{|loss - mean(loss)|} above this value are excluded as outliers
+\eqn{|loss - mean(loss)|} above this threshold are excluded as outliers
 (default \code{NULL}, no exclusion).}
 
-\item{title}{Character scalar. Optional title printed above the
+\item{title}{Character scalar. Optional title displayed above the
 combined figure (default \code{NULL}).}
 }
 \value{
 Whatever the dispatched method returns (a \code{patchwork} figure
 for \code{dicepro} objects).
 
-A \code{patchwork} figure which can be printed, saved with
+A \code{patchwork} object which can be printed, saved with
 \code{ggplot2::ggsave()}, or embedded in R Markdown documents.
 }
 \description{
@@ -64,7 +64,7 @@ Generic function for plotting the hyperparameter search report stored in a
 \code{dicepro} object. Dispatches to \code{plot_hyperopt.dicepro}.
 
 Builds a scatter-matrix of all evaluated \eqn{(\lambda, \gamma, p')}
-configurations, colour-coded by loss value, with violin/bar marginals for
+configurations, color-coded by loss value, with violin/bar marginals for
 the top 5\\% of trials. Reads all data from \code{x$trials} -- no file I/O.
 }
 \examples{

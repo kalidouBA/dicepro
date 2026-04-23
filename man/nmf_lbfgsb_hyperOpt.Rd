@@ -2,7 +2,7 @@
 % Please edit documentation in R/hypersearch.R
 \name{nmf_lbfgsb_hyperOpt}
 \alias{nmf_lbfgsb_hyperOpt}
-\title{NMF L-BFGS-B wrapper for hyperparameter optimisation}
+\title{NMF L-BFGS-B wrapper for hyper-parameter optimization}
 \usage{
 nmf_lbfgsb_hyperOpt(
   dataset,
@@ -21,9 +21,9 @@ nmf_lbfgsb_hyperOpt(
 \item{p_prime}{Optional numeric matrix or scalar. Initial \eqn{P'}.
 If \code{NULL}, defaults to a matrix of \code{0.1}.}
 
-\item{lambda_}{Numeric. Regularisation parameter \eqn{\lambda}.}
+\item{lambda_}{Numeric. Regularization parameter \eqn{\lambda}.}
 
-\item{gamma_par}{Numeric. Regularisation parameter \eqn{\gamma}.}
+\item{gamma_par}{Numeric. Regularization parameter \eqn{\gamma}.}
 
 \item{path2save}{Character. Path passed to \code{nmf_lbfgsb}.}
 }
@@ -32,6 +32,6 @@ List output from \code{\link{nmf_lbfgsb}} with \code{H} and
 \code{W} cleaned by \code{.clean_nmf_matrix}.
 }
 \description{
-Thin wrapper around \code{\link{nmf_lbfgsb}} that normalises the
+Thin wrapper around \code{\link{nmf_lbfgsb}} that normalizes the
 \code{p_prime} argument and cleans the returned matrices.
 }

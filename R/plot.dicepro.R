@@ -62,7 +62,7 @@ plot.dicepro <- function(x, ...) {
 # plot_hyperopt  generic
 # -----------------------------------------------------------------------------
 
-#' Plot hyperparameter optimisation report
+#' Plot hyperparameter optimization report
 #'
 #' Generic function for plotting the hyperparameter search report stored in a
 #' \code{dicepro} object. Dispatches to \code{plot_hyperopt.dicepro}.
@@ -83,11 +83,10 @@ plot_hyperopt <- function(x, ...) UseMethod("plot_hyperopt")
 # -----------------------------------------------------------------------------
 # plot_hyperopt.dicepro  method
 # -----------------------------------------------------------------------------
-
-#' Plot hyperparameter optimisation report for a dicepro object
+#' Plot hyperparameter optimization report for a dicepro object
 #'
 #' Builds a scatter-matrix of all evaluated \eqn{(\lambda, \gamma, p')}
-#' configurations, colour-coded by loss value, with violin/bar marginals for
+#' configurations, color-coded by loss value, with violin/bar marginals for
 #' the top 5\% of trials. Reads all data from \code{x$trials} -- no file I/O.
 #'
 #' @param x              A \code{dicepro} object. Trials are read from
@@ -101,18 +100,18 @@ plot_hyperopt <- function(x, ...) UseMethod("plot_hyperopt")
 #' @param loss_behaviour Character scalar. Direction of the loss:
 #'   \code{"min"} (default) or \code{"max"}.
 #' @param not_log        Character vector of parameter names that should
-#'   \emph{not} be log-scaled on their axis (default \code{NULL}).
+#'   not be log-scaled on their axis (default \code{NULL}).
 #' @param categorical    Character vector of categorical parameter names;
 #'   these are displayed as bar charts in the marginal row
 #'   (default \code{NULL}).
 #' @param max_deviation  Numeric scalar. Trials with
-#'   \eqn{|loss - mean(loss)|} above this value are excluded as outliers
+#'   \eqn{|loss - mean(loss)|} above this threshold are excluded as outliers
 #'   (default \code{NULL}, no exclusion).
-#' @param title          Character scalar. Optional title printed above the
+#' @param title          Character scalar. Optional title displayed above the
 #'   combined figure (default \code{NULL}).
 #' @param ...            Currently unused. Reserved for future extensions.
 #'
-#' @return A \code{patchwork} figure which can be printed, saved with
+#' @return A \code{patchwork} object which can be printed, saved with
 #'   \code{ggplot2::ggsave()}, or embedded in R Markdown documents.
 #'
 #' @examples
@@ -123,7 +122,7 @@ plot_hyperopt <- function(x, ...) UseMethod("plot_hyperopt")
 #' }
 #'
 #' @rdname plot_hyperopt
-#' @import  ggplot2
+#' @import ggplot2
 #' @importFrom patchwork wrap_plots plot_layout plot_annotation
 #' @export
 plot_hyperopt.dicepro <- function(x,

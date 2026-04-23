@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics.R
 \name{nrmse}
 \alias{nrmse}
-\title{Normalised Root Mean Square Error (NRMSE)}
+\title{Normalized Root Mean Square Error (NRMSE)}
 \usage{
 nrmse(
   pred,
@@ -19,7 +19,7 @@ transformed scale).}
 \item{obs}{Numeric vector of observed values (same scale as
 \code{pred}; same length).}
 
-\item{method}{Normalisation denominator: \code{"sd"} (default),
+\item{method}{Normalization denominator: \code{"sd"} (default),
 \code{"mean"}, \code{"maxmin"}, or \code{"iq"} (interquartile range).}
 
 \item{transformation}{Back-transformation applied before computing RMSE.
@@ -38,7 +38,7 @@ denominator).
 }
 \description{
 Computes RMSE between back-transformed \code{pred} and \code{obs} vectors,
-then normalises by a summary statistic of the observations.
+then normalizes by a summary statistic of the observations.
 }
 \examples{
 set.seed(1)

@@ -38,9 +38,9 @@ This vignette demonstrates a complete dicepro deconvolution workflow on
 **real RNA-seq data** using:
 
 - **BlueCode** -- the 34-cell-type reference signature matrix bundled with
-  the package, spanning five major tissue compartments (immune, stromal,
-  endothelial, epithelial, and muscle).
-- **CellMixtures** -- a bulk RNA-seq dataset of experimentally mixed cell
+  the package, spanning five major tissue compartments (Immune, Stromal,
+  Endothelial, Epithelial, and Muscle).
+- **CellMixtures** -- a bulk RNA-seq data-set of experimentally mixed cell
   populations (12 samples, ~31 000 genes).
 
 ---
@@ -148,7 +148,7 @@ cat("Loss        :", out$metrics$loss,            "\n")
 cat("Constraint  :", out$metrics$constraint,      "\n")
 ```
 
-## Hyperparameter Optimisation Report
+## Hyperparameter Optimization Report
 
 ```{r plot-hyperopt, eval=FALSE, fig.height=9}
 out$plot_hyperopt

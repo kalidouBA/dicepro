@@ -76,17 +76,17 @@ contains_nan_or_inf <- function(value) {
 # nmf_lbfgsb_hyperOpt  [public]
 # -----------------------------------------------------------------------------
 
-#' NMF L-BFGS-B wrapper for hyperparameter optimisation
+#' NMF L-BFGS-B wrapper for hyper-parameter optimization
 #'
-#' Thin wrapper around \code{\link{nmf_lbfgsb}} that normalises the
+#' Thin wrapper around \code{\link{nmf_lbfgsb}} that normalizes the
 #' \code{p_prime} argument and cleans the returned matrices.
 #'
 #' @param dataset   List containing matrices \code{B}, \code{W}, and \code{P}.
 #' @param W_prime   Optional numeric matrix. Initial \eqn{W'}.
 #' @param p_prime   Optional numeric matrix or scalar. Initial \eqn{P'}.
 #'   If \code{NULL}, defaults to a matrix of \code{0.1}.
-#' @param lambda_   Numeric. Regularisation parameter \eqn{\lambda}.
-#' @param gamma_par Numeric. Regularisation parameter \eqn{\gamma}.
+#' @param lambda_   Numeric. Regularization parameter \eqn{\lambda}.
+#' @param gamma_par Numeric. Regularization parameter \eqn{\gamma}.
 #' @param path2save Character. Path passed to \code{nmf_lbfgsb}.
 #'
 #' @return List output from \code{\link{nmf_lbfgsb}} with \code{H} and
@@ -149,7 +149,7 @@ nmf_lbfgsb_hyperOpt <- function(dataset,
 # objective_opt  [public]
 # -----------------------------------------------------------------------------
 
-#' Objective function for hyperparameter optimisation
+#' Objective function for hyper-parameter optimization
 #'
 #' Runs one NMF trial for a given \eqn{(\lambda, \gamma, p')} configuration
 #' and returns a structured result list, or \code{NULL} when the trial
@@ -158,7 +158,7 @@ nmf_lbfgsb_hyperOpt <- function(dataset,
 #' @param dataset      List with matrices \code{B}, \code{W}, and \code{P}.
 #' @param config       List. Configuration object (needs \code{$exp} for the
 #'   output directory).
-#' @param lambda_      Numeric. Regularisation parameter \eqn{\lambda}.
+#' @param lambda_      Numeric. Regularization parameter \eqn{\lambda}.
 #' @param gamma_factor Numeric or \code{NULL}. When not \code{NULL},
 #'   \eqn{\gamma} is derived as \code{lambda_ * gamma_factor}.
 #' @param gamma        Numeric. \eqn{\gamma} used directly when
@@ -534,7 +534,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 # research_hyperOpt  [public]
 # -----------------------------------------------------------------------------
 
-#' Hyperparameter optimisation loop for dicepro
+#' Hyper-parameter optimization loop for dicepro
 #'
 #' Runs \code{hp_max_evals} NMF trials by sampling from \code{hp_space},
 #' using either random or TPE sampling, and collects results.
@@ -546,7 +546,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #'   \code{exp}, \code{hp_max_evals}, \code{hp_method}.
 #'   Optionally contains \code{gamma_ratio_min} (positive numeric) to
 #'   activate rejection sampling (mode \code{"all_gamma_dominant"}).
-#' @param hp_space      Pre-built named list of parsed hyperparameter specs.
+#' @param hp_space      prebuilt named list of parsed hyper-parameter specs.
 #'   If \code{NULL}, built from \code{config$hp_space}.
 #' @param W_prime       Optional initial \eqn{W} matrix.
 #' @param seed Integer. Random seed used for full pipeline reproducibility.

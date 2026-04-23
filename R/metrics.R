@@ -7,7 +7,7 @@
 # row_norm_pos
 # -----------------------------------------------------------------------------
 
-#' Row-normalise a matrix with non-negative clamping
+#' Row-normalize a matrix with non-negative clamping
 #'
 #' Clamps negative values to 0, then divides each row by its sum so that
 #' rows sum to 1. Rows whose sum equals 0 become all-\code{NaN} (degenerate
@@ -93,10 +93,10 @@ samplewise_metrics <- function(obs_mat, pred_mat) {
 # full_metrics
 # -----------------------------------------------------------------------------
 
-#' Full agreement metrics via mixed-effects modelling
+#' Full agreement metrics via mixed-effects modeling
 #'
 #' Fits a two-way mixed-effects model (populations and subjects as random
-#' effects) and derives ICC(3,1), CCC, and relative RMSE, complemented by
+#' effects) and derives ICC(3,1), Concordance correlation coefficient, and relative RMSE, complemented by
 #' sample-wise correlation and RMSE from \code{\link{samplewise_metrics}}.
 #'
 #' @param x Numeric matrix of observed values (rows = subjects,
@@ -194,7 +194,7 @@ full_metrics <- function(x, y) {
 #' Build a performance metrics table for composition matrices
 #'
 #' Aligns predicted and observed matrices to their common populations,
-#' row-normalises both, then computes global and sample-wise agreement
+#' row-normalizes both, then computes global and sample-wise agreement
 #' metrics.
 #'
 #' @param pred_mat Numeric matrix of predicted compositions
@@ -213,7 +213,7 @@ full_metrics <- function(x, y) {
 #' @details
 #' Populations absent from \code{pred_mat} but present in \code{obs_mat}
 #' (and vice versa) are silently dropped after the intersection step.
-#' Both matrices are row-normalised via \code{\link{row_norm_pos}} before
+#' Both matrices are row-normalized via \code{\link{row_norm_pos}} before
 #' any metric is computed.
 #'
 #' @seealso \code{\link{full_metrics}}, \code{\link{row_norm_pos}}
@@ -242,7 +242,7 @@ MakeTable1Tool <- function(pred_mat, obs_mat) {
   pred_mat <- pred_mat[, common, drop = FALSE]
   obs_mat  <- obs_mat[,  common, drop = FALSE]
 
-  # ---- Row-normalise ----------------------------------------------------------
+  # ---- Row-normalize ----------------------------------------------------------
   pred_mat <- row_norm_pos(pred_mat)
   obs_mat  <- row_norm_pos(obs_mat)
 
@@ -276,16 +276,16 @@ MakeTable1Tool <- function(pred_mat, obs_mat) {
 # nrmse
 # -----------------------------------------------------------------------------
 
-#' Normalised Root Mean Square Error (NRMSE)
+#' Normalized Root Mean Square Error (NRMSE)
 #'
 #' Computes RMSE between back-transformed \code{pred} and \code{obs} vectors,
-#' then normalises by a summary statistic of the observations.
+#' then normalizes by a summary statistic of the observations.
 #'
 #' @param pred           Numeric vector of predicted values (on the
 #'   transformed scale).
 #' @param obs            Numeric vector of observed values (same scale as
 #'   \code{pred}; same length).
-#' @param method         Normalisation denominator: \code{"sd"} (default),
+#' @param method         Normalization denominator: \code{"sd"} (default),
 #'   \code{"mean"}, \code{"maxmin"}, or \code{"iq"} (interquartile range).
 #' @param transformation Back-transformation applied before computing RMSE.
 #'   One of \code{"none"} (default), \code{"sqrt"}, \code{"4thrt"},
@@ -359,7 +359,7 @@ nrmse <- function(pred, obs,
   # ---- RMSE ------------------------------------------------------------------
   rmse <- sqrt(mean((obs - pred)^2))
 
-  # ---- Normalisation denominator ---------------------------------------------
+  # ---- Normalization denominator ---------------------------------------------
   denom <- switch(
     method,
     sd     = sd(obs),

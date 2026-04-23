@@ -194,7 +194,7 @@
 # .run_hyperopt  [private]
 # -----------------------------------------------------------------------------
 
-#' Execute the full hyperparameter optimisation pipeline
+#' Execute the full hyperparameter optimization pipeline
 #'
 #' @param dataset               Named list: \code{B}, \code{W}, \code{P}.
 #' @param W_prime               Numeric matrix or scalar.
@@ -248,7 +248,7 @@
 # .save_outputs  [private]
 # -----------------------------------------------------------------------------
 
-#' Save hyperparameter optimisation diagnostic plots
+#' Save hyperparameter optimization diagnostic plots
 #'
 #' Creates \code{output_dir/report/}, saves two PDFs (hyperopt report and
 #' Pareto frontier), and attaches the hyperopt plot to \code{out}.
@@ -297,17 +297,17 @@
 # dicepro  [public]
 # -----------------------------------------------------------------------------
 
-#' Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimisation
+#' Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization
 #'
 #' @description
 #' Combines supervised estimation of known cell types with unsupervised
-#' discovery of latent components, with automatic Pareto-frontier-based
-#' hyperparameter optimisation.
+#' discovery of latent components, using automatic Pareto-frontier-based
+#' hyperparameter optimization.
 #'
 #' @details
-#' When \code{out_Decon} is provided the supervised step is skipped.
-#' Gene matrices are optionally z-score normalised per gene, and only
-#' intersecting genes are retained before optimisation.
+#' When \code{out_Decon} is provided, the supervised step is skipped.
+#' Gene matrices are optionally z-score normalized per gene, and only
+#' intersecting genes are retained before optimization.
 #'
 #' @param reference             Numeric matrix (genes × cell types).
 #' @param bulk                  Numeric matrix (genes × samples).
@@ -317,7 +317,7 @@
 #' @param cibersortx_token      CIBERSORTx token (required for \code{"CSx"}).
 #' @param W_prime               Initial unknown-signature matrix or \code{0}.
 #' @param bulkName              Character scalar. Label for the bulk dataset.
-#' @param refName               Character scalar. Label for the reference.
+#' @param refName               Character scalar. Label for the reference dataset.
 #' @param hp_max_evals          Positive integer. Number of hyperparameter trials.
 #' @param N_unknownCT           Positive integer. Number of unknown cell types.
 #' @param algo_select           Character. One of \code{"random"}, \code{"tpe"},
@@ -326,17 +326,17 @@
 #'   (\code{getwd()} by default).
 #' @param hspaceTechniqueChoose Character. One of \code{"all"},
 #'   \code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
-#'   \code{"all_gamma_dominant"} utilise le même espace libre que \code{"all"}
-#'   mais rejette tout candidat tel que
-#'   \code{gamma <= gamma_ratio_min * lambda_}, garantissant ainsi
+#'   \code{"all_gamma_dominant"} uses the same unconstrained search space as
+#'   \code{"all"}, but rejects any candidate such that
+#'   \code{gamma <= gamma_ratio_min * lambda_}, ensuring that
 #'   \code{gamma >> lambda_}.
-#' @param gamma_ratio_min       Positive numeric. Ratio minimal
-#'   \code{gamma / lambda_} imposé lorsque
-#'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (défaut \code{10}).
-#'   Ignoré pour les autres stratégies.
+#' @param gamma_ratio_min       Positive numeric. Minimum ratio
+#'   \code{gamma / lambda_} enforced when
+#'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+#'   Ignored for other strategies.
 #' @param out_Decon             Optional precomputed deconvolution matrix
 #'   (samples × cell types).
-#' @param normalize             Logical. Apply z-score normalisation per gene.
+#' @param normalize             Logical. Apply z-score normalization per gene.
 #' @param seed                  Integer. Random seed (default \code{42L}).
 #'
 #' @return An object of class \code{"dicepro"} (a named list) containing:
@@ -373,7 +373,7 @@
 #'   hspaceTechniqueChoose = "all_gamma_dominant"
 #' )
 #'
-#' gamma >> 50x lambda
+#' # gamma >> 50 × lambda
 #' res <- dicepro(
 #'   reference             = BlueCode,
 #'   bulk                  = CellMixtures,
@@ -444,7 +444,7 @@ dicepro <- function(reference,
 
   seed <- seed %||% 42L
 
-  # ---- Hyperparameter optimisation -----------------------------------------
+  # ---- Hyperparameter optimization -----------------------------------------
   out <- .run_hyperopt(
     dataset               = dataset,
     W_prime               = W_prime,

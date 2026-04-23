@@ -65,7 +65,7 @@
 #' Heatmap of cell-type abundances
 #'
 #' Generates a raster heatmap showing the estimated abundance of each cell
-#' type across NMF iterations (or samples). Colour encodes abundance using
+#' type across NMF iterations (or samples). Color encodes abundance using
 #' the viridis scale (reversed: dark = high abundance).
 #'
 #' @param res2plot  A \code{data.frame} with:
@@ -82,7 +82,7 @@
 #'   useful for highlighting deviations from a reference abundance.
 #'   Default \code{NULL} (sequential scale).
 #'
-#' @return A \code{ggplot} object. Print or save with
+#' @return A \code{ggplot} object. It can be printed or saved using
 #'   \code{ggplot2::ggsave()}.
 #'
 #' @examples
@@ -180,7 +180,7 @@ heatmap_abundances <- function(res2plot,
 #'     \item \code{metric}  — scalar performance value at each iteration.
 #'   }
 #'   Optionally a \code{group} column (character or factor) to draw
-#'   multiple coloured lines, one per group.
+#'   multiple colored lines, one per group.
 #' @param ylab       Character. Y-axis label
 #'   (default \code{"Error between folds"}).
 #' @param title      Character. Plot title (default \code{NULL}).

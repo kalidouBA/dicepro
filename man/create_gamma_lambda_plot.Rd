@@ -2,7 +2,7 @@
 % Please edit documentation in R/lambda_gamma_initialize.R
 \name{create_gamma_lambda_plot}
 \alias{create_gamma_lambda_plot}
-\title{Visualise the gamma–lambda hyperparameter search space}
+\title{Visualize the gamma–lambda hyper-parameter search space}
 \usage{
 create_gamma_lambda_plot(
   hspaceTechniqueChoose = c("all", "restrictionEspace"),

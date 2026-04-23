@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics.R
 \name{full_metrics}
 \alias{full_metrics}
-\title{Full agreement metrics via mixed-effects modelling}
+\title{Full agreement metrics via mixed-effects modeling}
 \usage{
 full_metrics(x, y)
 }
@@ -27,7 +27,7 @@ Named list:
 }
 \description{
 Fits a two-way mixed-effects model (populations and subjects as random
-effects) and derives ICC(3,1), CCC, and relative RMSE, complemented by
+effects) and derives ICC(3,1), Concordance correlation coefficient, and relative RMSE, complemented by
 sample-wise correlation and RMSE from \code{\link{samplewise_metrics}}.
 }
 \examples{

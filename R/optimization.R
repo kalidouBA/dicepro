@@ -1,5 +1,5 @@
 # =============================================================================
-# optimisation.R
+# optimization.R
 #
 # Public API  : run_experiment()
 # Private fns : .custom_space()
@@ -8,9 +8,9 @@
 #       .generate_experiment_paths() is defined in utils.R
 # =============================================================================
 
-#' Run a dicepro hyperparameter optimisation experiment
+#' Run a dicepro hyperparameter optimization experiment
 #'
-#' Builds the hyperparameter search space from \code{hspaceTechniqueChoose},
+#' Builds the hyperparameter search space from \code{hspaceTechniqueChoose}
 #' and runs \code{research_hyperOpt()}, returning the collected trials.
 #'
 #' @param dataset              List containing at least \code{$B}, \code{$W},
@@ -24,7 +24,7 @@
 #' @param hp_max_evals         Positive integer. Number of hyperparameter trials
 #'   to run.
 #' @param algo_select          Character scalar. Sampling algorithm passed to
-#'   the config (e.g. \code{"random"}).
+#'   the configuration (e.g. \code{"random"}).
 #' @param output_base_dir      Character scalar. Root directory for all outputs
 #'   (default \code{"."}).
 #' @param hspaceTechniqueChoose Character scalar. Search-space strategy:
@@ -33,21 +33,21 @@
 #'       \code{lambda_}, \code{gamma}, \code{p_prime}.}
 #'     \item{\code{"restrictionEspace"}}{Restricted space where \code{gamma}
 #'       is the base variable and \code{lambda_} is derived as
-#'       \code{lambda_ = gamma * lambda_factor} with
+#'       \code{lambda_ = gamma * lambda_factor}, with
 #'       \code{lambda_factor} in (2, 100).}
-#'     \item{\code{"all_gamma_dominant"}}{Même espace libre que \code{"all"}
-#'       mais tout candidat tel que
-#'       \code{gamma <= gamma_ratio_min * lambda_} est rejeté et retitré.
-#'       Garantit \code{gamma >> lambda_} sans contraindre les bornes.}
+#'     \item{\code{"all_gamma_dominant"}}{Same unconstrained space as
+#'       \code{"all"}, but any candidate such that
+#'       \code{gamma <= gamma_ratio_min * lambda_} is rejected.
+#'       This enforces \code{gamma >> lambda_} without constraining bounds.}
 #'   }
 #' @param gamma_ratio_min Positive numeric. Minimum ratio
 #'   \code{gamma / lambda_} enforced when
 #'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
-#'   Ignored for the other two strategies.
+#'   Ignored for the other strategies.
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
 #'
-#' @return The list returned by \code{\link{research_hyperOpt}}: \code{trials},
-#'   \code{W}, and \code{H}.
+#' @return The list returned by \code{\link{research_hyperOpt}}:
+#'   \code{trials}, \code{W}, and \code{H}.
 #'
 #' @export
 run_experiment <- function(dataset,

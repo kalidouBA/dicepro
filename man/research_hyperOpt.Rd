@@ -2,7 +2,7 @@
 % Please edit documentation in R/hypersearch.R
 \name{research_hyperOpt}
 \alias{research_hyperOpt}
-\title{Hyperparameter optimisation loop for dicepro}
+\title{Hyper-parameter optimization loop for dicepro}
 \usage{
 research_hyperOpt(
   objective_opt,
@@ -24,7 +24,7 @@ research_hyperOpt(
 Optionally contains \code{gamma_ratio_min} (positive numeric) to
 activate rejection sampling (mode \code{"all_gamma_dominant"}).}
 
-\item{hp_space}{Pre-built named list of parsed hyperparameter specs.
+\item{hp_space}{prebuilt named list of parsed hyper-parameter specs.
 If \code{NULL}, built from \code{config$hp_space}.}
 
 \item{W_prime}{Optional initial \eqn{W} matrix.}

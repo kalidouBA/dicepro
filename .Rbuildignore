@@ -10,3 +10,4 @@ test_simulation.Rmd
 ^README\.html$
 ^DICEPro_article_reproducibility/*
 ^\.github$
+^cran-comments\.md$

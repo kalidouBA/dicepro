@@ -45,7 +45,7 @@ Two simulation strategies are available and covered here:
 | `simulation()` | Synthetic (generated internally) | Generic (`CellType_k`) | Flexible benchmarking with custom parameters |
 | `simulation_bluecode()` | BlueCode (bundled real reference) | Real biological names | Realistic benchmarking on human tissue cell types |
 
-Both functions return the same standardised triplet — `$W`, `$p`, `$B` —
+Both functions return the same standardized triplet — `$W`, `$p`, `$B` —
 and are fully interchangeable as input to `dicepro()`.
 
 The pipeline proceeds in four stages:
@@ -54,7 +54,7 @@ The pipeline proceeds in four stages:
    proportions.
 2. **Generate** a noisy bulk RNA-seq matrix from the simulated mixture.
 3. **Deconvolve** using the main `dicepro()` function with automated
-   hyperparameter optimisation.
+   hyper-parameter optimization.
 4. **Evaluate** the recovered proportions against the ground truth.
 
 ---
@@ -134,7 +134,7 @@ cat("Loss        :", out$metrics$loss,            "\n")
 cat("Constraint  :", out$metrics$constraint,      "\n")
 ```
 
-### Hyperparameter Optimisation Report
+### Hyperparameter Optimization Report
 
 ```{r plot-hyperopt-synthetic, fig.height=9}
 out$plot_hyperopt
@@ -214,7 +214,7 @@ knitr::kable(perf$Perf, digits = 3,
 the package — a curated signature matrix covering 34 human cell types across
 five tissue compartments — as the fixed reference `$W`. Proportions are
 simulated via a two-level Dirichlet hierarchy that reflects the biological
-organisation of human tissues.
+organization of human tissues.
 
 This strategy is recommended when benchmarking should be grounded in a
 biologically realistic reference, while keeping full control over the
@@ -225,13 +225,13 @@ ground-truth proportions.
 The hierarchy encodes five major tissue compartments with their constituent
 cell types:
 
-| Compartment | Cell types (n) | Default α |
+| Compartment | Cell types (n) | Default alpha |
 |---|---|---|
 | Immune | B naive/memory, T CD4/CD8, NK, Monocyte, Macrophage, Neutrophil | 4.0 |
 | Stromal | Fibroblasts (×5), MSC, Chondrocyte, Osteoblast | 2.5 |
-| Endothelial | Large vessel, microvascular (×2) | 1.8 |
-| Epithelial | Mammary, renal, respiratory, keratinocyte, melanocyte | 1.8 |
-| Muscle | Smooth muscle (×7), cardiac myocyte, myometrial | 1.5 |
+| Endothelial | Large vessel, Microvascular (×2) | 1.8 |
+| Epithelial | Mammary, Renal, Respiratory, Keratinocyte, Melanocyte | 1.8 |
+| Muscle | Smooth muscle (×7), cardiac Myocyte, Myometrial | 1.5 |
 
 ## Data Generation
 
@@ -257,7 +257,7 @@ head(colnames(sim_bc$p))
 ## Proportion Distribution by Compartment
 
 The hierarchical model induces realistic between-compartment variation.
-Visualising the compartment-level totals confirms the expected dominance of
+Visualizing the compartment-level totals confirms the expected dominance of
 the Immune compartment.
 
 ```{r compartment-overview}
@@ -329,7 +329,7 @@ cat("Loss        :", out_bc$metrics$loss,            "\n")
 cat("Constraint  :", out_bc$metrics$constraint,      "\n")
 ```
 
-### Hyperparameter Optimisation Report
+### Hyperparameter Optimization Report
 
 ```{r plot-hyperopt-bluecode, fig.height=9}
 out_bc$plot_hyperopt
@@ -409,8 +409,7 @@ cat(sprintf(
 The two strategies are complementary: `simulation()` offers maximum
 flexibility for stress-testing deconvolution under varying gene numbers,
 cell-type counts, or noise levels; `simulation_bluecode()` anchors the
-benchmark in a biologically grounded reference, making results more
-interpretable in the context of real human tissue data.
+benchmark in a biologically grounded reference, making results easier to interpret in the context of real human tissue data.
 
 ---
 

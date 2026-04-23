@@ -640,9 +640,8 @@ Object.defineProperty(e,"__esModule",{value:!0}),e.mhchemParser=void 0;var r=fun
 
 <!-- badges -->
 
-<p><strong>D</strong>econvolution with <strong>I</strong>terative
-<strong>C</strong>ompletion for <strong>E</strong>stimating cellular
-<strong>Pro</strong>portions from RNA-seq data.</p>
+<p>Deconvolution with Iterative Completion for Estimating Cellular
+Proportions from RNA-seq Data</p>
 <hr />
 <h2 id="overview">Overview</h2>
 <p>Bulk RNA-seq deconvolution infers the proportions of distinct cell
@@ -651,17 +650,17 @@ that the reference signature matrix is <em>complete</em> — i.e., that
 every cell population present in the bulk sample is represented. In
 practice this assumption rarely holds, leading to biased estimates.</p>
 <p><strong>dicepro</strong> addresses this limitation through an
-iterative joint optimisation that simultaneously:</p>
+iterative joint optimization that simultaneously:</p>
 <ul>
 <li>estimates cell-type proportions for <em>known</em> populations
 (supervised step, via CIBERSORTx, FARDEEP, DCQ, CDSeq, or BayesPrism),
 and</li>
 <li>discovers and quantifies <em>unknown</em> populations using
-Non-Negative Matrix Factorisation (NMF) with L-BFGS-B optimisation
+Non-Negative Matrix Factorization (NMF) with L-BFGS-B optimization
 (unsupervised step).</li>
 </ul>
-<p>Hyperparameters <span class="math inline">\((\lambda, \gamma,
-p&#39;)\)</span> controlling the NMF regularisation are selected
+<p>Hyper-parameters <span class="math inline">\((\lambda, \gamma,
+p&#39;)\)</span> controlling the NMF regularization are selected
 automatically via a Pareto-frontier + knee-point procedure, so no manual
 tuning is required.</p>
 <hr />
@@ -671,12 +670,12 @@ tuning is required.</p>
 types absent from the reference matrix.</li>
 <li><strong>Method-agnostic supervised step</strong> — plug in any
 supported deconvolution backend.</li>
-<li><strong>Automated hyperparameter search</strong> — random search
+<li><strong>Automated hyper-parameter search</strong> — random search
 over a log-uniform grid with Pareto-optimal selection.</li>
 <li><strong>Bundled benchmark data</strong> — <code>BlueCode</code>
 (34-cell-type reference) and <code>CellMixtures</code> (12
 experimentally mixed bulk samples) included.</li>
-<li><strong>Rich diagnostics</strong> — Pareto plot and hyperparameter
+<li><strong>Rich diagnostics</strong> — Pareto plot and hyper-parameter
 scatter matrix saved automatically to
 <code>output_path/report/</code>.</li>
 </ul>
@@ -720,7 +719,7 @@ scatter matrix saved automatically to
 <span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>out<span class="sc">$</span>hyperparameters    <span class="co"># best lambda / gamma</span></span>
 <span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="fu">head</span>(out<span class="sc">$</span>H)            <span class="co"># estimated proportions</span></span>
 <span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>out<span class="sc">$</span>plot               <span class="co"># interactive Pareto plot</span></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>out<span class="sc">$</span>plot_hyperopt      <span class="co"># hyperparameter scatter matrix</span></span></code></pre></div>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>out<span class="sc">$</span>plot_hyperopt      <span class="co"># hyper-parameter scatter matrix</span></span></code></pre></div>
 <h3 id="real-data-bluecode--cellmixtures">Real Data (BlueCode +
 CellMixtures)</h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(dicepro)</span>
@@ -787,11 +786,11 @@ one when the existing token has expired.</p>
 </tr>
 <tr>
 <td><code>$trials</code></td>
-<td>data.frame of all evaluated hyperparameter configurations</td>
+<td>data.frame of all evaluated hyper-parameter configurations</td>
 </tr>
 <tr>
 <td><code>$W</code></td>
-<td>Optimised reference matrix (including unknown cell types)</td>
+<td>Optimized reference matrix (including unknown cell types)</td>
 </tr>
 <tr>
 <td><code>$H</code></td>
@@ -803,7 +802,7 @@ one when the existing token has expired.</p>
 </tr>
 <tr>
 <td><code>$plot_hyperopt</code></td>
-<td>Hyperparameter scatter matrix (ggplot2)</td>
+<td>Hyper-parameter scatter matrix (ggplot2)</td>
 </tr>
 </tbody>
 </table>
@@ -833,9 +832,9 @@ documentation.</p>
 <h2 id="citation">Citation</h2>
 <p>If you use dicepro in your research, please cite:</p>
 <blockquote>
-<p>[When Less Is Not More]{When Less Is Not More: Mitigates the Impact
-of Incomplete Reference Matrices on Cellular Frequency Deconvolution*
-Bioinformatics. <a href="doi:XXXX">doi:XXXX</a></p>
+<p>[When Less Is Not More]{When Less Is Not More: <code>dicepro</code>
+Mitigates the Impact of Incomplete Reference Matrices on Cellular
+Frequency Deconvolution* Bioinformatics. doi:</p>
 </blockquote>
 <hr />
 

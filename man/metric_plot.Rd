@@ -20,7 +20,7 @@ metric_plot(
 \item \code{metric}  — scalar performance value at each iteration.
 }
 Optionally a \code{group} column (character or factor) to draw
-multiple coloured lines, one per group.}
+multiple colored lines, one per group.}
 
 \item{ylab}{Character. Y-axis label
 (default \code{"Error between folds"}).}

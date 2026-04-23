@@ -3,7 +3,7 @@
 #
 # Public API  : create_gamma_lambda_plot()
 #
-# NOTE: .custom_space()        is defined in optimisation.R
+# NOTE: .custom_space()        is defined in optimization.R
 #       .sample_from_space()   is defined in hypersearch.R
 #       globalVariables("bound_label") is declared in utils.R
 # =============================================================================
@@ -13,7 +13,7 @@
 # create_gamma_lambda_plot  [public]
 # -----------------------------------------------------------------------------
 
-#' Visualise the gamma–lambda hyperparameter search space
+#' Visualize the gamma–lambda hyper-parameter search space
 #'
 #' Generates a ggplot2 scatter plot of \eqn{\gamma} vs \eqn{\lambda}
 #' sampled from the search space defined by \code{hspaceTechniqueChoose},

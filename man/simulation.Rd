@@ -92,11 +92,11 @@ A named list with three elements:
 \description{
 Generates synthetic bulk RNA-seq expression matrices by linearly mixing
 reference cell-type profiles according to simulated proportions, with
-optional biological and technical noise. The noise model is consistent
-with the Gaussian likelihood framework underlying dicepro's objective
-function: biological noise is applied multiplicatively and technical noise
-additively, so that normalization to a Gaussian scale prior to
-deconvolution is a formal requirement.
+optional biological and technical noise. The noise model follows the
+Gaussian likelihood framework underlying the dicepro objective function:
+biological noise is multiplicative, whereas technical noise is additive.
+Consequently, normalization to a Gaussian scale prior
+to deconvolution is required.
 }
 \details{
 The bulk expression matrix is generated as:

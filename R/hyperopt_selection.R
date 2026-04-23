@@ -181,7 +181,7 @@
 #' Select optimal hyperparameters using a Pareto frontier
 #'
 #' Identifies the best \eqn{(\lambda, \gamma)} pair from a set of
-#' optimisation trials by:
+#' optimization trials by:
 #' \enumerate{
 #'   \item Filtering trials that exceed the constraint threshold.
 #'   \item Computing constraint deviation (\code{abs_constraint}).
@@ -190,7 +190,7 @@
 #'   \item Selecting the knee point — the best loss/constraint trade-off.
 #' }
 #'
-#' @param trials_df            data.frame of optimisation trials as returned
+#' @param trials_df            data.frame of optimization trials as returned
 #'   by \code{\link{research_hyperOpt}} (\code{$trials}).
 #' @param W                    List of \eqn{W} matrices, one per trial.
 #' @param H                    List of \eqn{H} matrices, one per trial.

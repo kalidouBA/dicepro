@@ -61,7 +61,7 @@ proportions, then applying biological and technical noise.
 }
 \details{
 The proportion model follows a two-level Dirichlet hierarchy that mirrors
-the biological organisation of human tissues:
+the biological organization of human tissues:
 \enumerate{
 \item \strong{Compartment level} — five major tissue compartments
 (Immune, Stromal, Endothelial, Epithelial, Muscle) are drawn from

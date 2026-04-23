@@ -2,7 +2,7 @@
 % Please edit documentation in R/hypersearch.R
 \name{objective_opt}
 \alias{objective_opt}
-\title{Objective function for hyperparameter optimisation}
+\title{Objective function for hyper-parameter optimization}
 \usage{
 objective_opt(
   dataset,
@@ -20,7 +20,7 @@ objective_opt(
 \item{config}{List. Configuration object (needs \code{$exp} for the
 output directory).}
 
-\item{lambda_}{Numeric. Regularisation parameter \eqn{\lambda}.}
+\item{lambda_}{Numeric. Regularization parameter \eqn{\lambda}.}
 
 \item{gamma_factor}{Numeric or \code{NULL}. When not \code{NULL},
 \eqn{\gamma} is derived as \code{lambda_ * gamma_factor}.}

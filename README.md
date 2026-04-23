@@ -5,8 +5,8 @@
 
 <!-- badges -->
 
-**D**econvolution with **I**terative **C**ompletion for **E**stimating
-cellular **Pro**portions from RNA-seq data.
+Deconvolution with Iterative Completion for Estimating Cellular
+Proportions from RNA-seq Data
 
 ------------------------------------------------------------------------
 
@@ -19,16 +19,16 @@ population present in the bulk sample is represented. In practice this
 assumption rarely holds, leading to biased estimates.
 
 **dicepro** addresses this limitation through an iterative joint
-optimisation that simultaneously:
+optimization that simultaneously:
 
 - estimates cell-type proportions for *known* populations (supervised
   step, via CIBERSORTx, FARDEEP, DCQ, CDSeq, or BayesPrism), and
 - discovers and quantifies *unknown* populations using Non-Negative
-  Matrix Factorisation (NMF) with L-BFGS-B optimisation (unsupervised
+  Matrix Factorization (NMF) with L-BFGS-B optimization (unsupervised
   step).
 
-Hyperparameters $(\lambda, \gamma, p')$ controlling the NMF
-regularisation are selected automatically via a Pareto-frontier +
+Hyper-parameters $(\lambda, \gamma, p')$ controlling the NMF
+regularization are selected automatically via a Pareto-frontier +
 knee-point procedure, so no manual tuning is required.
 
 ------------------------------------------------------------------------
@@ -39,11 +39,11 @@ knee-point procedure, so no manual tuning is required.
   the reference matrix.
 - **Method-agnostic supervised step** — plug in any supported
   deconvolution backend.
-- **Automated hyperparameter search** — random search over a log-uniform
-  grid with Pareto-optimal selection.
+- **Automated hyper-parameter search** — random search over a
+  log-uniform grid with Pareto-optimal selection.
 - **Bundled benchmark data** — `BlueCode` (34-cell-type reference) and
   `CellMixtures` (12 experimentally mixed bulk samples) included.
-- **Rich diagnostics** — Pareto plot and hyperparameter scatter matrix
+- **Rich diagnostics** — Pareto plot and hyper-parameter scatter matrix
   saved automatically to `output_path/report/`.
 
 ------------------------------------------------------------------------
@@ -100,7 +100,7 @@ class(out)
 out$hyperparameters    # best lambda / gamma
 head(out$H)            # estimated proportions
 out$plot               # interactive Pareto plot
-out$plot_hyperopt      # hyperparameter scatter matrix
+out$plot_hyperopt      # hyper-parameter scatter matrix
 ```
 
 ### Real Data (BlueCode + CellMixtures)
@@ -176,11 +176,11 @@ elements:
 |----|----|
 | `$hyperparameters` | Best $\lambda$ and $\gamma$ found by the search |
 | `$metrics` | Loss and constraint value at the optimum |
-| `$trials` | data.frame of all evaluated hyperparameter configurations |
-| `$W` | Optimised reference matrix (including unknown cell types) |
+| `$trials` | data.frame of all evaluated hyper-parameter configurations |
+| `$W` | Optimized reference matrix (including unknown cell types) |
 | `$H` | Estimated cell-type proportions (samples x cell types) |
 | `$plot` | Pareto frontier |
-| `$plot_hyperopt` | Hyperparameter scatter matrix (ggplot2) |
+| `$plot_hyperopt` | Hyper-parameter scatter matrix (ggplot2) |
 
 ------------------------------------------------------------------------
 
@@ -228,8 +228,8 @@ vignette("vignette-real-data",  package = "dicepro")
 
 If you use dicepro in your research, please cite:
 
-> \[When Less Is Not More\]{When Less Is Not More: Mitigates the Impact
-> of Incomplete Reference Matrices on Cellular Frequency Deconvolution\*
-> Bioinformatics. <doi:XXXX>
+> \[When Less Is Not More\]{When Less Is Not More: `dicepro` Mitigates
+> the Impact of Incomplete Reference Matrices on Cellular Frequency
+> Deconvolution\* Bioinformatics. doi:
 
 ------------------------------------------------------------------------

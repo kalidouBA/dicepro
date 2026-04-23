@@ -7,7 +7,7 @@
 best_hyperParams(trials_df, W, H, savePaths, constraint_threshold = 0.1)
 }
 \arguments{
-\item{trials_df}{data.frame of optimisation trials as returned
+\item{trials_df}{data.frame of optimization trials as returned
 by \code{\link{research_hyperOpt}} (\code{$trials}).}
 
 \item{W}{List of \eqn{W} matrices, one per trial.}
@@ -36,7 +36,7 @@ dropped — the \code{Mixture} label column).}
 }
 \description{
 Identifies the best \eqn{(\lambda, \gamma)} pair from a set of
-optimisation trials by:
+optimization trials by:
 \enumerate{
 \item Filtering trials that exceed the constraint threshold.
 \item Computing constraint deviation (\code{abs_constraint}).

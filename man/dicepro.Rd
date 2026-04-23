@@ -2,7 +2,7 @@
 % Please edit documentation in R/dicepro.R
 \name{dicepro}
 \alias{dicepro}
-\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimisation}
+\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization}
 \usage{
 dicepro(
   reference,
@@ -40,7 +40,7 @@ dicepro(
 
 \item{bulkName}{Character scalar. Label for the bulk dataset.}
 
-\item{refName}{Character scalar. Label for the reference.}
+\item{refName}{Character scalar. Label for the reference dataset.}
 
 \item{hp_max_evals}{Positive integer. Number of hyperparameter trials.}
 
@@ -54,20 +54,20 @@ dicepro(
 
 \item{hspaceTechniqueChoose}{Character. One of \code{"all"},
 \code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
-\code{"all_gamma_dominant"} utilise le même espace libre que \code{"all"}
-mais rejette tout candidat tel que
-\code{gamma <= gamma_ratio_min * lambda_}, garantissant ainsi
+\code{"all_gamma_dominant"} uses the same unconstrained search space as
+\code{"all"}, but rejects any candidate such that
+\code{gamma <= gamma_ratio_min * lambda_}, ensuring that
 \code{gamma >> lambda_}.}
 
-\item{gamma_ratio_min}{Positive numeric. Ratio minimal
-\code{gamma / lambda_} imposé lorsque
-\code{hspaceTechniqueChoose = "all_gamma_dominant"} (défaut \code{10}).
-Ignoré pour les autres stratégies.}
+\item{gamma_ratio_min}{Positive numeric. Minimum ratio
+\code{gamma / lambda_} enforced when
+\code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+Ignored for other strategies.}
 
 \item{out_Decon}{Optional precomputed deconvolution matrix
 (samples × cell types).}
 
-\item{normalize}{Logical. Apply z-score normalisation per gene.}
+\item{normalize}{Logical. Apply z-score normalization per gene.}
 
 \item{seed}{Integer. Random seed (default \code{42L}).}
 }
@@ -87,13 +87,13 @@ is found.
 }
 \description{
 Combines supervised estimation of known cell types with unsupervised
-discovery of latent components, with automatic Pareto-frontier-based
-hyperparameter optimisation.
+discovery of latent components, using automatic Pareto-frontier-based
+hyperparameter optimization.
 }
 \details{
-When \code{out_Decon} is provided the supervised step is skipped.
-Gene matrices are optionally z-score normalised per gene, and only
-intersecting genes are retained before optimisation.
+When \code{out_Decon} is provided, the supervised step is skipped.
+Gene matrices are optionally z-score normalized per gene, and only
+intersecting genes are retained before optimization.
 }
 \examples{
 \dontrun{
@@ -113,7 +113,7 @@ res <- dicepro(
   hspaceTechniqueChoose = "all_gamma_dominant"
 )
 
-gamma >> 50x lambda
+# gamma >> 50 × lambda
 res <- dicepro(
   reference             = BlueCode,
   bulk                  = CellMixtures,

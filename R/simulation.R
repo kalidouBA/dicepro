@@ -514,11 +514,11 @@ generate_ref_matrix <- function(loi              = "rpois",
 #'
 #' Generates synthetic bulk RNA-seq expression matrices by linearly mixing
 #' reference cell-type profiles according to simulated proportions, with
-#' optional biological and technical noise. The noise model is consistent
-#' with the Gaussian likelihood framework underlying dicepro's objective
-#' function: biological noise is applied multiplicatively and technical noise
-#' additively, so that normalization to a Gaussian scale prior to
-#' deconvolution is a formal requirement.
+#' optional biological and technical noise. The noise model follows the
+#' Gaussian likelihood framework underlying the dicepro objective function:
+#' biological noise is multiplicative, whereas technical noise is additive.
+#' Consequently, normalization to a Gaussian scale prior
+#' to deconvolution is required.
 #'
 #' @param W               Numeric matrix (genes x cell types) or \code{NULL}.
 #'   If \code{NULL}, a reference matrix is generated internally via
@@ -688,7 +688,7 @@ simulation <- function(W                = NULL,
 #' proportions, then applying biological and technical noise.
 #'
 #' The proportion model follows a two-level Dirichlet hierarchy that mirrors
-#' the biological organisation of human tissues:
+#' the biological organization of human tissues:
 #' \enumerate{
 #'   \item \strong{Compartment level} — five major tissue compartments
 #'     (Immune, Stromal, Endothelial, Epithelial, Muscle) are drawn from

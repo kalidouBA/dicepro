@@ -7,12 +7,12 @@
 \format{
 A numeric matrix of dimensions \eqn{G \times 12}, where \eqn{G}
 denotes the number of genes (~31 400 after quality filtering). Rows are
-labelled by HGNC gene symbol; columns are labelled \code{A} through
+labeled by HGNC gene symbol; columns are labeled \code{A} through
 \code{L}, corresponding to 12 experimentally mixed samples. Values are
-raw read counts prior to normalisation.
+raw read counts prior to normalization.
 }
 \source{
-CellMixtures was constructed for the dicepro benchmarking framework.
+CellMixtures was constructed for the DICEPro benchmarking framework.
 Sorted cell populations were obtained from ENCODE
 (\url{https://www.encodeproject.org}) and mixed \emph{in silico} at
 predefined proportions from experimentally validated RNA-seq profiles.
@@ -37,12 +37,12 @@ populations at known proportions across the five tissue compartments
 represented in \code{BlueCode}. Each sample targets a distinct
 mixture composition, providing a controlled benchmark spanning a wide
 range of cell-type abundance profiles — from immune-dominated samples
-to stromal- or muscle-enriched configurations.
+to Stromal- or muscle-enriched configurations.
 }
 
 \subsection{Gene coverage}{
 
-CellMixtures covers approximately 31 400 gene symbols, a superset of
+CellMixtures covers approximately 31 400 gene symbols, a super-set of
 those present in BlueCode. dicepro automatically intersects the two
 gene sets before deconvolution; the effective number of informative
 genes is therefore determined by the BlueCode reference (see
@@ -58,14 +58,14 @@ cat(sprintf("Common genes: \%d / \%d reference genes\\n",
 }\if{html}{\out{</div>}}
 }
 
-\subsection{Normalisation}{
+\subsection{normalization}{
 
-Raw counts should be normalised before deconvolution.
-\code{dicepro} applies \code{.normalize_zscore_per_gene}
-internally; no pre-processing is required when using the main function.
-For exploratory analyses, log-CPM or TPM normalisation is recommended:
+Raw counts should be normalized before deconvolution.
+\code{dicepro} applies \code{.normalize_zscore_per_gene} internally;
+no preprocessing is required when using the main function.
+For exploratory analyses, log-CPM or TPM normalization is recommended:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{# log2-CPM normalisation
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# log2-CPM normalization
 cpm <- sweep(CellMixtures, 2, colSums(CellMixtures) / 1e6, FUN = "/")
 log2_cpm <- log2(cpm + 1)
 }\if{html}{\out{</div>}}
@@ -94,10 +94,10 @@ head(out$H)
 \subsection{Relationship to BlueCode}{
 
 CellMixtures and BlueCode are designed as a paired benchmark: the
-reference matrix was derived from the same cell populations used to
-construct the mixtures, ensuring that all cell types in the bulk are
-represented in the reference. This controlled setting allows direct
-evaluation of dicepro's reconstruction accuracy
+reference matrix is derived from the same cell populations used to
+construct the mixtures, ensuring that all cell types present in the bulk
+are represented in the reference. This controlled setting enables direct
+evaluation of the reconstruction accuracy of dicepro.
 }
 }
 \keyword{data}
