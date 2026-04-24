@@ -7,6 +7,14 @@
 \description{
 Performs semi-supervised deconvolution of bulk RNA-seq data. Known cell-type proportions are estimated using supervised methods (CIBERSORTx, FARDEEP, DCQ, or BayesPrism), while unknown components are inferred using non-negative matrix factorization (NMF) with L-BFGS-B optimization. Hyperparameters are selected automatically using a Pareto-frontier-based approach with knee-point detection, allowing application when the reference signature matrix is incomplete.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/kalidouBA/dicepro}
+  \item Report bugs at \url{https://github.com/kalidouBA/dicepro/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Kalidou BA \email{kalidou.ba@u-bordeaux.fr}
 

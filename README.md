@@ -220,10 +220,9 @@ vignette("vignette-real-data",  package = "dicepro")
 
 ## Citation
 
-If you use dicepro in your research, please cite:
-
-> \[When Less Is Not More\]{When Less Is Not More: `dicepro` Mitigates
-> the Impact of Incomplete Reference Matrices on Cellular Frequency
-> Deconvolution\* Bioinformatics. doi:
+If you use dicepro in your research, please cite: **When Less Is Not
+More: *dicepro* Mitigates the Impact of Incomplete Reference Matrices on
+Cellular Frequency Deconvolution.**  
+*Bioinformatics*. doi:
 
 ------------------------------------------------------------------------

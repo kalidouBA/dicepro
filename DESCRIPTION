@@ -25,10 +25,10 @@ LazyDataCompression: xz
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 LinkingTo:
-    Rcpp (>= 1.0.12),
+    Rcpp,
     RcppEigen
 Imports:
-    Rcpp (>= 1.0.12),
+    Rcpp,
     RcppEigen,
     lbfgsb3c,
     KraljicMatrix,
@@ -42,7 +42,5 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-Remotes:
-    RcppCore/Rcpp
 URL: https://github.com/kalidouBA/dicepro
 BugReports: https://github.com/kalidouBA/dicepro/issues
