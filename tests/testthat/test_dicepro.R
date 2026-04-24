@@ -46,7 +46,6 @@ test_that("dicepro runs on simulated data with incomplete reference", {
     output_path           = tempdir(),
     hspaceTechniqueChoose = "all"
   )
-  # Guard : si tous les trials ont échoué, skip plutôt que fail
   if (is.null(out)) {
     skip("All hyperparameter trials failed — increase nGenes/nCellsType or hp_max_evals.")
   }
