@@ -681,64 +681,62 @@ scatter matrix saved automatically to
 </ul>
 <hr />
 <h2 id="installation">Installation</h2>
-<h3 id="from-cran-stable">From CRAN (stable)</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;dicepro&quot;</span>)</span></code></pre></div>
-<h3 id="from-github-development">From GitHub (development)</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># install.packages(&quot;remotes&quot;)</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;kalidouBA/dicepro&quot;</span>)</span></code></pre></div>
+<h3 id="development-version-github">Development version (GitHub)</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># install.packages(&quot;remotes&quot;)</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;kalidouBA/dicepro&quot;</span>)</span></code></pre></div>
 <hr />
 <h2 id="quick-start">Quick Start</h2>
 <h3 id="simulated-data">Simulated Data</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(dicepro)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2101</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># 1. Simulate reference, proportions, and noisy bulk</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">simulation</span>(</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">scenario   =</span> <span class="st">&quot;hierarchical&quot;</span>,</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">nSample    =</span> <span class="dv">30</span>,</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">nGenes     =</span> <span class="dv">200</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">nCellsType =</span> <span class="dv">10</span>,</span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">sigma_bio  =</span> <span class="fl">0.07</span>,</span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">sigma_tech =</span> <span class="fl">0.07</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>)</span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co"># 2. Run dicepro</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="at">reference             =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>W),</span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="at">bulk                  =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>B),</span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>  <span class="at">methodDeconv          =</span> <span class="st">&quot;FARDEEP&quot;</span>,</span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="at">bulkName              =</span> <span class="st">&quot;SimBulk&quot;</span>,</span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="at">refName               =</span> <span class="st">&quot;SimRef&quot;</span>,</span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  <span class="at">hp_max_evals          =</span> <span class="dv">100</span><span class="dt">L</span>,</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="at">hspaceTechniqueChoose =</span> <span class="st">&quot;all&quot;</span>,</span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  <span class="at">output_path           =</span> <span class="fu">tempdir</span>()</span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>)</span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co"># 3. Inspect results</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="fu">class</span>(out)</span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>out<span class="sc">$</span>hyperparameters    <span class="co"># best lambda / gamma</span></span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="fu">head</span>(out<span class="sc">$</span>H)            <span class="co"># estimated proportions</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>out<span class="sc">$</span>plot               <span class="co"># interactive Pareto plot</span></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>out<span class="sc">$</span>plot_hyperopt      <span class="co"># hyper-parameter scatter matrix</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(dicepro)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2101</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># 1. Simulate reference, proportions, and noisy bulk</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">simulation</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">scenario   =</span> <span class="st">&quot;hierarchical&quot;</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">nSample    =</span> <span class="dv">30</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">nGenes     =</span> <span class="dv">200</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="at">nCellsType =</span> <span class="dv">10</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="at">sigma_bio  =</span> <span class="fl">0.07</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="at">sigma_tech =</span> <span class="fl">0.07</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># 2. Run dicepro</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">reference             =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>W),</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="at">bulk                  =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>B),</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="at">methodDeconv          =</span> <span class="st">&quot;FARDEEP&quot;</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="at">bulkName              =</span> <span class="st">&quot;SimBulk&quot;</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="at">refName               =</span> <span class="st">&quot;SimRef&quot;</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="at">hp_max_evals          =</span> <span class="dv">100</span><span class="dt">L</span>,</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  <span class="at">hspaceTechniqueChoose =</span> <span class="st">&quot;all&quot;</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>  <span class="at">output_path           =</span> <span class="fu">tempdir</span>()</span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>)</span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co"># 3. Inspect results</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="fu">class</span>(out)</span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>out<span class="sc">$</span>hyperparameters    <span class="co"># best lambda / gamma</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="fu">head</span>(out<span class="sc">$</span>H)            <span class="co"># estimated proportions</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>out<span class="sc">$</span>plot               <span class="co"># interactive Pareto plot</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>out<span class="sc">$</span>plot_hyperopt      <span class="co"># hyper-parameter scatter matrix</span></span></code></pre></div>
 <h3 id="real-data-bluecode--cellmixtures">Real Data (BlueCode +
 CellMixtures)</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(dicepro)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">data</span>(BlueCode)      <span class="co"># 34-cell-type reference (G x 34)</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">data</span>(CellMixtures)  <span class="co"># 12 mixed bulk samples  (G x 12)</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="at">reference             =</span> BlueCode,</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="at">bulk                  =</span> CellMixtures,</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="at">methodDeconv          =</span> <span class="st">&quot;FARDEEP&quot;</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="at">bulkName              =</span> <span class="st">&quot;CellMixtures&quot;</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="at">refName               =</span> <span class="st">&quot;BlueCode&quot;</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="at">hp_max_evals          =</span> <span class="dv">100</span><span class="dt">L</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">hspaceTechniqueChoose =</span> <span class="st">&quot;all&quot;</span>,</span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  <span class="at">output_path           =</span> <span class="fu">tempdir</span>()</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>)</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="fu">head</span>(out<span class="sc">$</span>H)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(dicepro)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">data</span>(BlueCode)      <span class="co"># 34-cell-type reference (G x 34)</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">data</span>(CellMixtures)  <span class="co"># 12 mixed bulk samples  (G x 12)</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">reference             =</span> BlueCode,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">bulk                  =</span> CellMixtures,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">methodDeconv          =</span> <span class="st">&quot;FARDEEP&quot;</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">bulkName              =</span> <span class="st">&quot;CellMixtures&quot;</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">refName               =</span> <span class="st">&quot;BlueCode&quot;</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">hp_max_evals          =</span> <span class="dv">100</span><span class="dt">L</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="at">hspaceTechniqueChoose =</span> <span class="st">&quot;all&quot;</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="at">output_path           =</span> <span class="fu">tempdir</span>()</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>)</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="fu">head</span>(out<span class="sc">$</span>H)</span></code></pre></div>
 <hr />
 <h2 id="cibersortx-setup-optional">CIBERSORTx Setup (optional)</h2>
 <p>CIBERSORTx (<code>methodDeconv = &quot;CSx&quot;</code>) requires Docker and a
@@ -746,22 +744,22 @@ personal token.</p>
 <p><strong>Step 1 — Install Docker Desktop</strong></p>
 <p>Download from <a href="https://www.docker.com/products/docker-desktop">https://www.docker.com/products/docker-desktop</a>,
 open it, log in, then pull the CIBERSORTx image from a terminal:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">docker</span> pull cibersortx/fractions</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">docker</span> pull cibersortx/fractions</span></code></pre></div>
 <p><strong>Step 2 — Obtain a token</strong></p>
 <p>Request a token at <a href="https://cibersortx.stanford.edu/getoken.php">https://cibersortx.stanford.edu/getoken.php</a>.
 Tokens are tied to your account and expire periodically; request a new
 one when the existing token has expired.</p>
 <p><strong>Step 3 — Run dicepro with CIBERSORTx</strong></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">reference        =</span> BlueCode,</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">bulk             =</span> CellMixtures,</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">methodDeconv     =</span> <span class="st">&quot;CSx&quot;</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">cibersortx_email =</span> <span class="st">&quot;your@email.com&quot;</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">cibersortx_token =</span> <span class="st">&quot;your_token_here&quot;</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">bulkName         =</span> <span class="st">&quot;CellMixtures&quot;</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">refName          =</span> <span class="st">&quot;BlueCode&quot;</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="at">output_path      =</span> <span class="fu">tempdir</span>()</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">reference        =</span> BlueCode,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">bulk             =</span> CellMixtures,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">methodDeconv     =</span> <span class="st">&quot;CSx&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">cibersortx_email =</span> <span class="st">&quot;your@email.com&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">cibersortx_token =</span> <span class="st">&quot;your_token_here&quot;</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">bulkName         =</span> <span class="st">&quot;CellMixtures&quot;</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="at">refName          =</span> <span class="st">&quot;BlueCode&quot;</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">output_path      =</span> <span class="fu">tempdir</span>()</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>)</span></code></pre></div>
 <p>Other supported deconvolution backends can be listed with
 <code>?running_method</code>.</p>
 <hr />
@@ -812,22 +810,22 @@ one when the existing token has expired.</p>
 <p>A gene x 34 cell-type reference signature matrix derived from sorted
 bulk RNA-seq profiles spanning five major tissue compartments: Immune
 (9), Stromal (8), Endothelial (3), Epithelial (5), and Muscle (9).</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">data</span>(BlueCode)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">dim</span>(BlueCode)</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">colnames</span>(BlueCode)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">data</span>(BlueCode)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">dim</span>(BlueCode)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">colnames</span>(BlueCode)</span></code></pre></div>
 <h3 id="cellmixtures">CellMixtures</h3>
 <p>A gene x 12 bulk RNA-seq matrix of experimentally constructed cell
 mixtures (samples A–L), paired with BlueCode for benchmarking.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">data</span>(CellMixtures)</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">dim</span>(CellMixtures)</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">colnames</span>(CellMixtures)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">data</span>(CellMixtures)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">dim</span>(CellMixtures)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">colnames</span>(CellMixtures)</span></code></pre></div>
 <p>See <code>?BlueCode</code> and <code>?CellMixtures</code> for full
 documentation.</p>
 <hr />
 <h2 id="vignettes">Vignettes</h2>
 <p>Two vignettes provide step-by-step:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">vignette</span>(<span class="st">&quot;vignette-simulation&quot;</span>, <span class="at">package =</span> <span class="st">&quot;dicepro&quot;</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">vignette</span>(<span class="st">&quot;vignette-real-data&quot;</span>,  <span class="at">package =</span> <span class="st">&quot;dicepro&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">vignette</span>(<span class="st">&quot;vignette-simulation&quot;</span>, <span class="at">package =</span> <span class="st">&quot;dicepro&quot;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">vignette</span>(<span class="st">&quot;vignette-real-data&quot;</span>,  <span class="at">package =</span> <span class="st">&quot;dicepro&quot;</span>)</span></code></pre></div>
 <hr />
 <h2 id="citation">Citation</h2>
 <p>If you use dicepro in your research, please cite:</p>

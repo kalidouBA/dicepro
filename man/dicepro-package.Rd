@@ -3,9 +3,9 @@
 \docType{package}
 \name{dicepro-package}
 \alias{dicepro-package}
-\title{dicepro: Deconvolution with Iterative Completion for Estimating Cellular Proportions from RNA-seq Data}
+\title{dicepro: Semi-Supervised Deconvolution of Bulk RNA-Seq Data with Hyperparameter Optimization}
 \description{
-Performs semi-supervised deconvolution of bulk RNA-seq data. Known cell-type proportions are estimated via a supervised step (CIBERSORTx, FARDEEP, DCQ, CDSeq, or BayesPrism) while unknown populations are discovered and quantified through Non-Negative Matrix Factorization (NMF) with L-BFGS-B optimization. Hyperparameters are selected automatically via Pareto-frontier and knee-point detection, making the method applicable even when the reference signature matrix is incomplete.
+Performs semi-supervised deconvolution of bulk RNA-seq data. Known cell-type proportions are estimated using supervised methods (CIBERSORTx, FARDEEP, DCQ, or BayesPrism), while unknown components are inferred using non-negative matrix factorization (NMF) with L-BFGS-B optimization. Hyperparameters are selected automatically using a Pareto-frontier-based approach with knee-point detection, allowing application when the reference signature matrix is incomplete.
 }
 \author{
 \strong{Maintainer}: Kalidou BA \email{kalidou.ba@u-bordeaux.fr}

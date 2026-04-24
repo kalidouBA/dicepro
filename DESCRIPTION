@@ -1,6 +1,6 @@
 Package: dicepro
-Title: Deconvolution with Iterative Completion for Estimating Cellular Proportions from RNA-seq Data
-Version: 0.0.2.1
+Title: Semi-Supervised Deconvolution of Bulk RNA-Seq Data with Hyperparameter Optimization
+Version: 0.1.0
 Authors@R: c(
     person("Kalidou", "BA",
            role  = c("aut", "cre"),
@@ -9,16 +9,15 @@ Authors@R: c(
            role  = "aut",
            email = "boris.hejblum@u-bordeaux.fr"))
 Description: Performs semi-supervised deconvolution of bulk RNA-seq data.
-    Known cell-type proportions are estimated via a supervised step
-    (CIBERSORTx, FARDEEP, DCQ, CDSeq, or BayesPrism) while unknown
-    populations are discovered and quantified through Non-Negative Matrix
-    Factorization (NMF) with L-BFGS-B optimization. Hyperparameters are
-    selected automatically via Pareto-frontier and knee-point detection,
-    making the method applicable even when the reference signature matrix
-    is incomplete.
-License: GPL (>= 3)
+    Known cell-type proportions are estimated using supervised methods
+    (CIBERSORTx, FARDEEP, DCQ, or BayesPrism), while unknown
+    components are inferred using non-negative matrix factorization (NMF)
+    with L-BFGS-B optimization. Hyperparameters are selected automatically
+    using a Pareto-frontier-based approach with knee-point detection,
+    allowing application when the reference signature matrix is incomplete.
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
+License: MIT + file LICENSE
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 LazyData: true

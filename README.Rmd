@@ -58,13 +58,7 @@ so no manual tuning is required.
 
 ## Installation
 
-### From CRAN (stable)
-
-```{r cran-install, eval = FALSE}
-install.packages("dicepro")
-```
-
-### From GitHub (development)
+###  Development version (GitHub)
 
 ```{r github-install, eval = FALSE}
 # install.packages("remotes")

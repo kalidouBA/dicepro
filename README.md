@@ -50,13 +50,7 @@ knee-point procedure, so no manual tuning is required.
 
 ## Installation
 
-### From CRAN (stable)
-
-``` r
-install.packages("dicepro")
-```
-
-### From GitHub (development)
+### Development version (GitHub)
 
 ``` r
 # install.packages("remotes")

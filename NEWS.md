@@ -1,5 +1,5 @@
-# DICEPro (development version)
+# dicepro 0.1.0
 
-* Initial CRAN submission.
-* First release of DICEPro implementing semi-supervised NMF-based deconvolution with 
-automated hyperparameter optimization for bulk RNA-seq data.
+- Initial release.
+- Implements semi-supervised NMF-based deconvolution with automated
+  hyperparameter optimization for bulk RNA-seq data.

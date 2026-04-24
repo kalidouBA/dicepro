@@ -11,3 +11,6 @@ test_simulation.Rmd
 ^DICEPro_article_reproducibility/*
 ^\.github$
 ^cran-comments\.md$
+^\.positai$
+^\.claude$
+^LICENSE\.md$

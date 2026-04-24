@@ -45,7 +45,7 @@ Two simulation strategies are available and covered here:
 | `simulation()` | Synthetic (generated internally) | Generic (`CellType_k`) | Flexible benchmarking with custom parameters |
 | `simulation_bluecode()` | BlueCode (bundled real reference) | Real biological names | Realistic benchmarking on human tissue cell types |
 
-Both functions return the same standardized triplet — `$W`, `$p`, `$B` —
+Both functions return the same standardised triplet — `$W`, `$p`, `$B` —
 and are fully interchangeable as input to `dicepro()`.
 
 The pipeline proceeds in four stages:
@@ -54,7 +54,7 @@ The pipeline proceeds in four stages:
    proportions.
 2. **Generate** a noisy bulk RNA-seq matrix from the simulated mixture.
 3. **Deconvolve** using the main `dicepro()` function with automated
-   hyper-parameter optimization.
+   hyperparameter optimisation.
 4. **Evaluate** the recovered proportions against the ground truth.
 
 ---
@@ -104,7 +104,6 @@ plot(
 abline(0, 1, col = "firebrick", lwd = 1.5)
 ```
 
-
 ## Deconvolution
 
 ```{r run-dicepro-synthetic}
@@ -134,7 +133,7 @@ cat("Loss        :", out$metrics$loss,            "\n")
 cat("Constraint  :", out$metrics$constraint,      "\n")
 ```
 
-### Hyperparameter Optimization Report
+### Hyperparameter Optimisation Report
 
 ```{r plot-hyperopt-synthetic, fig.height=9}
 out$plot_hyperopt
@@ -173,29 +172,20 @@ abline(0, 1, col = "firebrick", lwd = 1.5)
 ### Per-Cell-Type Correlation
 
 ```{r per-ct-cor-synthetic, fig.height=4}
-library(ggplot2)
+ct_cors <- vapply(common_ct, function(ct) {
+  cor(true_common[, ct], pred_common[, ct])
+}, numeric(1L))
 
-df <- data.frame(
-  cell_type = common_ct,
-  cor = ct_cors
+par(mar = c(5, 10, 3, 1))
+barplot(
+  sort(ct_cors),
+  horiz = TRUE, las = 1,
+  col   = ifelse(sort(ct_cors) > 0.7, "#2c7bb6", "#d7191c"),
+  xlab  = "Pearson r",
+  main  = "Per-cell-type correlation (synthetic)",
+  xlim  = c(-0.2, 1)
 )
-
-df <- df[order(df$cor), ]
-df$cell_type <- factor(df$cell_type, levels = df$cell_type)
-
-ggplot(df, aes(
-  x = cor,
-  y = reorder(cell_type, cor)
-)) +
-  geom_segment(aes(x = 0, xend = cor, yend = cell_type),
-               color = "grey70") +
-  geom_point(aes(color = cor > 0.7), size = 2.5) +
-  scale_color_manual(values = c("#d7191c", "#2c7bb6"), guide = "none") +
-  geom_vline(xintercept = 0.7, linetype = "dashed", color = "gray40") +
-  xlim(-0.2, 1) +
-  labs(x = "Pearson r", y = NULL,
-       title = "Per-cell-type correlation (synthetic)") +
-  theme_minimal()
+abline(v = 0.7, lty = 2, col = "gray40")
 ```
 
 ### Quantitative Performance Metrics
@@ -214,7 +204,7 @@ knitr::kable(perf$Perf, digits = 3,
 the package — a curated signature matrix covering 34 human cell types across
 five tissue compartments — as the fixed reference `$W`. Proportions are
 simulated via a two-level Dirichlet hierarchy that reflects the biological
-organization of human tissues.
+organisation of human tissues.
 
 This strategy is recommended when benchmarking should be grounded in a
 biologically realistic reference, while keeping full control over the
@@ -225,13 +215,13 @@ ground-truth proportions.
 The hierarchy encodes five major tissue compartments with their constituent
 cell types:
 
-| Compartment | Cell types (n) | Default alpha |
+| Compartment | Cell types (n) | Default α |
 |---|---|---|
 | Immune | B naive/memory, T CD4/CD8, NK, Monocyte, Macrophage, Neutrophil | 4.0 |
 | Stromal | Fibroblasts (×5), MSC, Chondrocyte, Osteoblast | 2.5 |
-| Endothelial | Large vessel, Microvascular (×2) | 1.8 |
-| Epithelial | Mammary, Renal, Respiratory, Keratinocyte, Melanocyte | 1.8 |
-| Muscle | Smooth muscle (×7), cardiac Myocyte, Myometrial | 1.5 |
+| Endothelial | Large vessel, microvascular (×2) | 1.8 |
+| Epithelial | Mammary, renal, respiratory, keratinocyte, melanocyte | 1.8 |
+| Muscle | Smooth muscle (×7), cardiac myocyte, myometrial | 1.5 |
 
 ## Data Generation
 
@@ -257,10 +247,11 @@ head(colnames(sim_bc$p))
 ## Proportion Distribution by Compartment
 
 The hierarchical model induces realistic between-compartment variation.
-Visualizing the compartment-level totals confirms the expected dominance of
+Visualising the compartment-level totals confirms the expected dominance of
 the Immune compartment.
 
 ```{r compartment-overview}
+# Cell-type to compartment mapping (mirrors .bluecode_cell_groups)
 compartment_map <- c(
   rep("Immune",      9),
   rep("Stromal",     8),
@@ -329,7 +320,7 @@ cat("Loss        :", out_bc$metrics$loss,            "\n")
 cat("Constraint  :", out_bc$metrics$constraint,      "\n")
 ```
 
-### Hyperparameter Optimization Report
+### Hyperparameter Optimisation Report
 
 ```{r plot-hyperopt-bluecode, fig.height=9}
 out_bc$plot_hyperopt
@@ -409,7 +400,8 @@ cat(sprintf(
 The two strategies are complementary: `simulation()` offers maximum
 flexibility for stress-testing deconvolution under varying gene numbers,
 cell-type counts, or noise levels; `simulation_bluecode()` anchors the
-benchmark in a biologically grounded reference, making results easier to interpret in the context of real human tissue data.
+benchmark in a biologically grounded reference, making results more
+interpretable in the context of real human tissue data.
 
 ---
 
