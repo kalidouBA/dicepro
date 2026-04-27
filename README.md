@@ -79,7 +79,7 @@ sim <- simulation(
 
 # 2. Run dicepro
 out <- dicepro(
-  reference             = as.matrix(sim$W),
+  reference             = as.matrix(sim$W)[, -c(1,5,10)],
   bulk                  = as.matrix(sim$B),
   methodDeconv          = "FARDEEP",
   bulkName              = "SimBulk",

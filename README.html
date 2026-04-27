@@ -702,7 +702,7 @@ scatter matrix saved automatically to
 <span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
 <span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># 2. Run dicepro</span></span>
 <span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">dicepro</span>(</span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">reference             =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>W),</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">reference             =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>W)[, <span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">10</span>)],</span>
 <span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="at">bulk                  =</span> <span class="fu">as.matrix</span>(sim<span class="sc">$</span>B),</span>
 <span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="at">methodDeconv          =</span> <span class="st">&quot;FARDEEP&quot;</span>,</span>
 <span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="at">bulkName              =</span> <span class="st">&quot;SimBulk&quot;</span>,</span>
