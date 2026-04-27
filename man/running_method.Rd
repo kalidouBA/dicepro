@@ -2,42 +2,75 @@
 % Please edit documentation in R/deconv_method.R
 \name{running_method}
 \alias{running_method}
-\title{Run Cell Deconvolution}
+\title{Run cell-type deconvolution}
 \usage{
 running_method(
   bulk,
   reference,
   methodDeconv = "CSx",
   cibersortx_email = NULL,
-  cibersortx_token = NULL
+  cibersortx_token = NULL,
+  cibersort_perm = 0L,
+  cibersort_QN = TRUE
 )
 }
 \arguments{
-\item{bulk}{A numeric matrix of bulk RNA-seq data (rows = genes, columns = samples).}
+\item{bulk}{Numeric matrix (genes x samples). Bulk RNA-seq
+expression data. Row names must be gene symbols.}
 
-\item{reference}{A numeric matrix of reference cell type gene expression profiles
-(rows = genes, columns = cell types).}
+\item{reference}{Numeric matrix (genes x cell types). Reference
+cell-type signature profiles. Row names must be gene symbols.}
 
-\item{methodDeconv}{Character. The deconvolution method to use:
-"CSx", "DCQ", "FARDEEP", or "BayesPrism".}
+\item{methodDeconv}{Character scalar. Deconvolution method:
+\describe{
+\item{\code{"CSx"}}{CIBERSORTx - requires Docker and credentials.}
+\item{\code{"CIBERSORT"}}{Built-in CIBERSORT nu-SVR implementation.
+Requires \pkg{e1071}, \pkg{parallel}, and \pkg{preprocessCore}.
+No external account needed.}
+\item{\code{"DCQ"}}{Requires \pkg{ComICS}.}
+\item{\code{"FARDEEP"}}{Requires \pkg{FARDEEP}.}
+}}
 
-\item{cibersortx_email}{Optional. Email for CIBERSORTx account
-(required if methodDeconv = "CSx").}
+\item{cibersortx_email}{Character. CIBERSORTx account email (required
+when \code{methodDeconv = "CSx"}).}
 
-\item{cibersortx_token}{Optional. Token for CIBERSORTx account
-(required if methodDeconv = "CSx").}
+\item{cibersortx_token}{Character. CIBERSORTx account token (required
+when \code{methodDeconv = "CSx"}).}
+
+\item{cibersort_perm}{Non-negative integer. Number of permutations for
+CIBERSORT p-values (default \code{0L} = no p-values). Only used when
+\code{methodDeconv = "CIBERSORT"}.}
+
+\item{cibersort_QN}{Logical. Apply quantile normalisation in
+CIBERSORT (default \code{TRUE}). Only used when
+\code{methodDeconv = "CIBERSORT"}.}
 }
 \value{
-A numeric matrix with estimated cell type proportions for each sample.
+Numeric matrix (cell types x samples) of estimated cell-type
+proportions. Each column sums to 1.
 }
 \description{
-Performs cell deconvolution on bulk RNA-seq data using multiple methods
-such as CSx, DCQ, FARDEEP, and BayesPrism.
+Performs cell-type deconvolution on bulk RNA-seq data using one of four
+supported methods. All methods receive gene-intersected, numeric matrices
+and return a proportion matrix normalised to sum to 1 per sample
+(columns).
 }
 \details{
-This function allows selection among different deconvolution algorithms.
-The output is a matrix with normalized estimated cell fractions per sample.
+Gene intersection is performed automatically: only genes present in both
+\code{bulk} and \code{reference} are used. Both matrices are coerced to
+numeric before processing.
+
+For \code{"CIBERSORT"}, the built-in implementation closely follows the
+original Newman et al. (2015) algorithm: nu-SVR with three candidate nu
+values (0.25, 0.50, 0.75), optional quantile normalisation, and optional
+permutation-based p-values. Packages \pkg{e1071}, \pkg{parallel}, and
+\pkg{preprocessCore} must be installed.
+}
+\references{
+Newman AM et al. (2015). Robust enumeration of cell subsets from tissue
+expression profiles. \emph{Nature Methods}, 12(5), 453-457.
+\doi{10.1038/nmeth.3337}
 }
 \seealso{
-\code{run_CSx}, \code{dcq}, \code{fardeep}
+\code{\link{run_CSx}}
 }
