@@ -108,7 +108,7 @@ abline(0, 1, col = "firebrick", lwd = 1.5)
 
 ```{r run-dicepro-synthetic}
 out <- dicepro(
-  reference             = as.matrix(sim_data$W),
+  reference             = as.matrix(sim_data$W)[, -c(1,5,10)],
   bulk                  = as.matrix(sim_data$B),
   methodDeconv          = "FARDEEP",
   W_prime               = 0,
