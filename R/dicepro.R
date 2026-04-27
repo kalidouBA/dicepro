@@ -152,7 +152,7 @@
                                cibersortx_token,
                                out_Decon) {
 
-  valid_methods <- c("CSx", "DCQ", "CDSeq", "FARDEEP")
+  valid_methods <- c("CSx", "CIBERSORT", "DCQ", "CDSeq", "FARDEEP")
 
   if (is.null(out_Decon)) {
 
@@ -311,7 +311,7 @@
 #'
 #' @param reference             Numeric matrix (genes × cell types).
 #' @param bulk                  Numeric matrix (genes × samples).
-#' @param methodDeconv          Character. One of \code{"CSx"}, \code{"DCQ"},
+#' @param methodDeconv          Character. One of \code{"CSx"}, \code{"CIBERSORT"}, \code{"DCQ"},
 #'   \code{"CDSeq"}, \code{"FARDEEP"}.
 #' @param cibersortx_email      CIBERSORTx email (required for \code{"CSx"}).
 #' @param cibersortx_token      CIBERSORTx token (required for \code{"CSx"}).
