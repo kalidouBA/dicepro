@@ -37,7 +37,10 @@ Imports:
     FARDEEP,
     ComICS,
     lme4,
-    withr
+    withr,
+    e1071,
+    preprocessCore,
+    parallel
 Suggests:
     knitr,
     rmarkdown,
