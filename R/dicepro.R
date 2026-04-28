@@ -14,10 +14,12 @@
 
 #' Validate and normalise dicepro user parameters
 #'
-#' @param normalize               Logical.
-#' @param algo_select             Character. Hyperparameter search strategy.
-#' @param hspaceTechniqueChoose   Character. Search-space strategy.
-#' @param gamma_ratio_min         Numeric or \code{NULL}.
+#' @param normalize             Logical.
+#' @param algo_select           Character. Hyperparameter search strategy.
+#' @param hspaceTechniqueChoose Character. Search-space strategy.
+#' @param gamma_ratio_min       Numeric or \code{NULL}.
+#' @param cibersort_perm        Non-negative integer.
+#' @param cibersort_QN          Logical.
 #'
 #' @return Named list with validated fields.
 #'
@@ -26,7 +28,9 @@
 .validate_inputs <- function(normalize,
                              algo_select,
                              hspaceTechniqueChoose,
-                             gamma_ratio_min = NULL) {
+                             gamma_ratio_min = NULL,
+                             cibersort_perm  = 0L,
+                             cibersort_QN    = TRUE) {
 
   if (!is.logical(normalize) || length(normalize) != 1L)
     stop("'normalize' must be TRUE or FALSE.", call. = FALSE)
@@ -45,16 +49,27 @@
     if (is.null(gamma_ratio_min)) gamma_ratio_min <- 10
     if (!is.numeric(gamma_ratio_min) ||
         length(gamma_ratio_min) != 1L ||
-        gamma_ratio_min <= 0) {
+        gamma_ratio_min <= 0)
       stop("'gamma_ratio_min' must be a single positive numeric.", call. = FALSE)
-    }
   }
+
+  # ---- CIBERSORT-specific validation ---------------------------------------
+  if (!is.numeric(cibersort_perm) ||
+      length(cibersort_perm) != 1L ||
+      cibersort_perm < 0)
+    stop("'cibersort_perm' must be a single non-negative integer.", call. = FALSE)
+  cibersort_perm <- as.integer(cibersort_perm)
+
+  if (!is.logical(cibersort_QN) || length(cibersort_QN) != 1L)
+    stop("'cibersort_QN' must be TRUE or FALSE.", call. = FALSE)
 
   list(
     normalize             = normalize,
     algo_select           = algo_select,
     hspaceTechniqueChoose = hspaceTechniqueChoose,
-    gamma_ratio_min       = gamma_ratio_min
+    gamma_ratio_min       = gamma_ratio_min,
+    cibersort_perm        = cibersort_perm,
+    cibersort_QN          = cibersort_QN
   )
 }
 
@@ -75,10 +90,10 @@
 #' @noRd
 .normalize_zscore_per_gene <- function(mat) {
 
-  mat       <- as.matrix(mat)
-  gene_sd   <- apply(mat, 1L, stats::sd, na.rm = TRUE)
-  keep      <- !is.na(gene_sd) & gene_sd > 0
-  mat       <- mat[keep, , drop = FALSE]
+  mat     <- as.matrix(mat)
+  gene_sd <- apply(mat, 1L, stats::sd, na.rm = TRUE)
+  keep    <- !is.na(gene_sd) & gene_sd > 0
+  mat     <- mat[keep, , drop = FALSE]
 
   t(apply(mat, 1L, function(x) {
     (x - mean(x, na.rm = TRUE)) / stats::sd(x, na.rm = TRUE)
@@ -135,11 +150,15 @@
 #' Calls \code{\link{running_method}} when \code{out_Decon} is \code{NULL};
 #' otherwise validates and transposes the user-supplied matrix.
 #'
-#' @param bulk,reference       Numeric matrices (genes × ...).
-#' @param methodDeconv         Character. Deconvolution method.
+#' @param bulk,reference         Numeric matrices (genes × ...).
+#' @param methodDeconv           Character. Deconvolution method.
 #' @param cibersortx_email,cibersortx_token CIBERSORTx credentials.
-#' @param out_Decon            Optional precomputed matrix
+#' @param out_Decon              Optional precomputed matrix
 #'   (samples × cell types) or \code{NULL}.
+#' @param cibersort_perm         Non-negative integer. Permutations for
+#'   built-in CIBERSORT p-values.
+#' @param cibersort_QN           Logical. Quantile-normalise mixture in
+#'   built-in CIBERSORT.
 #'
 #' @return Numeric matrix (cell types × samples).
 #'
@@ -150,7 +169,9 @@
                                methodDeconv,
                                cibersortx_email,
                                cibersortx_token,
-                               out_Decon) {
+                               out_Decon,
+                               cibersort_perm = 0L,
+                               cibersort_QN   = TRUE) {
 
   valid_methods <- c("CSx", "CIBERSORT", "DCQ", "CDSeq", "FARDEEP")
 
@@ -166,13 +187,17 @@
 
     if (methodDeconv == "CSx" &&
         (is.null(cibersortx_email) || is.null(cibersortx_token)))
-      stop("CIBERSORTx credentials required for CSx.", call. = FALSE)
+      stop("CIBERSORTx credentials required for methodDeconv = 'CSx'.",
+           call. = FALSE)
 
     out_Decon <- running_method(
-      bulk, reference,
-      methodDeconv,
-      cibersortx_email,
-      cibersortx_token
+      bulk             = bulk,
+      reference        = reference,
+      methodDeconv     = methodDeconv,
+      cibersortx_email = cibersortx_email,
+      cibersortx_token = cibersortx_token,
+      cibersort_perm   = cibersort_perm,
+      cibersort_QN     = cibersort_QN
     )
 
   } else {
@@ -244,6 +269,7 @@
   )
 }
 
+
 # -----------------------------------------------------------------------------
 # .save_outputs  [private]
 # -----------------------------------------------------------------------------
@@ -309,35 +335,63 @@
 #' Gene matrices are optionally z-score normalized per gene, and only
 #' intersecting genes are retained before optimization.
 #'
+#' The built-in \code{"CIBERSORT"} method closely follows Newman et al.
+#' (2015): nu-SVR with three candidate nu values (0.25, 0.50, 0.75),
+#' optional quantile normalization, and optional permutation-based p-values.
+#' It requires packages \pkg{e1071}, \pkg{parallel}, and
+#' \pkg{preprocessCore}. No external account or Docker installation is
+#' needed, unlike \code{"CSx"}.
+#'
 #' @param reference             Numeric matrix (genes × cell types).
 #' @param bulk                  Numeric matrix (genes × samples).
-#' @param methodDeconv          Character. One of \code{"CSx"}, \code{"CIBERSORT"}, \code{"DCQ"},
-#'   \code{"CDSeq"}, \code{"FARDEEP"}.
-#' @param cibersortx_email      CIBERSORTx email (required for \code{"CSx"}).
-#' @param cibersortx_token      CIBERSORTx token (required for \code{"CSx"}).
+#' @param methodDeconv          Character. One of \code{"CSx"},
+#'   \code{"CIBERSORT"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.
+#' @param cibersortx_email      Character. CIBERSORTx email (required for
+#'   \code{"CSx"}).
+#' @param cibersortx_token      Character. CIBERSORTx token (required for
+#'   \code{"CSx"}).
+#' @param cibersort_perm        Non-negative integer. Number of permutations
+#'   for p-value estimation in the built-in \code{"CIBERSORT"} method.
+#'   Set to \code{0L} (default) to skip p-value computation. Ignored for
+#'   all other methods.
+#' @param cibersort_QN          Logical. Apply quantile normalization to the
+#'   bulk mixture in the built-in \code{"CIBERSORT"} method (default
+#'   \code{TRUE}). Ignored for all other methods.
 #' @param W_prime               Initial unknown-signature matrix or \code{0}.
-#' @param bulkName              Character scalar. Label for the bulk dataset.
-#' @param refName               Character scalar. Label for the reference dataset.
-#' @param hp_max_evals          Positive integer. Number of hyperparameter trials.
-#' @param N_unknownCT           Positive integer. Number of unknown cell types.
-#' @param algo_select           Character. One of \code{"random"}, \code{"tpe"},
-#'   \code{"atpe"}, \code{"anneal"}.
+#' @param bulkName              Character scalar. Label for the bulk data-set.
+#' @param refName               Character scalar. Label for the reference.
+#' @param hp_max_evals          Positive integer. Number of hyper-parameter
+#'   trials.
+#' @param N_unknownCT           Positive integer. Number of unknown cell
+#'   types.
+#' @param algo_select           Character. One of \code{"random"},
+#'   \code{"tpe"}, \code{"atpe"}, \code{"anneal"}.
 #' @param output_path           Character scalar. Root output directory
 #'   (\code{getwd()} by default).
 #' @param hspaceTechniqueChoose Character. One of \code{"all"},
 #'   \code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
-#'   \code{"all_gamma_dominant"} uses the same unconstrained search space as
-#'   \code{"all"}, but rejects any candidate such that
-#'   \code{gamma <= gamma_ratio_min * lambda_}, ensuring that
-#'   \code{gamma >> lambda_}.
+#'   \describe{
+#'     \item{\code{"all"}}{Full independent log-uniform grid for
+#'       \code{lambda_}, \code{gamma}, \code{p_prime}.}
+#'     \item{\code{"restrictionEspace"}}{Restricted space where
+#'       \code{lambda_ = gamma * lambda_factor},
+#'       \code{lambda_factor} \eqn{\in [2, 100]}.}
+#'     \item{\code{"all_gamma_dominant"}}{Same unconstrained grid as
+#'       \code{"all"}, but candidates where
+#'       \code{gamma <= gamma_ratio_min * lambda_} are rejected, ensuring
+#'       \code{gamma >> lambda_}.}
+#'   }
 #' @param gamma_ratio_min       Positive numeric. Minimum ratio
-#'   \code{gamma / lambda_} enforced when
+#'   \eqn{\gamma / \lambda} enforced when
 #'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
 #'   Ignored for other strategies.
-#' @param out_Decon             Optional precomputed deconvolution matrix
-#'   (samples × cell types).
-#' @param normalize             Logical. Apply z-score normalization per gene.
-#' @param seed                  Integer. Random seed (default \code{42L}).
+#' @param out_Decon             Optional pre-computed deconvolution matrix
+#'   (samples × cell types). When provided, the supervised deconvolution
+#'   step is skipped entirely.
+#' @param normalize             Logical. Apply z-score normalization per
+#'   gene (default \code{TRUE}).
+#' @param seed                  Integer. Global random seed for
+#'   reproducibility (default \code{42L}).
 #'
 #' @return An object of class \code{"dicepro"} (a named list) containing:
 #' \itemize{
@@ -355,8 +409,14 @@
 #' @seealso \code{\link{running_method}}, \code{\link{run_experiment}},
 #'   \code{\link{best_hyperParams}}
 #'
+#' @references
+#' Newman AM et al. (2015). Robust enumeration of cell subsets from tissue
+#' expression profiles. \emph{Nature Methods}, 12(5), 453–457.
+#' \doi{10.1038/nmeth.3337}
+#'
 #' @examples
 #' \dontrun{
+#' # FARDEEP deconvolution
 #' res <- dicepro(
 #'   reference    = BlueCode,
 #'   bulk         = CellMixtures,
@@ -364,16 +424,17 @@
 #'   hp_max_evals = 50L
 #' )
 #'
-#' # gamma >> lambda
+#' # Built-in CIBERSORT (no Docker, no account)
 #' res <- dicepro(
-#'   reference             = BlueCode,
-#'   bulk                  = CellMixtures,
-#'   methodDeconv          = "FARDEEP",
-#'   hp_max_evals          = 50L,
-#'   hspaceTechniqueChoose = "all_gamma_dominant"
+#'   reference      = BlueCode,
+#'   bulk           = CellMixtures,
+#'   methodDeconv   = "CIBERSORT",
+#'   cibersort_perm = 100L,
+#'   cibersort_QN   = TRUE,
+#'   hp_max_evals   = 50L
 #' )
 #'
-#' # gamma >> 50 × lambda
+#' # gamma >> lambda (all_gamma_dominant strategy)
 #' res <- dicepro(
 #'   reference             = BlueCode,
 #'   bulk                  = CellMixtures,
@@ -390,6 +451,8 @@ dicepro <- function(reference,
                     methodDeconv          = "CSx",
                     cibersortx_email      = NULL,
                     cibersortx_token      = NULL,
+                    cibersort_perm        = 0L,
+                    cibersort_QN          = TRUE,
                     W_prime               = 0,
                     bulkName              = "Bulk",
                     refName               = "Reference",
@@ -404,12 +467,20 @@ dicepro <- function(reference,
                     seed                  = NULL) {
 
   # ---- Validation ----------------------------------------------------------
-  args                  <- .validate_inputs(normalize, algo_select,
-                                            hspaceTechniqueChoose, gamma_ratio_min)
+  args                  <- .validate_inputs(
+    normalize             = normalize,
+    algo_select           = algo_select,
+    hspaceTechniqueChoose = hspaceTechniqueChoose,
+    gamma_ratio_min       = gamma_ratio_min,
+    cibersort_perm        = cibersort_perm,
+    cibersort_QN          = cibersort_QN
+  )
   normalize             <- args$normalize
   algo_select           <- args$algo_select
   hspaceTechniqueChoose <- args$hspaceTechniqueChoose
   gamma_ratio_min       <- args$gamma_ratio_min
+  cibersort_perm        <- args$cibersort_perm
+  cibersort_QN          <- args$cibersort_QN
 
   # ---- Preprocessing -------------------------------------------------------
   data      <- .prepare_data(reference, bulk, normalize)
@@ -418,11 +489,14 @@ dicepro <- function(reference,
 
   # ---- Supervised deconvolution --------------------------------------------
   out_Dec <- .get_deconvolution(
-    bulk, reference,
-    methodDeconv,
-    cibersortx_email,
-    cibersortx_token,
-    out_Decon
+    bulk             = bulk,
+    reference        = reference,
+    methodDeconv     = methodDeconv,
+    cibersortx_email = cibersortx_email,
+    cibersortx_token = cibersortx_token,
+    out_Decon        = out_Decon,
+    cibersort_perm   = cibersort_perm,
+    cibersort_QN     = cibersort_QN
   )
 
   # ---- Dataset for NMF -----------------------------------------------------

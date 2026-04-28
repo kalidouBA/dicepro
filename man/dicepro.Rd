@@ -10,6 +10,8 @@ dicepro(
   methodDeconv = "CSx",
   cibersortx_email = NULL,
   cibersortx_token = NULL,
+  cibersort_perm = 0L,
+  cibersort_QN = TRUE,
   W_prime = 0,
   bulkName = "Bulk",
   refName = "Reference",
@@ -29,47 +31,70 @@ dicepro(
 
 \item{bulk}{Numeric matrix (genes × samples).}
 
-\item{methodDeconv}{Character. One of \code{"CSx"}, \code{"CIBERSORT"}, \code{"DCQ"},
-\code{"CDSeq"}, \code{"FARDEEP"}.}
+\item{methodDeconv}{Character. One of \code{"CSx"},
+\code{"CIBERSORT"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.}
 
-\item{cibersortx_email}{CIBERSORTx email (required for \code{"CSx"}).}
+\item{cibersortx_email}{Character. CIBERSORTx email (required for
+\code{"CSx"}).}
 
-\item{cibersortx_token}{CIBERSORTx token (required for \code{"CSx"}).}
+\item{cibersortx_token}{Character. CIBERSORTx token (required for
+\code{"CSx"}).}
+
+\item{cibersort_perm}{Non-negative integer. Number of permutations
+for p-value estimation in the built-in \code{"CIBERSORT"} method.
+Set to \code{0L} (default) to skip p-value computation. Ignored for
+all other methods.}
+
+\item{cibersort_QN}{Logical. Apply quantile normalization to the
+bulk mixture in the built-in \code{"CIBERSORT"} method (default
+\code{TRUE}). Ignored for all other methods.}
 
 \item{W_prime}{Initial unknown-signature matrix or \code{0}.}
 
-\item{bulkName}{Character scalar. Label for the bulk dataset.}
+\item{bulkName}{Character scalar. Label for the bulk data-set.}
 
-\item{refName}{Character scalar. Label for the reference dataset.}
+\item{refName}{Character scalar. Label for the reference.}
 
-\item{hp_max_evals}{Positive integer. Number of hyperparameter trials.}
+\item{hp_max_evals}{Positive integer. Number of hyper-parameter
+trials.}
 
-\item{N_unknownCT}{Positive integer. Number of unknown cell types.}
+\item{N_unknownCT}{Positive integer. Number of unknown cell
+types.}
 
-\item{algo_select}{Character. One of \code{"random"}, \code{"tpe"},
-\code{"atpe"}, \code{"anneal"}.}
+\item{algo_select}{Character. One of \code{"random"},
+\code{"tpe"}, \code{"atpe"}, \code{"anneal"}.}
 
 \item{output_path}{Character scalar. Root output directory
 (\code{getwd()} by default).}
 
 \item{hspaceTechniqueChoose}{Character. One of \code{"all"},
 \code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
-\code{"all_gamma_dominant"} uses the same unconstrained search space as
-\code{"all"}, but rejects any candidate such that
-\code{gamma <= gamma_ratio_min * lambda_}, ensuring that
+\describe{
+\item{\code{"all"}}{Full independent log-uniform grid for
+\code{lambda_}, \code{gamma}, \code{p_prime}.}
+\item{\code{"restrictionEspace"}}{Restricted space where
+\code{lambda_ = gamma * lambda_factor},
+\code{lambda_factor} \eqn{\in [2, 100]}.}
+\item{\code{"all_gamma_dominant"}}{Same unconstrained grid as
+\code{"all"}, but candidates where
+\code{gamma <= gamma_ratio_min * lambda_} are rejected, ensuring
 \code{gamma >> lambda_}.}
+}}
 
 \item{gamma_ratio_min}{Positive numeric. Minimum ratio
-\code{gamma / lambda_} enforced when
+\eqn{\gamma / \lambda} enforced when
 \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
 Ignored for other strategies.}
 
-\item{out_Decon}{Optional precomputed deconvolution matrix
-(samples × cell types).}
+\item{out_Decon}{Optional pre-computed deconvolution matrix
+(samples × cell types). When provided, the supervised deconvolution
+step is skipped entirely.}
 
-\item{normalize}{Logical. Apply z-score normalization per gene.}
+\item{normalize}{Logical. Apply z-score normalization per
+gene (default \code{TRUE}).}
 
-\item{seed}{Integer. Random seed (default \code{42L}).}
+\item{seed}{Integer. Global random seed for
+reproducibility (default \code{42L}).}
 }
 \value{
 An object of class \code{"dicepro"} (a named list) containing:
@@ -94,9 +119,17 @@ hyperparameter optimization.
 When \code{out_Decon} is provided, the supervised step is skipped.
 Gene matrices are optionally z-score normalized per gene, and only
 intersecting genes are retained before optimization.
+
+The built-in \code{"CIBERSORT"} method closely follows Newman et al.
+(2015): nu-SVR with three candidate nu values (0.25, 0.50, 0.75),
+optional quantile normalization, and optional permutation-based p-values.
+It requires packages \pkg{e1071}, \pkg{parallel}, and
+\pkg{preprocessCore}. No external account or Docker installation is
+needed, unlike \code{"CSx"}.
 }
 \examples{
 \dontrun{
+# FARDEEP deconvolution
 res <- dicepro(
   reference    = BlueCode,
   bulk         = CellMixtures,
@@ -104,16 +137,17 @@ res <- dicepro(
   hp_max_evals = 50L
 )
 
-# gamma >> lambda
+# Built-in CIBERSORT (no Docker, no account)
 res <- dicepro(
-  reference             = BlueCode,
-  bulk                  = CellMixtures,
-  methodDeconv          = "FARDEEP",
-  hp_max_evals          = 50L,
-  hspaceTechniqueChoose = "all_gamma_dominant"
+  reference      = BlueCode,
+  bulk           = CellMixtures,
+  methodDeconv   = "CIBERSORT",
+  cibersort_perm = 100L,
+  cibersort_QN   = TRUE,
+  hp_max_evals   = 50L
 )
 
-# gamma >> 50 × lambda
+# gamma >> lambda (all_gamma_dominant strategy)
 res <- dicepro(
   reference             = BlueCode,
   bulk                  = CellMixtures,
@@ -124,6 +158,11 @@ res <- dicepro(
 )
 }
 
+}
+\references{
+Newman AM et al. (2015). Robust enumeration of cell subsets from tissue
+expression profiles. \emph{Nature Methods}, 12(5), 453–457.
+\doi{10.1038/nmeth.3337}
 }
 \seealso{
 \code{\link{running_method}}, \code{\link{run_experiment}},
