@@ -22,7 +22,7 @@ research_hyperOpt(
 \item{config}{List. Configuration object; must contain
 \code{exp}, \code{hp_max_evals}, \code{hp_method}.
 Optionally contains \code{gamma_ratio_min} (positive numeric) to
-activate rejection sampling (mode \code{"all_gamma_dominant"}).}
+activate rejection sampling (mode \code{"gamma_dominant"}).}
 
 \item{hp_space}{prebuilt named list of parsed hyper-parameter specs.
 If \code{NULL}, built from \code{config$hp_space}.}

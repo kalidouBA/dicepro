@@ -1,5 +1,5 @@
 # =============================================================================
-# dicepro.R — Main entry point
+# dicepro.R -- Main entry point
 #
 # Public API  : dicepro()
 # Private fns : .validate_inputs(), .normalize_zscore_per_gene(),
@@ -12,12 +12,13 @@
 # .validate_inputs  [private]
 # -----------------------------------------------------------------------------
 
-#' Validate and normalise dicepro user parameters
+#' Validate and normalize dicepro user parameters
 #'
 #' @param normalize             Logical.
-#' @param algo_select           Character. Hyperparameter search strategy.
+#' @param algo_select           Character. hyper-parameter search strategy.
 #' @param hspaceTechniqueChoose Character. Search-space strategy.
 #' @param gamma_ratio_min       Numeric or \code{NULL}.
+#' @param constraint_threshold Positive numeric.
 #' @param cibersort_perm        Non-negative integer.
 #' @param cibersort_QN          Logical.
 #'
@@ -29,6 +30,7 @@
                              algo_select,
                              hspaceTechniqueChoose,
                              gamma_ratio_min = NULL,
+                             constraint_threshold = 0.1,
                              cibersort_perm  = 0L,
                              cibersort_QN    = TRUE) {
 
@@ -42,15 +44,28 @@
 
   hspaceTechniqueChoose <- match.arg(
     hspaceTechniqueChoose,
-    c("all", "restrictionEspace", "all_gamma_dominant")
+    c("all", "restrictionEspace", "gamma_dominant")
   )
 
-  if (hspaceTechniqueChoose == "all_gamma_dominant") {
+  if (hspaceTechniqueChoose == "gamma_dominant") {
     if (is.null(gamma_ratio_min)) gamma_ratio_min <- 10
     if (!is.numeric(gamma_ratio_min) ||
         length(gamma_ratio_min) != 1L ||
         gamma_ratio_min <= 0)
       stop("'gamma_ratio_min' must be a single positive numeric.", call. = FALSE)
+  }
+
+  if (!is.numeric(constraint_threshold) ||
+      length(constraint_threshold) != 1L ||
+      is.na(constraint_threshold) ||
+      !is.finite(constraint_threshold) ||
+      constraint_threshold <= 0) {
+    stop(
+      "'constraint_threshold' must be a single positive finite numeric value.\n",
+      "Guidelines: 0.05 = very strict (risk of no solution), ",
+      "0.1 = good trade-off, 0.2 -- 0.3 = more permissive.",
+      call. = FALSE
+    )
   }
 
   # ---- CIBERSORT-specific validation ---------------------------------------
@@ -68,22 +83,22 @@
     algo_select           = algo_select,
     hspaceTechniqueChoose = hspaceTechniqueChoose,
     gamma_ratio_min       = gamma_ratio_min,
+    constraint_threshold  = constraint_threshold,  # <-- IMPORTANT
     cibersort_perm        = cibersort_perm,
     cibersort_QN          = cibersort_QN
   )
 }
 
-
 # -----------------------------------------------------------------------------
 # .normalize_zscore_per_gene  [private]
 # -----------------------------------------------------------------------------
 
-#' Z-score normalisation per gene
+#' Z-score normalization per gene
 #'
-#' Centres and scales each row (gene) of a numeric matrix. Genes with
+#' Center and scales each row (gene) of a numeric matrix. Genes with
 #' \code{SD = 0} or \code{NA} are silently removed.
 #'
-#' @param mat Numeric matrix (genes × samples).
+#' @param mat Numeric matrix (genes * samples).
 #' @return Numeric matrix with mean = 0 and SD = 1 per row.
 #'
 #' @keywords internal
@@ -105,13 +120,13 @@
 # .prepare_data  [private]
 # -----------------------------------------------------------------------------
 
-#' Normalise and intersect bulk and reference matrices
+#' normalize and intersect bulk and reference matrices
 #'
-#' @param reference Numeric matrix (genes × cell types).
-#' @param bulk      Numeric matrix (genes × samples).
+#' @param reference Numeric matrix (genes * cell types).
+#' @param bulk      Numeric matrix (genes * samples).
 #' @param normalize Logical.
 #'
-#' @return Named list: \code{reference}, \code{bulk} — both filtered to
+#' @return Named list: \code{reference}, \code{bulk} -- both filtered to
 #'   intersecting genes.
 #'
 #' @keywords internal
@@ -150,17 +165,17 @@
 #' Calls \code{\link{running_method}} when \code{out_Decon} is \code{NULL};
 #' otherwise validates and transposes the user-supplied matrix.
 #'
-#' @param bulk,reference         Numeric matrices (genes × ...).
+#' @param bulk,reference         Numeric matrices (genes * sample * N_cell_type).
 #' @param methodDeconv           Character. Deconvolution method.
 #' @param cibersortx_email,cibersortx_token CIBERSORTx credentials.
-#' @param out_Decon              Optional precomputed matrix
-#'   (samples × cell types) or \code{NULL}.
+#' @param out_Decon              Optional pre-computed matrix
+#'   (samples * cell types) or \code{NULL}.
 #' @param cibersort_perm         Non-negative integer. Permutations for
 #'   built-in CIBERSORT p-values.
-#' @param cibersort_QN           Logical. Quantile-normalise mixture in
+#' @param cibersort_QN           Logical. Quantile-normalize mixture in
 #'   built-in CIBERSORT.
 #'
-#' @return Numeric matrix (cell types × samples).
+#' @return Numeric matrix (cell types * samples).
 #'
 #' @keywords internal
 #' @noRd
@@ -219,7 +234,7 @@
 # .run_hyperopt  [private]
 # -----------------------------------------------------------------------------
 
-#' Execute the full hyperparameter optimization pipeline
+#' Execute the full hyper-parameter optimization pipeline
 #'
 #' @param dataset               Named list: \code{B}, \code{W}, \code{P}.
 #' @param W_prime               Numeric matrix or scalar.
@@ -246,6 +261,7 @@
                           hspaceTechniqueChoose,
                           output_dir,
                           gamma_ratio_min,
+                          constraint_threshold,
                           seed) {
 
   res <- run_experiment(
@@ -265,7 +281,8 @@
     trials_df = res$trials,
     W         = res$W,
     H         = res$H,
-    savePaths = output_dir
+    savePaths = output_dir,
+    constraint_threshold = constraint_threshold
   )
 }
 
@@ -274,14 +291,14 @@
 # .save_outputs  [private]
 # -----------------------------------------------------------------------------
 
-#' Save hyperparameter optimization diagnostic plots
+#' Save hyper-parameter optimization diagnostic plots
 #'
 #' Creates \code{output_dir/report/}, saves two PDFs (hyperopt report and
 #' Pareto frontier), and attaches the hyperopt plot to \code{out}.
 #'
 #' @param out        Named list returned by \code{.run_hyperopt}.
 #' @param output_dir Character scalar. Root results directory.
-#' @param hp_params  Character vector of hyperparameter names to plot.
+#' @param hp_params  Character vector of hyper-parameter names to plot.
 #'
 #' @return \code{out} with an additional \code{plot_hyperopt} element.
 #'
@@ -323,12 +340,12 @@
 # dicepro  [public]
 # -----------------------------------------------------------------------------
 
-#' Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization
+#' Semi-supervised bulk RNA-seq deconvolution with hyper-parameter optimization
 #'
 #' @description
 #' Combines supervised estimation of known cell types with unsupervised
 #' discovery of latent components, using automatic Pareto-frontier-based
-#' hyperparameter optimization.
+#' hyper-parameter optimization.
 #'
 #' @details
 #' When \code{out_Decon} is provided, the supervised step is skipped.
@@ -342,8 +359,8 @@
 #' \pkg{preprocessCore}. No external account or Docker installation is
 #' needed, unlike \code{"CSx"}.
 #'
-#' @param reference             Numeric matrix (genes × cell types).
-#' @param bulk                  Numeric matrix (genes × samples).
+#' @param reference             Numeric matrix (genes * cell types).
+#' @param bulk                  Numeric matrix (genes * samples).
 #' @param methodDeconv          Character. One of \code{"CSx"},
 #'   \code{"CIBERSORT"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.
 #' @param cibersortx_email      Character. CIBERSORTx email (required for
@@ -368,25 +385,39 @@
 #'   \code{"tpe"}, \code{"atpe"}, \code{"anneal"}.
 #' @param output_path           Character scalar. Root output directory
 #'   (\code{getwd()} by default).
-#' @param hspaceTechniqueChoose Character. One of \code{"all"},
-#'   \code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
+#' @param hspaceTechniqueChoose Character. One of \code{"gamma_dominant"}
+#'  or \code{"all"}, or \code{"restrictionEspace"}.
+#'   \strong{The most efficient and strongly recommended strategy is
+#'   \code{"gamma_dominant"}, as it provides faster convergence and
+#'   more precise results.}
 #'   \describe{
+#'     \item{\code{"gamma_dominant"}}{\strong{Recommended.}
+#'       Same unconstrained grid as \code{"all"}, but candidates where
+#'       \code{gamma <= gamma_ratio_min * lambda_} are rejected, ensuring
+#'       \code{gamma >> lambda_}. This reduces the search space, leading
+#'       to faster optimization and more stable solutions.}
+#'
 #'     \item{\code{"all"}}{Full independent log-uniform grid for
 #'       \code{lambda_}, \code{gamma}, \code{p_prime}.}
+#'
 #'     \item{\code{"restrictionEspace"}}{Restricted space where
 #'       \code{lambda_ = gamma * lambda_factor},
 #'       \code{lambda_factor} \eqn{\in [2, 100]}.}
-#'     \item{\code{"all_gamma_dominant"}}{Same unconstrained grid as
-#'       \code{"all"}, but candidates where
-#'       \code{gamma <= gamma_ratio_min * lambda_} are rejected, ensuring
-#'       \code{gamma >> lambda_}.}
 #'   }
 #' @param gamma_ratio_min       Positive numeric. Minimum ratio
 #'   \eqn{\gamma / \lambda} enforced when
-#'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+#'   \code{hspaceTechniqueChoose = "gamma_dominant"} (default \code{10}).
 #'   Ignored for other strategies.
+#' @param constraint_threshold Positive numeric. Maximum allowed deviation
+#'   from the constraint (|1 - constraint|) when filtering hyper-parameter
+#'   trials before Pareto selection (default \code{0.1}).
+#'   \describe{
+#'     \item{\code{0.05}}{Very strict (risk of no valid solution).}
+#'     \item{\code{0.1}}{Good trade-off between feasibility and robustness.}
+#'     \item{\code{0.2 -- 0.3}}{More permissive, useful for broader exploration.}
+#'   }
 #' @param out_Decon             Optional pre-computed deconvolution matrix
-#'   (samples × cell types). When provided, the supervised deconvolution
+#'   (samples * cell types). When provided, the supervised deconvolution
 #'   step is skipped entirely.
 #' @param normalize             Logical. Apply z-score normalization per
 #'   gene (default \code{TRUE}).
@@ -395,13 +426,13 @@
 #'
 #' @return An object of class \code{"dicepro"} (a named list) containing:
 #' \itemize{
-#'   \item \code{hyperparameters} — selected \eqn{\lambda} and \eqn{\gamma}
-#'   \item \code{metrics}         — loss and constraint of the best trial
-#'   \item \code{trials}          — all evaluated configurations
-#'   \item \code{W}               — estimated unknown signature matrix
-#'   \item \code{H}               — estimated proportion matrix
-#'   \item \code{plot}            — Pareto frontier ggplot2 figure
-#'   \item \code{plot_hyperopt}   — hyperparameter space ggplot2 figure
+#'   \item \code{hyper-parameters} -- selected \eqn{\lambda} and \eqn{\gamma}
+#'   \item \code{metrics}         -- loss and constraint of the best trial
+#'   \item \code{trials}          -- all evaluated configurations
+#'   \item \code{W}               -- estimated unknown signature matrix
+#'   \item \code{H}               -- estimated proportion matrix
+#'   \item \code{plot}            -- Pareto frontier ggplot2 figure
+#'   \item \code{plot_hyperopt}   -- hyper-parameter space ggplot2 figure
 #' }
 #' Returns \code{invisible(NULL)} with a warning when no valid configuration
 #' is found.
@@ -411,12 +442,13 @@
 #'
 #' @references
 #' Newman AM et al. (2015). Robust enumeration of cell subsets from tissue
-#' expression profiles. \emph{Nature Methods}, 12(5), 453–457.
+#' expression profiles. \emph{Nature Methods}, 12(5), 453-457.
 #' \doi{10.1038/nmeth.3337}
 #'
 #' @examples
 #' \dontrun{
-#' # FARDEEP deconvolution
+#'  # gamma >> lambda (gamma_dominant strategy)
+#'     # FARDEEP deconvolution
 #' res <- dicepro(
 #'   reference    = BlueCode,
 #'   bulk         = CellMixtures,
@@ -424,7 +456,7 @@
 #'   hp_max_evals = 50L
 #' )
 #'
-#' # Built-in CIBERSORT (no Docker, no account)
+#'     # Built-in CIBERSORT (no Docker, no account)
 #' res <- dicepro(
 #'   reference      = BlueCode,
 #'   bulk           = CellMixtures,
@@ -432,16 +464,6 @@
 #'   cibersort_perm = 100L,
 #'   cibersort_QN   = TRUE,
 #'   hp_max_evals   = 50L
-#' )
-#'
-#' # gamma >> lambda (all_gamma_dominant strategy)
-#' res <- dicepro(
-#'   reference             = BlueCode,
-#'   bulk                  = CellMixtures,
-#'   methodDeconv          = "FARDEEP",
-#'   hp_max_evals          = 50L,
-#'   hspaceTechniqueChoose = "all_gamma_dominant",
-#'   gamma_ratio_min       = 50
 #' )
 #' }
 #'
@@ -460,8 +482,9 @@ dicepro <- function(reference,
                     N_unknownCT           = 1L,
                     algo_select           = "random",
                     output_path           = NULL,
-                    hspaceTechniqueChoose = "all",
+                    hspaceTechniqueChoose = "gamma_dominant",
                     gamma_ratio_min       = 10,
+                    constraint_threshold  = 0.1,
                     out_Decon             = NULL,
                     normalize             = TRUE,
                     seed                  = NULL) {
@@ -499,7 +522,7 @@ dicepro <- function(reference,
     cibersort_QN     = cibersort_QN
   )
 
-  # ---- Dataset for NMF -----------------------------------------------------
+  # ---- Data-set for NMF -----------------------------------------------------
   dataset <- list(B = bulk, W = reference, P = out_Dec)
 
   # ---- Output directory ----------------------------------------------------
@@ -512,13 +535,13 @@ dicepro <- function(reference,
   hp_params <- switch(
     hspaceTechniqueChoose,
     all                = c("gamma", "lambda_", "p_prime"),
-    all_gamma_dominant = c("gamma", "lambda_", "p_prime"),
+    gamma_dominant = c("gamma", "lambda_", "p_prime"),
     restrictionEspace  = c("gamma", "lambda_factor", "p_prime")
   )
 
   seed <- seed %||% 42L
 
-  # ---- Hyperparameter optimization -----------------------------------------
+  # ---- hyper-parameter optimization -----------------------------------------
   out <- .run_hyperopt(
     dataset               = dataset,
     W_prime               = W_prime,
@@ -530,11 +553,12 @@ dicepro <- function(reference,
     hspaceTechniqueChoose = hspaceTechniqueChoose,
     output_dir            = output_dir,
     gamma_ratio_min       = gamma_ratio_min,
+    constraint_threshold  = constraint_threshold,
     seed                  = seed
   )
 
   if (is.null(out)) {
-    warning("No valid hyperparameter configuration found.", call. = FALSE)
+    warning("No valid hyper-parameter configuration found.", call. = FALSE)
     return(invisible(NULL))
   }
 

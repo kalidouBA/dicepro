@@ -359,27 +359,40 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 
 #' Sample one configuration from a hyperparameter search space
 #'
-#' Each element of \code{space} is a named list with a \code{type} field and
-#' the corresponding bounds/parameters. Atomic vectors of the form
-#' \code{c(type, low, high)} are also accepted and parsed automatically.
+#' Each element of \code{space} is either an atomic vector
+#' \code{c(type, low, high, ...)} or a named list with a \code{type} field.
+#' Both forms are normalised via \code{\link{.parse_hyperopt_searchspace}}
+#' before sampling.
 #'
+#' @section Derived parameters:
 #' When both \code{lambda_factor} and \code{gamma} are present in the sampled
-#' configuration, \code{lambda_} is derived as
-#' \code{lambda_ = gamma * lambda_factor}.
+#' configuration, \code{lambda_} is automatically derived as
+#' \code{lambda_ = gamma * lambda_factor} and appended to the result.
 #'
-#' When \code{config$gamma_ratio_min} is set (mode \code{"all_gamma_dominant"}),
-#' candidates where \code{gamma <= gamma_ratio_min * lambda_} are rejected and
-#' resampled. After \code{max_tries} attempts the last candidate is returned
-#' with a warning.
+#' @section Rejection sampling (\code{gamma_ratio_min}):
+#' When \code{gamma_ratio_min} is not \code{NULL}, any candidate where
+#' \code{gamma <= gamma_ratio_min * lambda_} is rejected and resampled
+#' (mode \code{"gamma_dominant"}).  After \code{max_tries} failed attempts the
+#' last candidate is returned with a \code{\link{warning}}.  The constraint is
+#' silently skipped when the sampled configuration contains neither
+#' \code{gamma} nor \code{lambda_}.
 #'
-#' @param space         Named list. Each element describes one hyperparameter.
-#' @param gamma_ratio_min Numeric or \code{NULL}. Minimum ratio
-#'   \code{gamma / lambda_} required. \code{NULL} disables the constraint
-#'   (equivalent to the plain \code{"all"} mode).
-#' @param max_tries     Positive integer. Maximum rejection-sampling attempts
-#'   before falling back (default \code{100L}).
+#' @param space Named list. Each element describes one hyperparameter using any
+#'   form accepted by \code{\link{.parse_hyperopt_searchspace}}. See that
+#'   function for the full list of supported types (\code{choice},
+#'   \code{randint}, \code{uniform}, \code{quniform}, \code{loguniform},
+#'   \code{qloguniform}, \code{normal}, \code{qnormal}, \code{lognormal},
+#'   \code{qlognormal}).
+#' @param gamma_ratio_min Numeric scalar or \code{NULL} (default). Minimum
+#'   required ratio \code{gamma / lambda_}. \code{NULL} disables rejection
+#'   sampling entirely.
+#' @param max_tries Positive integer. Maximum rejection-sampling attempts
+#'   before falling back to the last draw (default \code{100L}).
 #'
-#' @return Named list of sampled values.
+#' @return A named list of sampled hyperparameter values, plus \code{lambda_}
+#'   when applicable (see *Derived parameters*).
+#'
+#' @seealso \code{\link{.parse_hyperopt_searchspace}}
 #' @keywords internal
 #' @noRd
 .sample_from_space <- function(space,
@@ -389,51 +402,19 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
   space_names <- names(space)
   if (is.null(space_names) || length(space_names) == 0L)
     stop(".sample_from_space: `space` must be a *named* list.")
+
+  # Normalise every spec once, delegating entirely to the shared parser.
   space <- stats::setNames(
-    lapply(space, function(spec) {
-      if (!is.list(spec)) spec <- as.list(spec)
-      if (!is.null(names(spec)) && "type" %in% names(spec)) return(spec)
-      type <- spec[[1L]]
-      switch(type,
-             choice      = list(type = type, choices = spec[-1L]),
-             randint     = list(type = type,
-                                low  = as.integer(spec[[2L]]),
-                                high = as.integer(spec[[3L]])),
-             uniform     = list(type = type,
-                                low  = as.numeric(spec[[2L]]),
-                                high = as.numeric(spec[[3L]])),
-             quniform    = list(type = type,
-                                low  = as.numeric(spec[[2L]]),
-                                high = as.numeric(spec[[3L]]),
-                                q    = as.numeric(spec[[4L]])),
-             loguniform  = list(type = type,
-                                low  = as.numeric(spec[[2L]]),
-                                high = as.numeric(spec[[3L]])),
-             qloguniform = list(type = type,
-                                low  = as.numeric(spec[[2L]]),
-                                high = as.numeric(spec[[3L]]),
-                                q    = as.numeric(spec[[4L]])),
-             normal      = list(type = type,
-                                mu    = as.numeric(spec[[2L]]),
-                                sigma = as.numeric(spec[[3L]])),
-             qnormal     = list(type = type,
-                                mu    = as.numeric(spec[[2L]]),
-                                sigma = as.numeric(spec[[3L]]),
-                                q     = as.numeric(spec[[4L]])),
-             lognormal   = list(type = type,
-                                mu    = as.numeric(spec[[2L]]),
-                                sigma = as.numeric(spec[[3L]])),
-             qlognormal  = list(type = type,
-                                mu    = as.numeric(spec[[2L]]),
-                                sigma = as.numeric(spec[[3L]]),
-                                q     = as.numeric(spec[[4L]])),
-             stop(sprintf("Unknown search space type: '%s'", type))
-      )
-    }),
+    mapply(.parse_hyperopt_searchspace,
+           arg   = space_names,
+           specs = space,
+           SIMPLIFY = FALSE),
     space_names
   )
 
-  # Sampler interne ---------------------------------------------------------
+  # ------------------------------------------------------------------
+  # Internal: draw one candidate configuration.
+  # ------------------------------------------------------------------
   .draw_once <- function() {
     params <- list()
     for (param_name in space_names) {
@@ -464,34 +445,42 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
                                      stop(paste("Unknown search space type:", spec$type))
       )
     }
-    if ("lambda_factor" %in% names(params) && "gamma" %in% names(params)) {
+
+    # Derive lambda_ when both lambda_factor and gamma are present.
+    if ("lambda_factor" %in% names(params) && "gamma" %in% names(params))
       params$lambda_ <- params$gamma * params$lambda_factor
-    }
 
     params
   }
-  if (is.null(gamma_ratio_min)) {
+
+  # ------------------------------------------------------------------
+  # Fast path: no rejection constraint.
+  # ------------------------------------------------------------------
+  if (is.null(gamma_ratio_min))
     return(.draw_once())
-  }
+
   stopifnot(is.numeric(gamma_ratio_min), gamma_ratio_min > 0)
 
+  # ------------------------------------------------------------------
+  # Rejection-sampling path.
+  # ------------------------------------------------------------------
   params <- NULL
   for (attempt in seq_len(max_tries)) {
     candidate <- .draw_once()
-    if (!("gamma" %in% names(candidate) && "lambda_" %in% names(candidate))) {
-      return(candidate)
-    }
 
-    if (candidate$gamma > gamma_ratio_min * candidate$lambda_) {
+    # Constraint only applies when both gamma and lambda_ exist.
+    if (!("gamma" %in% names(candidate) && "lambda_" %in% names(candidate)))
       return(candidate)
-    }
+
+    if (candidate$gamma > gamma_ratio_min * candidate$lambda_)
+      return(candidate)
+
     params <- candidate
   }
 
   warning(sprintf(
-    paste0(".sample_from_space: No satisfactory candidate found ",
-           "Gamma > %.4g * lambda_ found in %d attempts.",
-           "The last draw was returned as is"),
+    paste0(".sample_from_space: no candidate satisfying gamma > %.4g * lambda_ ",
+           "found in %d attempts. The last draw is returned as-is."),
     gamma_ratio_min, max_tries
   ), call. = FALSE)
 
@@ -545,7 +534,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #' @param config        List. Configuration object; must contain
 #'   \code{exp}, \code{hp_max_evals}, \code{hp_method}.
 #'   Optionally contains \code{gamma_ratio_min} (positive numeric) to
-#'   activate rejection sampling (mode \code{"all_gamma_dominant"}).
+#'   activate rejection sampling (mode \code{"gamma_dominant"}).
 #' @param hp_space      prebuilt named list of parsed hyper-parameter specs.
 #'   If \code{NULL}, built from \code{config$hp_space}.
 #' @param W_prime       Optional initial \eqn{W} matrix.
@@ -582,7 +571,6 @@ research_hyperOpt <- function(objective_opt,
     }
   }, add = TRUE)
 
-  # Ratio minimal gamma/lambda_ pour le mode all_gamma_dominant (NULL = inactif)
   gamma_ratio_min <- config$gamma_ratio_min
 
   {
@@ -781,7 +769,7 @@ research_hyperOpt <- function(objective_opt,
 #'
 #' @param config Named list. Must contain \code{exp}, \code{hp_max_evals},
 #'   and \code{hp_method}. Optionally contains \code{gamma_ratio_min}
-#'   (positive numeric) used by the \code{"all_gamma_dominant"} mode.
+#'   (positive numeric) used by the \code{"gamma_dominant"} mode.
 #' @return The validated \code{config} list (unchanged).
 #' @keywords internal
 #' @noRd
@@ -818,61 +806,93 @@ research_hyperOpt <- function(objective_opt,
 # .parse_hyperopt_searchspace  [private]
 # -----------------------------------------------------------------------------
 
-#' Parse one hyperparameter search-space specification
+#' Parse one hyper-parameter search-space specification
 #'
-#' Converts an atomic vector \code{c(type, low, high, ...)} or an already
-#' structured list into a fully named spec list consumed by
-#' \code{.sample_from_space}.
+#' Converts a raw specification — either an atomic vector
+#' \code{c(type, low, high, ...)} or an already-structured named list — into
+#' the canonical named list consumed by \code{\link{.sample_from_space}}.
 #'
-#' @param arg   Character scalar. Parameter name (used in error messages).
-#' @param specs Atomic vector or list.
-#' @return Named list with \code{type} and bounds/parameters.
+#' If \code{specs} is already a named list containing a \code{type} field it
+#' is returned unchanged, so the function is safe to call on already-parsed
+#' specs.
+#'
+#' @section Supported types:
+#' \describe{
+#'   \item{\code{choice}}{Discrete set. Extra elements of \code{specs} become
+#'     the candidate values (kept as-is, no numeric coercion).}
+#'   \item{\code{randint}}{Uniform integer on \code{[low, high]}.}
+#'   \item{\code{uniform}}{Continuous uniform on \code{[low, high]}.}
+#'   \item{\code{quniform}}{Quantised uniform: \code{round(U(low,high) / q) * q}.}
+#'   \item{\code{loguniform}}{Log-uniform on \code{[low, high]}
+#'     (samples \code{exp(U(log low, log high))}).}
+#'   \item{\code{qloguniform}}{Quantised log-uniform.}
+#'   \item{\code{normal}}{Normal with mean \code{mu} and std-dev \code{sigma}.}
+#'   \item{\code{qnormal}}{Quantised normal.}
+#'   \item{\code{lognormal}}{Log-normal with log-mean \code{mu} and
+#'     log-std-dev \code{sigma}.}
+#'   \item{\code{qlognormal}}{Quantised log-normal.}
+#' }
+#'
+#' @param arg   Character scalar. Parameter name — used only in error messages
+#'   to pinpoint the offending spec.
+#' @param specs Atomic vector or list. When atomic, element 1 is the type
+#'   string and subsequent elements are the bounds / parameters in the order
+#'   documented above. When a named list with a \code{type} field, returned
+#'   unchanged.
+#'
+#' @return A named list with at minimum \code{$type}, plus the fields required
+#'   by that type (\code{low}/\code{high}, \code{mu}/\code{sigma},
+#'   \code{choices}, and optionally \code{q}).
+#'
 #' @keywords internal
 #' @noRd
 .parse_hyperopt_searchspace <- function(arg, specs) {
   if (!is.list(specs)) specs <- as.list(specs)
+  if (!is.null(names(specs)) && "type" %in% names(specs)) return(specs)
+
   type <- specs[[1L]]
   .n   <- as.numeric
 
   switch(type,
-         choice      = list(type = "choice",
-                            choices = lapply(specs[-1L], .n)),
-         randint     = list(type = "randint",
-                            low  = as.integer(specs[[2L]]),
-                            high = as.integer(specs[[3L]])),
-         uniform     = list(type = "uniform",
-                            low  = .n(specs[[2L]]),
-                            high = .n(specs[[3L]])),
-         quniform    = list(type = "quniform",
-                            low  = .n(specs[[2L]]),
-                            high = .n(specs[[3L]]),
-                            q    = .n(specs[[4L]])),
-         loguniform  = list(type = "loguniform",
-                            low  = .n(specs[[2L]]),
-                            high = .n(specs[[3L]])),
-         qloguniform = list(type = "qloguniform",
-                            low  = .n(specs[[2L]]),
-                            high = .n(specs[[3L]]),
-                            q    = .n(specs[[4L]])),
-         normal      = list(type = "normal",
-                            mu    = .n(specs[[2L]]),
-                            sigma = .n(specs[[3L]])),
-         qnormal     = list(type = "qnormal",
-                            mu    = .n(specs[[2L]]),
-                            sigma = .n(specs[[3L]]),
-                            q     = .n(specs[[4L]])),
-         lognormal   = list(type = "lognormal",
-                            mu    = .n(specs[[2L]]),
-                            sigma = .n(specs[[3L]])),
-         qlognormal  = list(type = "qlognormal",
-                            mu    = .n(specs[[2L]]),
-                            sigma = .n(specs[[3L]]),
-                            q     = .n(specs[[4L]])),
+         choice      = list(type    = "choice",
+                            choices = specs[-1L]),
+         randint     = list(type    = "randint",
+                            low     = as.integer(specs[[2L]]),
+                            high    = as.integer(specs[[3L]])),
+         uniform     = list(type    = "uniform",
+                            low     = .n(specs[[2L]]),
+                            high    = .n(specs[[3L]])),
+         quniform    = list(type    = "quniform",
+                            low     = .n(specs[[2L]]),
+                            high    = .n(specs[[3L]]),
+                            q       = .n(specs[[4L]])),
+         loguniform  = list(type    = "loguniform",
+                            low     = .n(specs[[2L]]),
+                            high    = .n(specs[[3L]])),
+         qloguniform = list(type    = "qloguniform",
+                            low     = .n(specs[[2L]]),
+                            high    = .n(specs[[3L]]),
+                            q       = .n(specs[[4L]])),
+         normal      = list(type    = "normal",
+                            mu      = .n(specs[[2L]]),
+                            sigma   = .n(specs[[3L]])),
+         qnormal     = list(type    = "qnormal",
+                            mu      = .n(specs[[2L]]),
+                            sigma   = .n(specs[[3L]]),
+                            q       = .n(specs[[4L]])),
+         lognormal   = list(type    = "lognormal",
+                            mu      = .n(specs[[2L]]),
+                            sigma   = .n(specs[[3L]])),
+         qlognormal  = list(type    = "qlognormal",
+                            mu      = .n(specs[[2L]]),
+                            sigma   = .n(specs[[3L]]),
+                            q       = .n(specs[[4L]])),
          stop(sprintf(
            "Unknown search space type '%s' for parameter '%s'.", type, arg
          ), call. = FALSE)
   )
 }
+
 
 
 # -----------------------------------------------------------------------------

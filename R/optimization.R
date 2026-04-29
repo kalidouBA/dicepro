@@ -35,14 +35,14 @@
 #'       is the base variable and \code{lambda_} is derived as
 #'       \code{lambda_ = gamma * lambda_factor}, with
 #'       \code{lambda_factor} in (2, 100).}
-#'     \item{\code{"all_gamma_dominant"}}{Same unconstrained space as
+#'     \item{\code{"gamma_dominant"}}{Same unconstrained space as
 #'       \code{"all"}, but any candidate such that
 #'       \code{gamma <= gamma_ratio_min * lambda_} is rejected.
 #'       This enforces \code{gamma >> lambda_} without constraining bounds.}
 #'   }
 #' @param gamma_ratio_min Positive numeric. Minimum ratio
 #'   \code{gamma / lambda_} enforced when
-#'   \code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+#'   \code{hspaceTechniqueChoose = "gamma_dominant"} (default \code{10}).
 #'   Ignored for the other strategies.
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
 #'
@@ -69,7 +69,7 @@ run_experiment <- function(dataset,
 
   hspaceTechniqueChoose <- match.arg(
     hspaceTechniqueChoose,
-    c("all", "restrictionEspace", "all_gamma_dominant")
+    c("gamma_dominant", "all", "restrictionEspace")
   )
 
   base_config <- list(
@@ -77,7 +77,7 @@ run_experiment <- function(dataset,
     hp_max_evals  = hp_max_evals,
     hp_method     = algo_select,
     seed          = seed,
-    gamma_ratio_min = if (hspaceTechniqueChoose == "all_gamma_dominant")
+    gamma_ratio_min = if (hspaceTechniqueChoose == "gamma_dominant")
       gamma_ratio_min
     else
       NULL
@@ -90,7 +90,7 @@ run_experiment <- function(dataset,
       gamma   = c("loguniform", 1,    1e8),
       p_prime = c("loguniform", 1e-6, 1)
     ),
-    all_gamma_dominant = list(
+    gamma_dominant = list(
       lambda_ = c("loguniform", 1,    1e8),
       gamma   = c("loguniform", 1,    1e8),
       p_prime = c("loguniform", 1e-6, 1)
@@ -120,7 +120,7 @@ run_experiment <- function(dataset,
 # .custom_space  [private]
 # -----------------------------------------------------------------------------
 
-#' Default restricted hyperparameter search space
+#' Default restricted hyper-parameter search space
 #'
 #' Returns the \code{restrictionEspace} search space where \code{gamma} is
 #' the base variable and \code{lambda_} is derived as

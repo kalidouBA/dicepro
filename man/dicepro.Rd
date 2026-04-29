@@ -2,7 +2,7 @@
 % Please edit documentation in R/dicepro.R
 \name{dicepro}
 \alias{dicepro}
-\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimization}
+\title{Semi-supervised bulk RNA-seq deconvolution with hyper-parameter optimization}
 \usage{
 dicepro(
   reference,
@@ -19,17 +19,18 @@ dicepro(
   N_unknownCT = 1L,
   algo_select = "random",
   output_path = NULL,
-  hspaceTechniqueChoose = "all",
+  hspaceTechniqueChoose = "gamma_dominant",
   gamma_ratio_min = 10,
+  constraint_threshold = 0.1,
   out_Decon = NULL,
   normalize = TRUE,
   seed = NULL
 )
 }
 \arguments{
-\item{reference}{Numeric matrix (genes × cell types).}
+\item{reference}{Numeric matrix (genes * cell types).}
 
-\item{bulk}{Numeric matrix (genes × samples).}
+\item{bulk}{Numeric matrix (genes * samples).}
 
 \item{methodDeconv}{Character. One of \code{"CSx"},
 \code{"CIBERSORT"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.}
@@ -67,27 +68,44 @@ types.}
 \item{output_path}{Character scalar. Root output directory
 (\code{getwd()} by default).}
 
-\item{hspaceTechniqueChoose}{Character. One of \code{"all"},
-\code{"restrictionEspace"}, or \code{"all_gamma_dominant"}.
+\item{hspaceTechniqueChoose}{Character. One of \code{"gamma_dominant"}
+or \code{"all"}, or \code{"restrictionEspace"}.
+\strong{The most efficient and strongly recommended strategy is
+\code{"gamma_dominant"}, as it provides faster convergence and
+more precise results.}
 \describe{
-\item{\code{"all"}}{Full independent log-uniform grid for
-\code{lambda_}, \code{gamma}, \code{p_prime}.}
-\item{\code{"restrictionEspace"}}{Restricted space where
-\code{lambda_ = gamma * lambda_factor},
-\code{lambda_factor} \eqn{\in [2, 100]}.}
-\item{\code{"all_gamma_dominant"}}{Same unconstrained grid as
-\code{"all"}, but candidates where
+\item{\code{"gamma_dominant"}}{\strong{Recommended.}
+Same unconstrained grid as \code{"all"}, but candidates where
 \code{gamma <= gamma_ratio_min * lambda_} are rejected, ensuring
-\code{gamma >> lambda_}.}
+\code{gamma >> lambda_}. This reduces the search space, leading
+to faster optimization and more stable solutions.}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{"all"}\}\{Full independent log-uniform grid for
+  \code{lambda_}, \code{gamma}, \code{p_prime}.\}
+
+\\item\{\code{"restrictionEspace"}\}\{Restricted space where
+  \code{lambda_ = gamma * lambda_factor},
+  \code{lambda_factor} \eqn{\in [2, 100]}.\}
+}\if{html}{\out{</div>}}
+
 }}
 
 \item{gamma_ratio_min}{Positive numeric. Minimum ratio
 \eqn{\gamma / \lambda} enforced when
-\code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+\code{hspaceTechniqueChoose = "gamma_dominant"} (default \code{10}).
 Ignored for other strategies.}
 
+\item{constraint_threshold}{Positive numeric. Maximum allowed deviation
+from the constraint (|1 - constraint|) when filtering hyper-parameter
+trials before Pareto selection (default \code{0.1}).
+\describe{
+\item{\code{0.05}}{Very strict (risk of no valid solution).}
+\item{\code{0.1}}{Good trade-off between feasibility and robustness.}
+\item{\code{0.2 -- 0.3}}{More permissive, useful for broader exploration.}
+}}
+
 \item{out_Decon}{Optional pre-computed deconvolution matrix
-(samples × cell types). When provided, the supervised deconvolution
+(samples * cell types). When provided, the supervised deconvolution
 step is skipped entirely.}
 
 \item{normalize}{Logical. Apply z-score normalization per
@@ -99,13 +117,13 @@ reproducibility (default \code{42L}).}
 \value{
 An object of class \code{"dicepro"} (a named list) containing:
 \itemize{
-\item \code{hyperparameters} — selected \eqn{\lambda} and \eqn{\gamma}
-\item \code{metrics}         — loss and constraint of the best trial
-\item \code{trials}          — all evaluated configurations
-\item \code{W}               — estimated unknown signature matrix
-\item \code{H}               — estimated proportion matrix
-\item \code{plot}            — Pareto frontier ggplot2 figure
-\item \code{plot_hyperopt}   — hyperparameter space ggplot2 figure
+\item \code{hyper-parameters} -- selected \eqn{\lambda} and \eqn{\gamma}
+\item \code{metrics}         -- loss and constraint of the best trial
+\item \code{trials}          -- all evaluated configurations
+\item \code{W}               -- estimated unknown signature matrix
+\item \code{H}               -- estimated proportion matrix
+\item \code{plot}            -- Pareto frontier ggplot2 figure
+\item \code{plot_hyperopt}   -- hyper-parameter space ggplot2 figure
 }
 Returns \code{invisible(NULL)} with a warning when no valid configuration
 is found.
@@ -113,7 +131,7 @@ is found.
 \description{
 Combines supervised estimation of known cell types with unsupervised
 discovery of latent components, using automatic Pareto-frontier-based
-hyperparameter optimization.
+hyper-parameter optimization.
 }
 \details{
 When \code{out_Decon} is provided, the supervised step is skipped.
@@ -129,7 +147,8 @@ needed, unlike \code{"CSx"}.
 }
 \examples{
 \dontrun{
-# FARDEEP deconvolution
+ # gamma >> lambda (gamma_dominant strategy)
+    # FARDEEP deconvolution
 res <- dicepro(
   reference    = BlueCode,
   bulk         = CellMixtures,
@@ -137,7 +156,7 @@ res <- dicepro(
   hp_max_evals = 50L
 )
 
-# Built-in CIBERSORT (no Docker, no account)
+    # Built-in CIBERSORT (no Docker, no account)
 res <- dicepro(
   reference      = BlueCode,
   bulk           = CellMixtures,
@@ -146,22 +165,12 @@ res <- dicepro(
   cibersort_QN   = TRUE,
   hp_max_evals   = 50L
 )
-
-# gamma >> lambda (all_gamma_dominant strategy)
-res <- dicepro(
-  reference             = BlueCode,
-  bulk                  = CellMixtures,
-  methodDeconv          = "FARDEEP",
-  hp_max_evals          = 50L,
-  hspaceTechniqueChoose = "all_gamma_dominant",
-  gamma_ratio_min       = 50
-)
 }
 
 }
 \references{
 Newman AM et al. (2015). Robust enumeration of cell subsets from tissue
-expression profiles. \emph{Nature Methods}, 12(5), 453–457.
+expression profiles. \emph{Nature Methods}, 12(5), 453-457.
 \doi{10.1038/nmeth.3337}
 }
 \seealso{

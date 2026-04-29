@@ -47,7 +47,7 @@ the configuration (e.g. \code{"random"}).}
 is the base variable and \code{lambda_} is derived as
 \code{lambda_ = gamma * lambda_factor}, with
 \code{lambda_factor} in (2, 100).}
-\item{\code{"all_gamma_dominant"}}{Same unconstrained space as
+\item{\code{"gamma_dominant"}}{Same unconstrained space as
 \code{"all"}, but any candidate such that
 \code{gamma <= gamma_ratio_min * lambda_} is rejected.
 This enforces \code{gamma >> lambda_} without constraining bounds.}
@@ -55,7 +55,7 @@ This enforces \code{gamma >> lambda_} without constraining bounds.}
 
 \item{gamma_ratio_min}{Positive numeric. Minimum ratio
 \code{gamma / lambda_} enforced when
-\code{hspaceTechniqueChoose = "all_gamma_dominant"} (default \code{10}).
+\code{hspaceTechniqueChoose = "gamma_dominant"} (default \code{10}).
 Ignored for the other strategies.}
 
 \item{seed}{Integer. Random seed used for full pipeline reproducibility.}

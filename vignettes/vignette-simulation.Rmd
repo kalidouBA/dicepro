@@ -114,10 +114,10 @@ out <- dicepro(
   W_prime               = 0,
   bulkName              = "SimBulk",
   refName               = "SimRef",
-  hp_max_evals          = 150L,
+  hp_max_evals          = 500L,
   algo_select           = "random",
   output_path           = tempdir(),
-  hspaceTechniqueChoose = "all",
+  hspaceTechniqueChoose = "gamma_dominant",
   normalize             = FALSE
 )
 ```
@@ -301,10 +301,10 @@ out_bc <- dicepro(
   W_prime               = 0,
   bulkName              = "BlueCodeBulk",
   refName               = "BlueCode",
-  hp_max_evals          = 150L,
+  hp_max_evals          = 100L,
   algo_select           = "random",
   output_path           = tempdir(),
-  hspaceTechniqueChoose = "all",
+  hspaceTechniqueChoose = "gamma_dominant",
   normalize             = FALSE
 )
 ```
