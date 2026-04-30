@@ -128,8 +128,8 @@ token.
 
 **Step 1 — Install Docker Desktop**
 
-Download from <https://www.docker.com/products/docker-desktop>, open it,
-log in, then pull the CIBERSORTx image from a terminal:
+Download from <https://www.docker.com/products/docker-desktop/>, open
+it, log in, then pull the CIBERSORTx image from a terminal:
 
 ``` bash
 docker pull cibersortx/fractions

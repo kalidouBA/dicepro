@@ -134,7 +134,7 @@ CIBERSORTx (`methodDeconv = "CSx"`) requires Docker and a personal token.
 
 **Step 1 — Install Docker Desktop**
 
-Download from <https://www.docker.com/products/docker-desktop>, open it,
+Download from <https://www.docker.com/products/docker-desktop/>, open it,
 log in, then pull the CIBERSORTx image from a terminal:
 
 ```bash

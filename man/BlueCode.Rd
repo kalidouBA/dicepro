@@ -15,7 +15,7 @@ downstream analyses.
 \source{
 BlueCode reference matrix constructed for the dicepro benchmarking
 framework from ENCODE (\url{https://www.encodeproject.org}) and GEO
-(\url{https://www.ncbi.nlm.nih.gov/geo}) sorted RNA-seq profiles.
+(\url{https://www.ncbi.nlm.nih.gov/geo/}) sorted RNA-seq profiles.
 See the accompanying manuscript for full details on data sources,
 replicate averaging, quality filtering, and normalization.
 }
