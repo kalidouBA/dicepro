@@ -36,7 +36,7 @@ knitr::opts_chunk$set(
 
 This vignette demonstrates complete dicepro deconvolution workflows on
 **fully synthetic data**, enabling end-to-end reproducibility without
-requiring access to proprietary datasets.
+requiring access to proprietary data-sets.
 
 Two simulation strategies are available and covered here:
 
@@ -45,7 +45,7 @@ Two simulation strategies are available and covered here:
 | `simulation()` | Synthetic (generated internally) | Generic (`CellType_k`) | Flexible benchmarking with custom parameters |
 | `simulation_bluecode()` | BlueCode (bundled real reference) | Real biological names | Realistic benchmarking on human tissue cell types |
 
-Both functions return the same standardised triplet — `$W`, `$p`, `$B` —
+Both functions return the same standardized triplet — `$W`, `$p`, `$B` —
 and are fully interchangeable as input to `dicepro()`.
 
 The pipeline proceeds in four stages:
@@ -54,7 +54,7 @@ The pipeline proceeds in four stages:
    proportions.
 2. **Generate** a noisy bulk RNA-seq matrix from the simulated mixture.
 3. **Deconvolve** using the main `dicepro()` function with automated
-   hyperparameter optimisation.
+   hyper-parameter optimization.
 4. **Evaluate** the recovered proportions against the ground truth.
 
 ---
@@ -397,11 +397,11 @@ cat(sprintf(
 ))
 ```
 
-The two strategies are complementary: `simulation()` offers maximum
-flexibility for stress-testing deconvolution under varying gene numbers,
-cell-type counts, or noise levels; `simulation_bluecode()` anchors the
-benchmark in a biologically grounded reference, making results more
-interpretable in the context of real human tissue data.
+These two strategies are complementary: `simulation()` offers maximum 
+flexibility for testing deconvolution under stress conditions, with varying 
+numbers of genes, cell types, or noise levels; `simulation_bluecode()` anchors 
+the benchmark to a biologically grounded reference, making the results easier 
+to interpret in the context of real-world data from human tissues.
 
 ---
 
