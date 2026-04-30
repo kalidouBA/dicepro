@@ -22,7 +22,7 @@ assumption rarely holds, leading to biased estimates.
 optimization that simultaneously:
 
 - estimates cell-type proportions for *known* populations (supervised
-  step, via CIBERSORTx, FARDEEP, DCQ, CDSeq, or BayesPrism), and
+  step, via CIBERSORTx, CIBERSORT, FARDEEP, DCQ, CDSeq, or BayesPrism).
 - discovers and quantifies *unknown* populations using Non-Negative
   Matrix Factorization (NMF) with L-BFGS-B optimization (unsupervised
   step).
