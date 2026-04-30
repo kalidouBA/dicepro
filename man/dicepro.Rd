@@ -33,7 +33,7 @@ dicepro(
 \item{bulk}{Numeric matrix (genes * samples).}
 
 \item{methodDeconv}{Character. One of \code{"CSx"},
-\code{"CS"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.}
+\code{"CS"}, \code{"DCQ"}, \code{"FARDEEP"}.}
 
 \item{cibersortx_email}{Character. CIBERSORTx email (required for
 \code{"CSx"}).}

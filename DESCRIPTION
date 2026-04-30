@@ -10,7 +10,7 @@ Authors@R: c(
            email = "boris.hejblum@u-bordeaux.fr"))
 Description: Performs semi-supervised deconvolution of bulk RNA-seq data.
     Known cell-type proportions are estimated using supervised methods
-    (CIBERSORTx, CIBERSORT, FARDEEP, DCQ, or BayesPrism), while unknown
+    (CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP, DCQ), while unknown
     components are inferred using non-negative matrix factorization (NMF)
     with L-BFGS-B optimization. Hyperparameters are selected automatically
     using a Pareto-frontier-based approach with knee-point detection,
