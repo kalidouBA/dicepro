@@ -172,12 +172,8 @@
   for (grp in names(cell_groups)) {
     subtypes <- cell_groups[[grp]]
     alpha_g  <- alpha_subtypes[[grp]]
-
-    # One independent Dirichlet draw per sample (nSample x n_subtypes)
     sub_props <- .rdirichlet(nSample, rep(alpha_g, length(subtypes)))
     colnames(sub_props) <- subtypes
-
-    # Weight sub-type proportions by the compartment proportion
     prop_matrix[, subtypes] <- sub_props * group_props[, grp]
   }
 

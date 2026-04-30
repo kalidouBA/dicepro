@@ -2,7 +2,7 @@
 % Please edit documentation in R/hyperopt_selection.R
 \name{best_hyperParams}
 \alias{best_hyperParams}
-\title{Select optimal hyperparameters using a Pareto frontier}
+\title{Select optimal hyper-parameters using a Pareto frontier}
 \usage{
 best_hyperParams(trials_df, W, H, savePaths, constraint_threshold = 0.1)
 }

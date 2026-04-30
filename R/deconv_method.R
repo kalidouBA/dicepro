@@ -319,8 +319,6 @@ running_method <- function(bulk,
       methodDeconv, paste(valid_methods, collapse = ", ")
     ), call. = FALSE)
   )
-
-  # ---- Coerce to numeric matrices preserving dimnames ---------------------
   .to_numeric_matrix <- function(mat) {
     dn  <- dimnames(mat)
     mat <- apply(mat, 2L, as.numeric)

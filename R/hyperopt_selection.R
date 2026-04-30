@@ -7,11 +7,11 @@
 #               .make_preddata_fname()
 #
 # Pipeline:
-#   1. Filter valid hyperparameter trials
+#   1. Filter valid hyper-parameter trials
 #   2. Compute constraint deviation
 #   3. Extract Pareto frontier (KraljicMatrix::get_frontier)
 #   4. Detect the knee point (best compromise)
-#   5. Generate a ggplot2 visualisation
+#   5. Generate a ggplot2 visualization
 #
 # NOTE: globalVariables(c("frob_H", "loss")) declared in utils.R
 # =============================================================================
@@ -158,7 +158,7 @@
 # .make_preddata_fname  [private]
 # -----------------------------------------------------------------------------
 
-#' Build standard hyperparameter result filenames
+#' Build standard hyper-parameter result file names
 #'
 #' @param lambda Numeric vector of \eqn{\lambda} values.
 #' @param gamma  Numeric vector of \eqn{\gamma} values.
@@ -175,10 +175,10 @@
 
 
 # -----------------------------------------------------------------------------
-# best_hyperParams  [public]
+# best_hyper-Params  [public]
 # -----------------------------------------------------------------------------
 
-#' Select optimal hyperparameters using a Pareto frontier
+#' Select optimal hyper-parameters using a Pareto frontier
 #'
 #' Identifies the best \eqn{(\lambda, \gamma)} pair from a set of
 #' optimization trials by:
