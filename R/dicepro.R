@@ -188,7 +188,7 @@
                                cibersort_perm = 0L,
                                cibersort_QN   = TRUE) {
 
-  valid_methods <- c("CSx", "CIBERSORT", "DCQ", "CDSeq", "FARDEEP")
+  valid_methods <- c("CSx", "CS", "DCQ", "CDSeq", "FARDEEP")
 
   if (is.null(out_Decon)) {
 
@@ -362,7 +362,7 @@
 #' @param reference             Numeric matrix (genes * cell types).
 #' @param bulk                  Numeric matrix (genes * samples).
 #' @param methodDeconv          Character. One of \code{"CSx"},
-#'   \code{"CIBERSORT"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.
+#'   \code{"CS"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.
 #' @param cibersortx_email      Character. CIBERSORTx email (required for
 #'   \code{"CSx"}).
 #' @param cibersortx_token      Character. CIBERSORTx token (required for
@@ -460,7 +460,7 @@
 #' res <- dicepro(
 #'   reference      = BlueCode,
 #'   bulk           = CellMixtures,
-#'   methodDeconv   = "CIBERSORT",
+#'   methodDeconv   = "CS",
 #'   cibersort_perm = 100L,
 #'   cibersort_QN   = TRUE,
 #'   hp_max_evals   = 50L

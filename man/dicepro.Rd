@@ -33,7 +33,7 @@ dicepro(
 \item{bulk}{Numeric matrix (genes * samples).}
 
 \item{methodDeconv}{Character. One of \code{"CSx"},
-\code{"CIBERSORT"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.}
+\code{"CS"}, \code{"DCQ"}, \code{"CDSeq"}, \code{"FARDEEP"}.}
 
 \item{cibersortx_email}{Character. CIBERSORTx email (required for
 \code{"CSx"}).}
@@ -160,7 +160,7 @@ res <- dicepro(
 res <- dicepro(
   reference      = BlueCode,
   bulk           = CellMixtures,
-  methodDeconv   = "CIBERSORT",
+  methodDeconv   = "CS",
   cibersort_perm = 100L,
   cibersort_QN   = TRUE,
   hp_max_evals   = 50L

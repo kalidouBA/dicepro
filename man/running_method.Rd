@@ -24,7 +24,7 @@ cell-type signature profiles. Row names must be gene symbols.}
 \item{methodDeconv}{Character scalar. Deconvolution method:
 \describe{
 \item{\code{"CSx"}}{CIBERSORTx - requires Docker and credentials.}
-\item{\code{"CIBERSORT"}}{Built-in CIBERSORT nu-SVR implementation.
+\item{\code{"CS"}}{Built-in CIBERSORT nu-SVR implementation.
 Requires \pkg{e1071}, \pkg{parallel}, and \pkg{preprocessCore}.
 No external account needed.}
 \item{\code{"DCQ"}}{Requires \pkg{ComICS}.}
@@ -39,11 +39,11 @@ when \code{methodDeconv = "CSx"}).}
 
 \item{cibersort_perm}{Non-negative integer. Number of permutations for
 CIBERSORT p-values (default \code{0L} = no p-values). Only used when
-\code{methodDeconv = "CIBERSORT"}.}
+\code{methodDeconv = "CS"}.}
 
 \item{cibersort_QN}{Logical. Apply quantile normalisation in
 CIBERSORT (default \code{TRUE}). Only used when
-\code{methodDeconv = "CIBERSORT"}.}
+\code{methodDeconv = "CS"}.}
 }
 \value{
 Numeric matrix (cell types x samples) of estimated cell-type
@@ -60,7 +60,7 @@ Gene intersection is performed automatically: only genes present in both
 \code{bulk} and \code{reference} are used. Both matrices are coerced to
 numeric before processing.
 
-For \code{"CIBERSORT"}, the built-in implementation closely follows the
+For \code{"CS"}, the built-in implementation closely follows the
 original Newman et al. (2015) algorithm: nu-SVR with three candidate nu
 values (0.25, 0.50, 0.75), optional quantile normalisation, and optional
 permutation-based p-values. Packages \pkg{e1071}, \pkg{parallel}, and

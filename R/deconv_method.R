@@ -7,7 +7,7 @@
 #
 # Supported methods:
 #   "CSx"        - CIBERSORTx via Docker (requires credentials)
-#   "CIBERSORT"  - CIBERSORT nu-SVR (built-in, no credentials needed)
+#   "CS"  - CIBERSORT nu-SVR (built-in, no credentials needed)
 #   "DCQ"        - ComICS::dcq
 #   "FARDEEP"    - FARDEEP::fardeep
 # =============================================================================
@@ -28,11 +28,11 @@
 #' Fit nu-SVR models and return the best-fit weights
 #'
 #' Tries three values of nu (0.25, 0.50, 0.75) in parallel, selects the
-#' model with the lowest RMSE, and returns normalised cell-type weights.
+#' model with the lowest RMSE, and returns normalized cell-type weights.
 #'
-#' @param X          Numeric matrix. Standardised signature matrix
+#' @param X          Numeric matrix. Standardized signature matrix
 #'   (genes x cell types).
-#' @param y          Numeric vector. Standardised mixture sample (length =
+#' @param y          Numeric vector. Standardized mixture sample (length =
 #'   number of genes).
 #' @param absolute   Logical. Run in absolute mode.
 #' @param abs_method Character. \code{"sig.score"} or \code{"no.sumto1"}.
@@ -263,7 +263,7 @@
 #' @param methodDeconv     Character scalar. Deconvolution method:
 #' \describe{
 #'   \item{\code{"CSx"}}{CIBERSORTx - requires Docker and credentials.}
-#'   \item{\code{"CIBERSORT"}}{Built-in CIBERSORT nu-SVR implementation.
+#'   \item{\code{"CS"}}{Built-in CIBERSORT nu-SVR implementation.
 #'     Requires \pkg{e1071}, \pkg{parallel}, and \pkg{preprocessCore}.
 #'     No external account needed.}
 #'   \item{\code{"DCQ"}}{Requires \pkg{ComICS}.}
@@ -275,10 +275,10 @@
 #'   when \code{methodDeconv = "CSx"}).
 #' @param cibersort_perm   Non-negative integer. Number of permutations for
 #'   CIBERSORT p-values (default \code{0L} = no p-values). Only used when
-#'   \code{methodDeconv = "CIBERSORT"}.
+#'   \code{methodDeconv = "CS"}.
 #' @param cibersort_QN     Logical. Apply quantile normalisation in
 #'   CIBERSORT (default \code{TRUE}). Only used when
-#'   \code{methodDeconv = "CIBERSORT"}.
+#'   \code{methodDeconv = "CS"}.
 #'
 #' @return Numeric matrix (cell types x samples) of estimated cell-type
 #'   proportions. Each column sums to 1.
@@ -288,7 +288,7 @@
 #' \code{bulk} and \code{reference} are used. Both matrices are coerced to
 #' numeric before processing.
 #'
-#' For \code{"CIBERSORT"}, the built-in implementation closely follows the
+#' For \code{"CS"}, the built-in implementation closely follows the
 #' original Newman et al. (2015) algorithm: nu-SVR with three candidate nu
 #' values (0.25, 0.50, 0.75), optional quantile normalisation, and optional
 #' permutation-based p-values. Packages \pkg{e1071}, \pkg{parallel}, and
@@ -310,7 +310,7 @@ running_method <- function(bulk,
                            cibersort_perm   = 0L,
                            cibersort_QN     = TRUE) {
 
-  valid_methods <- c("CSx", "CIBERSORT", "DCQ", "FARDEEP")
+  valid_methods <- c("CSx", "CS", "DCQ", "FARDEEP")
 
   methodDeconv <- tryCatch(
     match.arg(methodDeconv, valid_methods),
@@ -349,12 +349,12 @@ running_method <- function(bulk,
       run_CSx(bulk, reference, cibersortx_email, cibersortx_token)
     },
 
-    CIBERSORT = {
+    CS = {
       # Check required packages
       for (pkg in c("e1071", "parallel", "preprocessCore")) {
         if (!requireNamespace(pkg, quietly = TRUE))
           stop(sprintf(
-            "Package '%s' is required for methodDeconv = 'CIBERSORT'.\n",
+            "Package '%s' is required for methodDeconv = 'CS'.\n",
             pkg
           ), call. = FALSE)
       }
@@ -407,7 +407,7 @@ running_method <- function(bulk,
 
   # ---- Normalise columns to sum to 1 --------------------------------------
   col_sums <- colSums(out_Dec)
-  col_sums[col_sums == 0] <- 1   # avoid division by zero for zero samples
+  col_sums[col_sums == 0] <- 1
   out_Dec <- sweep(out_Dec, 2L, col_sums, FUN = "/")
 
   out_Dec
