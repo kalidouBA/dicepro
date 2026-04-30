@@ -48,12 +48,12 @@ convert_matrix_to_df <- function(mat) {
 
 #' Build and create standard experiment directory structure
 #'
-#' Creates \code{output_dir} and a subdirectory named
+#' Creates \code{output_dir} and a sub-directory named
 #' \code{dicepro_<bulkName>_<refName>} inside it, then returns both paths.
 #'
 #' @param output_dir Character scalar. Root output directory.
-#' @param bulkName   Character scalar. Identifier for the bulk dataset.
-#' @param refName    Character scalar. Identifier for the reference dataset.
+#' @param bulkName   Character scalar. Identifier for the bulk data-set.
+#' @param refName    Character scalar. Identifier for the reference data-set.
 #'
 #' @return Named list with two elements:
 #' \describe{
