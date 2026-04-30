@@ -182,9 +182,13 @@ elements:
 
 ### BlueCode
 
-A gene x 34 cell-type reference signature matrix derived from sorted
-bulk RNA-seq profiles spanning five major tissue compartments: Immune
-(9), Stromal (8), Endothelial (3), Epithelial (5), and Muscle (9).
+A 13299 genes x 34 cell-type reference signature matrix derived from
+sorted bulk RNA-seq profiles spanning five major tissue compartments:
+Immune (9), Stromal (8), Endothelial (3), Epithelial (5), and Muscle
+(9). Immune cells (e.g., B cells, T cells, monocytes, macrophages, NK
+cells) Stromal cells (e.g., fibroblasts, MSC-like cells) Endothelial
+cells Epithelial cells Muscle-related cells (e.g., smooth muscle,
+myocytes)
 
 ``` r
 data(BlueCode)
@@ -194,8 +198,8 @@ colnames(BlueCode)
 
 ### CellMixtures
 
-A gene x 12 bulk RNA-seq matrix of experimentally constructed cell
-mixtures (samples A–L), paired with BlueCode for benchmarking.
+A 31422 genes x 12 bulk RNA-seq matrix of experimentally constructed
+cell mixtures (samples A–L), paired with BlueCode for benchmarking.
 
 ``` r
 data(CellMixtures)

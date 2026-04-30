@@ -807,15 +807,19 @@ one when the existing token has expired.</p>
 <hr />
 <h2 id="bundled-datasets">Bundled Datasets</h2>
 <h3 id="bluecode">BlueCode</h3>
-<p>A gene x 34 cell-type reference signature matrix derived from sorted
-bulk RNA-seq profiles spanning five major tissue compartments: Immune
-(9), Stromal (8), Endothelial (3), Epithelial (5), and Muscle (9).</p>
+<p>A 13299 genes x 34 cell-type reference signature matrix derived from
+sorted bulk RNA-seq profiles spanning five major tissue compartments:
+Immune (9), Stromal (8), Endothelial (3), Epithelial (5), and Muscle
+(9). Immune cells (e.g., B cells, T cells, monocytes, macrophages, NK
+cells) Stromal cells (e.g., fibroblasts, MSC-like cells) Endothelial
+cells Epithelial cells Muscle-related cells (e.g., smooth muscle,
+myocytes)</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">data</span>(BlueCode)</span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">dim</span>(BlueCode)</span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">colnames</span>(BlueCode)</span></code></pre></div>
 <h3 id="cellmixtures">CellMixtures</h3>
-<p>A gene x 12 bulk RNA-seq matrix of experimentally constructed cell
-mixtures (samples A–L), paired with BlueCode for benchmarking.</p>
+<p>A 31422 genes x 12 bulk RNA-seq matrix of experimentally constructed
+cell mixtures (samples A–L), paired with BlueCode for benchmarking.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">data</span>(CellMixtures)</span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">dim</span>(CellMixtures)</span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">colnames</span>(CellMixtures)</span></code></pre></div>
