@@ -2,7 +2,7 @@
 % Please edit documentation in R/dicepro.R
 \name{dicepro}
 \alias{dicepro}
-\title{Semi-supervised bulk RNA-seq deconvolution with hyper-parameter optimization}
+\title{Semi-supervised bulk RNA-seq deconvolution with hyperparameter optimisation}
 \usage{
 dicepro(
   reference,
@@ -10,8 +10,6 @@ dicepro(
   methodDeconv = "CSx",
   cibersortx_email = NULL,
   cibersortx_token = NULL,
-  cibersort_perm = 0L,
-  cibersort_QN = TRUE,
   W_prime = 0,
   bulkName = "Bulk",
   refName = "Reference",
@@ -19,159 +17,87 @@ dicepro(
   N_unknownCT = 1L,
   algo_select = "random",
   output_path = NULL,
-  hspaceTechniqueChoose = "gamma_dominant",
-  gamma_ratio_min = 10,
-  constraint_threshold = 0.1,
+  hspaceTechniqueChoose = "all",
   out_Decon = NULL,
   normalize = TRUE,
   seed = NULL
 )
 }
 \arguments{
-\item{reference}{Numeric matrix (genes * cell types).}
+\item{reference}{Numeric matrix (genes × cell types).}
 
-\item{bulk}{Numeric matrix (genes * samples).}
+\item{bulk}{Numeric matrix (genes × samples).}
 
-\item{methodDeconv}{Character. One of \code{"CSx"},
-\code{"CS"}, \code{"DCQ"}, \code{"FARDEEP"}.}
+\item{methodDeconv}{Character. One of \code{"CSx"}, \code{"DCQ"},
+\code{"CDSeq"}, \code{"FARDEEP"}.}
 
-\item{cibersortx_email}{Character. CIBERSORTx email (required for
-\code{"CSx"}).}
+\item{cibersortx_email}{CIBERSORTx email (required for \code{"CSx"}).}
 
-\item{cibersortx_token}{Character. CIBERSORTx token (required for
-\code{"CSx"}).}
-
-\item{cibersort_perm}{Non-negative integer. Number of permutations
-for p-value estimation in the built-in \code{"CIBERSORT"} method.
-Set to \code{0L} (default) to skip p-value computation. Ignored for
-all other methods.}
-
-\item{cibersort_QN}{Logical. Apply quantile normalization to the
-bulk mixture in the built-in \code{"CIBERSORT"} method (default
-\code{TRUE}). Ignored for all other methods.}
+\item{cibersortx_token}{CIBERSORTx token (required for \code{"CSx"}).}
 
 \item{W_prime}{Initial unknown-signature matrix or \code{0}.}
 
-\item{bulkName}{Character scalar. Label for the bulk data-set.}
+\item{bulkName}{Character scalar. Label for the bulk dataset.}
 
 \item{refName}{Character scalar. Label for the reference.}
 
-\item{hp_max_evals}{Positive integer. Number of hyper-parameter
-trials.}
+\item{hp_max_evals}{Positive integer. Number of hyperparameter trials.}
 
-\item{N_unknownCT}{Positive integer. Number of unknown cell
-types.}
+\item{N_unknownCT}{Positive integer. Number of unknown cell types.}
 
-\item{algo_select}{Character. One of \code{"random"},
-\code{"tpe"}, \code{"atpe"}, \code{"anneal"}.}
+\item{algo_select}{Character. One of \code{"random"}, \code{"tpe"},
+\code{"atpe"}, \code{"anneal"}.}
 
 \item{output_path}{Character scalar. Root output directory
 (\code{getwd()} by default).}
 
-\item{hspaceTechniqueChoose}{Character. One of \code{"gamma_dominant"}
-or \code{"all"}, or \code{"restrictionEspace"}.
-\strong{The most efficient and strongly recommended strategy is
-\code{"gamma_dominant"}, as it provides faster convergence and
-more precise results.}
-\describe{
-\item{\code{"gamma_dominant"}}{\strong{Recommended.}
-Same unconstrained grid as \code{"all"}, but candidates where
-\code{gamma <= gamma_ratio_min * lambda_} are rejected, ensuring
-\code{gamma >> lambda_}. This reduces the search space, leading
-to faster optimization and more stable solutions.}
+\item{hspaceTechniqueChoose}{Character. \code{"all"} or
+\code{"restrictionEspace"}.}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{"all"}\}\{Full independent log-uniform grid for
-  \code{lambda_}, \code{gamma}, \code{p_prime}.\}
+\item{out_Decon}{Optional precomputed deconvolution matrix
+(samples × cell types).}
 
-\\item\{\code{"restrictionEspace"}\}\{Restricted space where
-  \code{lambda_ = gamma * lambda_factor},
-  \code{lambda_factor} \eqn{\in [2, 100]}.\}
-}\if{html}{\out{</div>}}
+\item{normalize}{Logical. Apply z-score normalisation per gene.}
 
-}}
-
-\item{gamma_ratio_min}{Positive numeric. Minimum ratio
-\eqn{\gamma / \lambda} enforced when
-\code{hspaceTechniqueChoose = "gamma_dominant"} (default \code{10}).
-Ignored for other strategies.}
-
-\item{constraint_threshold}{Positive numeric. Maximum allowed deviation
-from the constraint (|1 - constraint|) when filtering hyper-parameter
-trials before Pareto selection (default \code{0.1}).
-\describe{
-\item{\code{0.05}}{Very strict (risk of no valid solution).}
-\item{\code{0.1}}{Good trade-off between feasibility and robustness.}
-\item{\code{0.2 -- 0.3}}{More permissive, useful for broader exploration.}
-}}
-
-\item{out_Decon}{Optional pre-computed deconvolution matrix
-(samples * cell types). When provided, the supervised deconvolution
-step is skipped entirely.}
-
-\item{normalize}{Logical. Apply z-score normalization per
-gene (default \code{TRUE}).}
-
-\item{seed}{Integer. Global random seed for
-reproducibility (default \code{42L}).}
+\item{seed}{Integer. Random seed used for full pipeline reproducibility.
+Defaults to \code{42L}. Ensures deterministic behaviour of the
+hyperparameter optimisation and downstream stochastic components.
+Set to \code{NULL} if you explicitly want non-reproducible runs.}
 }
 \value{
 An object of class \code{"dicepro"} (a named list) containing:
 \itemize{
-\item \code{hyper-parameters} -- selected \eqn{\lambda} and \eqn{\gamma}
-\item \code{metrics}         -- loss and constraint of the best trial
-\item \code{trials}          -- all evaluated configurations
-\item \code{W}               -- estimated unknown signature matrix
-\item \code{H}               -- estimated proportion matrix
-\item \code{plot}            -- Pareto frontier ggplot2 figure
-\item \code{plot_hyperopt}   -- hyper-parameter space ggplot2 figure
+\item \code{hyperparameters} — selected \eqn{\lambda} and \eqn{\gamma}
+\item \code{metrics}         — loss and constraint of the best trial
+\item \code{trials}          — all evaluated configurations
+\item \code{W}               — estimated unknown signature matrix
+\item \code{H}               — estimated proportion matrix
+\item \code{plot}            — Pareto frontier ggplot2 figure
+\item \code{plot_hyperopt}   — hyperparameter space ggplot2 figure
 }
 Returns \code{invisible(NULL)} with a warning when no valid configuration
 is found.
 }
 \description{
 Combines supervised estimation of known cell types with unsupervised
-discovery of latent components, using automatic Pareto-frontier-based
-hyper-parameter optimization.
+discovery of latent components, with automatic Pareto-frontier-based
+hyperparameter optimisation.
 }
 \details{
-When \code{out_Decon} is provided, the supervised step is skipped.
-Gene matrices are optionally z-score normalized per gene, and only
-intersecting genes are retained before optimization.
-
-The built-in \code{"CIBERSORT"} method closely follows Newman et al.
-(2015): nu-SVR with three candidate nu values (0.25, 0.50, 0.75),
-optional quantile normalization, and optional permutation-based p-values.
-It requires packages \pkg{e1071}, \pkg{parallel}, and
-\pkg{preprocessCore}. No external account or Docker installation is
-needed, unlike \code{"CSx"}.
+When \code{out_Decon} is provided the supervised step is skipped.
+Gene matrices are optionally z-score normalised per gene, and only
+intersecting genes are retained before optimisation.
 }
 \examples{
 \dontrun{
- # gamma >> lambda (gamma_dominant strategy)
-    # FARDEEP deconvolution
 res <- dicepro(
   reference    = BlueCode,
   bulk         = CellMixtures,
   methodDeconv = "FARDEEP",
   hp_max_evals = 50L
 )
-
-    # Built-in CIBERSORT (no Docker, no account)
-res <- dicepro(
-  reference      = BlueCode,
-  bulk           = CellMixtures,
-  methodDeconv   = "CS",
-  cibersort_perm = 100L,
-  cibersort_QN   = TRUE,
-  hp_max_evals   = 50L
-)
 }
 
-}
-\references{
-Newman AM et al. (2015). Robust enumeration of cell subsets from tissue
-expression profiles. \emph{Nature Methods}, 12(5), 453-457.
-\doi{10.1038/nmeth.3337}
 }
 \seealso{
 \code{\link{running_method}}, \code{\link{run_experiment}},

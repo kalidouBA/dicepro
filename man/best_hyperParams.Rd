@@ -8,17 +8,18 @@ best_hyperParams(trials_df, W, H, savePaths, constraint_threshold = 0.1)
 }
 \arguments{
 \item{trials_df}{data.frame of optimization trials as returned
-by \code{\link{research_hyperOpt}} (\code{$trials}).}
+by \code{\link{research_hyperOpt}} (\code{$trials}).  Must contain at
+least: \code{lambda_}, \code{gamma}, \code{frobNorm}, \code{constraint}.}
 
 \item{W}{List of \eqn{W} matrices, one per trial.}
 
 \item{H}{List of \eqn{H} matrices, one per trial.}
 
 \item{savePaths}{Character scalar. Root directory (kept for
-API compatibility; no file I/O performed here).}
+API compatibility; no file I/O is performed here).}
 
 \item{constraint_threshold}{Numeric scalar. Maximum allowed
-\eqn{|1 - \text{constraint}|}; trials above this are discarded
+\eqn{|1 - \text{constraint}|}; trials above this threshold are discarded
 (default \code{0.1}).}
 }
 \value{
@@ -26,22 +27,25 @@ Named list, or \code{invisible(NULL)} when no valid configuration
 survives filtering:
 \describe{
 \item{hyperparameters}{List with \code{lambda} and \code{gamma}.}
-\item{metrics}{List with \code{loss} and \code{constraint}.}
-\item{trials}{Filtered trials data.frame.}
+\item{metrics}{List with \code{frobNorm}, \code{abs_constraint}, and
+\code{constraint} for the selected trial.}
+\item{trials}{Filtered trials data.frame (constraint-passing rows only).}
 \item{W}{The \eqn{W} matrix of the selected trial.}
-\item{H}{The \eqn{H} matrix of the selected trial (first column
-dropped — the \code{Mixture} label column).}
-\item{plot}{ggplot2 Pareto frontier figure.}
+\item{H}{The \eqn{H} matrix of the selected trial.}
+\item{plot}{A \code{ggplot2} Pareto frontier figure.}
 }
 }
 \description{
 Identifies the best \eqn{(\lambda, \gamma)} pair from a set of
 optimization trials by:
 \enumerate{
-\item Filtering trials that exceed the constraint threshold.
-\item Computing constraint deviation (\code{abs_constraint}).
-\item Extracting the Pareto frontier (Frobenius norm vs. loss) via
-\code{KraljicMatrix::get_frontier}.
-\item Selecting the knee point — the best loss/constraint trade-off.
+\item Filtering trials where \eqn{|1 - \text{constraint}|} exceeds
+\code{constraint_threshold}.
+\item Computing \code{abs_constraint = |1 - constraint|}.
+\item Extracting the Pareto frontier (minimize \code{frobNorm} AND
+\code{abs_constraint}) via \code{KraljicMatrix::get_frontier}
+with \code{quadrant = "bottom.left"}.
+\item Selecting the knee point via maximum perpendicular distance to
+the utopia-nadir line in normalized objective space.
 }
 }

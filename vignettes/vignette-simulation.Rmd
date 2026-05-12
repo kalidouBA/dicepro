@@ -129,8 +129,8 @@ out <- dicepro(
 ```{r best-hp-synthetic}
 cat("Best lambda :", out$hyperparameters$lambda, "\n")
 cat("Best gamma  :", out$hyperparameters$gamma,  "\n")
-cat("Loss        :", out$metrics$loss,            "\n")
-cat("Constraint  :", out$metrics$constraint,      "\n")
+cat("Loss        :", out$metrics$loss,           "\n")
+cat("Constraint  :", out$metrics$constraint,     "\n")
 ```
 
 ### Hyperparameter Optimisation Report
