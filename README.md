@@ -137,9 +137,9 @@ docker pull cibersortx/fractions
 
 **Step 2 — Obtain a token**
 
-Request a token at <https://cibersortx.stanford.edu/getoken.php>. Tokens
-are tied to your account and expire periodically; request a new one when
-the existing token has expired.
+Request a token at <https://cibersortx.stanford.edu/> (you will first
+need to register). Tokens are tied to your account and expire
+periodically; request a new one when the existing token has expired.
 
 **Step 3 — Run dicepro with CIBERSORTx**
 
