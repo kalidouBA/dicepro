@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Kalidou BA \email{kalidou.ba@u-bordeaux.fr}
+\strong{Maintainer}: Kalidou BA \email{sistm.soft.maintain@gmail.com}
 
 Authors:
 \itemize{
