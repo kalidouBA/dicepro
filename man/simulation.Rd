@@ -111,14 +111,14 @@ Negative values are clipped to zero.
 \examples{
 set.seed(2101)
 sim <- simulation(
-    scenario   = "hierarchical",
-    nSample    = 20,
-    nGenes     = 100,
-    nCellsType = 10,
-    sigma_bio  = 0.07,
-    sigma_tech = 0.07,
-    seed       = 2101
-    )
+  scenario   = "hierarchical",
+  nSample    = 20,
+  nGenes     = 100,
+  nCellsType = 10,
+  sigma_bio  = 0.07,
+  sigma_tech = 0.07,
+  seed       = 2101
+)
 dim(sim$p)  # 20 x 10
 dim(sim$B)  # 100 x 20
 }

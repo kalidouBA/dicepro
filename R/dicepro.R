@@ -154,7 +154,7 @@
     )
 
     if (methodDeconv == "CSx" &&
-        (is.null(cibersortx_email) || is.null(cibersortx_token)))
+      (is.null(cibersortx_email) || is.null(cibersortx_token)))
       stop("CIBERSORTx credentials required for CSx.", call. = FALSE)
 
     out_Decon <- running_method(
@@ -229,8 +229,7 @@
   best_hyperParams(
     trials_df = res$trials,
     W         = res$W,
-    H         = res$H,
-    savePaths = output_dir
+    H         = res$H
   )
 }
 
@@ -321,9 +320,9 @@
 #'   (samples × cell types).
 #' @param normalize           Logical. Apply z-score normalisation per gene.
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
-#'   Defaults to \code{42L}. Ensures deterministic behaviour of the
+#'   Defaults to \code{NULL}. If set, ensures deterministic behaviour of the
 #'   hyperparameter optimisation and downstream stochastic components.
-#'   Set to \code{NULL} if you explicitly want non-reproducible runs.
+#'   Set to \code{NULL} if you explicitly want random (non-reproducible) runs.
 #'
 #' @return An object of class \code{"dicepro"} (a named list) containing:
 #' \itemize{
@@ -386,7 +385,6 @@ dicepro <- function(reference,
                     out_Decon             = NULL,
                     normalize             = TRUE,
                     seed                  = NULL) {
-
   # ---- Validation ----------------------------------------------------------
   args                  <- .validate_inputs(normalize, algo_select, hspaceTechniqueChoose)
   normalize             <- args$normalize
@@ -422,8 +420,6 @@ dicepro <- function(reference,
     all               = c("gamma", "lambda_", "p_prime"),
     restrictionEspace = c("gamma", "lambda_factor", "p_prime")
   )
-
-  seed <- seed %||% 42L
 
   # ---- Hyperparameter optimisation -----------------------------------------
   out <- .run_hyperopt(

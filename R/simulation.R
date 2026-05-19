@@ -42,7 +42,7 @@
 .rdirichlet <- function(n, alpha) {
   k     <- length(alpha)
   draws <- matrix(stats::rgamma(n * k, shape = alpha, rate = 1L),
-                  nrow = n, ncol = k, byrow = TRUE)
+    nrow = n, ncol = k, byrow = TRUE)
   draws / rowSums(draws)
 }
 
@@ -148,8 +148,10 @@
                                     cell_groups,
                                     alpha_groups,
                                     alpha_subtypes,
-                                    seed) {
-  set.seed(seed)
+                                    seed = NULL) {
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
 
   # Level 1: draw compartment proportions for all samples simultaneously
   group_props <- .rdirichlet(nSample, alpha_groups)
@@ -218,7 +220,7 @@
 #'   \code{scenario = "bluecode"}.
 #'   Default: all compartments set to \code{8}.
 #' @param seed Integer. Random seed. Only used when \code{scenario =
-#'   "bluecode"}. Default: \code{1234}.
+#'   "bluecode"}. Default: \code{NULL}.
 #'
 #' @return A numeric matrix of dimensions \code{nSample x n_cell_types} where
 #'   each row sums to 1. For all scenarios except \code{"bluecode"}, row names
@@ -237,13 +239,13 @@
 #' # Equal proportions
 #' prop_even <- generateProp(nSample = 20, n_cell_types = 10, scenario = "even")
 #'
-#'   # Generic hierarchical Dirichlet
+#' # Generic hierarchical Dirichlet
 #' prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
-#' scenario = "hierarchical")
+#'   scenario = "hierarchical")
 #' all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
 #'
 #' # BlueCode hierarchical Dirichlet (real cell-type names)
-#' prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
+#' prop_bc <- generateProp(nSample = 20, scenario = "bluecode")
 #' colnames(prop_bc)  # real BlueCode cell-type names
 generateProp <- function(n_cell_types   = NULL,
                          nSample,
@@ -270,8 +272,8 @@ generateProp <- function(n_cell_types   = NULL,
     m <- round(
       matrix(
         abs(rnorm(n_cell_types,
-                  mean = 1 / n_cell_types,
-                  sd   = 0.01)),
+          mean = 1 / n_cell_types,
+          sd   = 0.01)),
         ncol = n_cell_types
       ), 3
     )
@@ -290,8 +292,8 @@ generateProp <- function(n_cell_types   = NULL,
       P <- runif(num.CT, min.percentage, max.percentage)
       P <- round(P / sum(P), digits = log10(nCell))
       P <- data.frame(CT       = selected.CT,
-                      expected = P,
-                      stringsAsFactors = FALSE)
+        expected = P,
+        stringsAsFactors = FALSE)
 
       missing.CT <- data.frame(
         CT       = CT[!CT %in% selected.CT],
@@ -304,8 +306,8 @@ generateProp <- function(n_cell_types   = NULL,
 
     m <- matrix(
       aggregate(P_all$expected,
-                list(P_all$CT),
-                FUN = mean)$x,
+        list(P_all$CT),
+        FUN = mean)$x,
       ncol = n_cell_types
     )
 
@@ -573,14 +575,14 @@ generate_ref_matrix <- function(loi              = "rpois",
 #' @examples
 #' set.seed(2101)
 #' sim <- simulation(
-#'     scenario   = "hierarchical",
-#'     nSample    = 20,
-#'     nGenes     = 100,
-#'     nCellsType = 10,
-#'     sigma_bio  = 0.07,
-#'     sigma_tech = 0.07,
-#'     seed       = 2101
-#'     )
+#'   scenario   = "hierarchical",
+#'   nSample    = 20,
+#'   nGenes     = 100,
+#'   nCellsType = 10,
+#'   sigma_bio  = 0.07,
+#'   sigma_tech = 0.07,
+#'   seed       = 2101
+#' )
 #' dim(sim$p)  # 20 x 10
 #' dim(sim$B)  # 100 x 20
 simulation <- function(W                = NULL,
@@ -601,7 +603,6 @@ simulation <- function(W                = NULL,
                        sigma_bio        = 0.07,
                        sigma_tech       = 0.07,
                        seed             = 1234) {
-
   # ── Reference matrix ──────────────────────────────────────────────────────
   if (is.null(W)) {
     W <- generate_ref_matrix(
@@ -743,36 +744,34 @@ simulation <- function(W                = NULL,
 #'
 #' @examples
 #' sim <- simulation_bluecode(
-#'     nSample    = 30,
-#'     sigma_bio  = 0.15,
-#'     sigma_tech = 0.02,
-#'     seed       = 42
-#'   )
+#'   nSample    = 30,
+#'   sigma_bio  = 0.15,
+#'   sigma_tech = 0.02
+#' )
 #' dim(sim$p)
 #' dim(sim$W)
 #' dim(sim$B)
 #' all(abs(rowSums(sim$p) - 1) < 1e-8)
 simulation_bluecode <- function(
-    nSample        = 50,
-    alpha_groups   = c(
-      Immune      = 4.0,
-      Stromal     = 2.5,
-      Endothelial = 1.8,
-      Epithelial  = 1.8,
-      Muscle      = 1.5
-    ),
-    alpha_subtypes = list(
-      Immune      = 8,
-      Stromal     = 8,
-      Endothelial = 8,
-      Epithelial  = 8,
-      Muscle      = 8
-    ),
-    sigma_bio   = 0.15,
-    sigma_tech  = 0.02,
-    seed        = 1234
+  nSample        = 50,
+  alpha_groups   = c(
+    Immune      = 4.0,
+    Stromal     = 2.5,
+    Endothelial = 1.8,
+    Epithelial  = 1.8,
+    Muscle      = 1.5
+  ),
+  alpha_subtypes = list(
+    Immune      = 8,
+    Stromal     = 8,
+    Endothelial = 8,
+    Epithelial  = 8,
+    Muscle      = 8
+  ),
+  sigma_bio   = 0.15,
+  sigma_tech  = 0.02,
+  seed        = NULL
 ) {
-
   # ── 0. Load BlueCode from the package namespace ───────────────────────────
   # Avoids relying on the user having BlueCode in their global environment.
   W <- get("BlueCode", envir = asNamespace(utils::packageName()))
@@ -805,7 +804,6 @@ simulation_bluecode <- function(
 
   # ── 5. Biological noise: multiplicative log-normal ─────────────────────────
   # seed + 1L keeps proportion and noise sampling independently reproducible
-  set.seed(seed + 1L)
   bio_noise  <- matrix(
     rnorm(length(bulk), mean = 0, sd = sigma_bio),
     nrow = nrow(bulk), ncol = ncol(bulk)

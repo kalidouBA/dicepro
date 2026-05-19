@@ -60,9 +60,9 @@ tempdir(); pass an explicit directory to persist results across sessions.}
 \item{normalize}{Logical. Apply z-score normalisation per gene.}
 
 \item{seed}{Integer. Random seed used for full pipeline reproducibility.
-Defaults to \code{42L}. Ensures deterministic behaviour of the
+Defaults to \code{NULL}. If set, ensures deterministic behaviour of the
 hyperparameter optimisation and downstream stochastic components.
-Set to \code{NULL} if you explicitly want non-reproducible runs.}
+Set to \code{NULL} if you explicitly want random (non-reproducible) runs.}
 }
 \value{
 An object of class \code{"dicepro"} (a named list) containing:

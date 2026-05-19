@@ -22,7 +22,6 @@ Depends: R (>= 4.1.0)
 Encoding: UTF-8
 License: MIT + file LICENSE
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 LazyData: true
 LazyDataCompression: xz
 Config/testthat/edition: 3
@@ -40,7 +39,6 @@ Imports:
     FARDEEP,
     ComICS,
     lme4,
-    withr,
     e1071,
     preprocessCore,
     parallel
@@ -50,3 +48,4 @@ Suggests:
     testthat (>= 3.0.0)
 URL: https://github.com/kalidouBA/dicepro
 BugReports: https://github.com/kalidouBA/dicepro/issues
+Config/roxygen2/version: 8.0.0

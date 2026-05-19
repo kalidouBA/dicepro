@@ -9,8 +9,7 @@ nmf_lbfgsb_hyperOpt(
   W_prime = NULL,
   p_prime = NULL,
   lambda_ = 10,
-  gamma_par = 100,
-  path2save = ""
+  gamma_par = 100
 )
 }
 \arguments{
@@ -24,8 +23,6 @@ If \code{NULL}, defaults to a matrix of \code{0.1}.}
 \item{lambda_}{Numeric. Regularization parameter \eqn{\lambda}.}
 
 \item{gamma_par}{Numeric. Regularization parameter \eqn{\gamma}.}
-
-\item{path2save}{Character. Path passed to \code{nmf_lbfgsb}.}
 }
 \value{
 List output from \code{\link{nmf_lbfgsb}} with \code{H} and

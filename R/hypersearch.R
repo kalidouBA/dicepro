@@ -87,7 +87,6 @@ contains_nan_or_inf <- function(value) {
 #'   If \code{NULL}, defaults to a matrix of \code{0.1}.
 #' @param lambda_   Numeric. Regularization parameter \eqn{\lambda}.
 #' @param gamma_par Numeric. Regularization parameter \eqn{\gamma}.
-#' @param path2save Character. Path passed to \code{nmf_lbfgsb}.
 #'
 #' @return List output from \code{\link{nmf_lbfgsb}} with \code{H} and
 #'   \code{W} cleaned by \code{.clean_nmf_matrix}.
@@ -97,8 +96,7 @@ nmf_lbfgsb_hyperOpt <- function(dataset,
                                 W_prime   = NULL,
                                 p_prime   = NULL,
                                 lambda_   = 10,
-                                gamma_par = 100,
-                                path2save = "") {
+                                gamma_par = 100) {
 
   B    <- as.data.frame(dataset$B)
   W_cb <- as.data.frame(dataset$W)
@@ -134,7 +132,6 @@ nmf_lbfgsb_hyperOpt <- function(dataset,
     p_prime     = p_prime,
     lambda_     = lambda_,
     gamma_par   = gamma_par,
-    path2save   = path2save,
     N_unknownCT = N_unknownCT
   )
 
@@ -191,8 +188,7 @@ objective_opt <- function(dataset,
     W_prime   = W_prime,
     p_prime   = p_prime,
     lambda_   = lambda_,
-    gamma_par = gamma,
-    path2save = exp_dir
+    gamma_par = gamma
   )
 
   # --- Coerce result components to plain scalars/matrices -------------------
@@ -219,11 +215,11 @@ objective_opt <- function(dataset,
 
   # --- Guard: discard trials with non-finite values -------------------------
   if (contains_nan_or_inf(.sc(result_dict$objectiveValue)) ||
-      contains_nan_or_inf(.sc(result_dict$constraint))     ||
-      any(is.na(c(
-        .sc(result_dict$frob_H), .sc(result_dict$var_H),
-        .sc(result_dict$frob_W), .sc(result_dict$var_W)
-      )))) {
+    contains_nan_or_inf(.sc(result_dict$constraint))     ||
+    any(is.na(c(
+      .sc(result_dict$frob_H), .sc(result_dict$var_H),
+      .sc(result_dict$frob_W), .sc(result_dict$var_W)
+    )))) {
     return(NULL)
   }
 
@@ -311,7 +307,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
       )
 
       if (is.null(returned_dict) ||
-          (!is.null(returned_dict$status) && returned_dict$status != "OK")) {
+        (!is.null(returned_dict$status) && returned_dict$status != "OK")) {
         return(NULL)
       }
 
@@ -406,9 +402,9 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
   # Normalise every spec once, delegating entirely to the shared parser.
   space <- stats::setNames(
     mapply(.parse_hyperopt_searchspace,
-           arg   = space_names,
-           specs = space,
-           SIMPLIFY = FALSE),
+      arg   = space_names,
+      specs = space,
+      SIMPLIFY = FALSE),
     space_names
   )
 
@@ -420,29 +416,29 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
     for (param_name in space_names) {
       spec <- space[[param_name]]
       params[[param_name]] <- switch(spec$type,
-                                     choice      = sample(spec$choices, 1L)[[1L]],
-                                     randint     = sample(seq.int(spec$low, spec$high), 1L),
-                                     uniform     = stats::runif(1L, spec$low, spec$high),
-                                     quniform    = {
-                                       v <- stats::runif(1L, spec$low, spec$high)
-                                       round(v / spec$q) * spec$q
-                                     },
-                                     loguniform  = exp(stats::runif(1L, log(spec$low), log(spec$high))),
-                                     qloguniform = {
-                                       v <- exp(stats::runif(1L, log(spec$low), log(spec$high)))
-                                       round(v / spec$q) * spec$q
-                                     },
-                                     normal      = stats::rnorm(1L, spec$mu, spec$sigma),
-                                     qnormal     = {
-                                       v <- stats::rnorm(1L, spec$mu, spec$sigma)
-                                       round(v / spec$q) * spec$q
-                                     },
-                                     lognormal   = stats::rlnorm(1L, spec$mu, spec$sigma),
-                                     qlognormal  = {
-                                       v <- stats::rlnorm(1L, spec$mu, spec$sigma)
-                                       round(v / spec$q) * spec$q
-                                     },
-                                     stop(paste("Unknown search space type:", spec$type))
+        choice      = sample(spec$choices, 1L)[[1L]],
+        randint     = sample(seq.int(spec$low, spec$high), 1L),
+        uniform     = stats::runif(1L, spec$low, spec$high),
+        quniform    = {
+          v <- stats::runif(1L, spec$low, spec$high)
+          round(v / spec$q) * spec$q
+        },
+        loguniform  = exp(stats::runif(1L, log(spec$low), log(spec$high))),
+        qloguniform = {
+          v <- exp(stats::runif(1L, log(spec$low), log(spec$high)))
+          round(v / spec$q) * spec$q
+        },
+        normal      = stats::rnorm(1L, spec$mu, spec$sigma),
+        qnormal     = {
+          v <- stats::rnorm(1L, spec$mu, spec$sigma)
+          round(v / spec$q) * spec$q
+        },
+        lognormal   = stats::rlnorm(1L, spec$mu, spec$sigma),
+        qlognormal  = {
+          v <- stats::rlnorm(1L, spec$mu, spec$sigma)
+          round(v / spec$q) * spec$q
+        },
+        stop(paste("Unknown search space type:", spec$type))
       )
     }
 
@@ -480,7 +476,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 
   warning(sprintf(
     paste0(".sample_from_space: no candidate satisfying gamma > %.4g * lambda_ ",
-           "found in %d attempts. The last draw is returned as-is."),
+      "found in %d attempts. The last draw is returned as-is."),
     gamma_ratio_min, max_tries
   ), call. = FALSE)
 
@@ -557,7 +553,7 @@ research_hyperOpt <- function(objective_opt,
 
   config <- .parse_config(config)
 
-  if(!is.null(seed)){
+  if (!is.null(seed)) {
     set.seed(seed)
   }
 
@@ -594,10 +590,10 @@ research_hyperOpt <- function(objective_opt,
 
       params <- if (use_tpe) {
         .tpe_sample(search_space, tpe_history,
-                    gamma_ratio_min = gamma_ratio_min)
+          gamma_ratio_min = gamma_ratio_min)
       } else {
         .sample_from_space(search_space,
-                           gamma_ratio_min = gamma_ratio_min)
+          gamma_ratio_min = gamma_ratio_min)
       }
 
       res <- tryCatch(
@@ -683,7 +679,7 @@ research_hyperOpt <- function(objective_opt,
   candidates <- lapply(
     seq_len(n_candidates),
     function(.) .sample_from_space(search_space,
-                                   gamma_ratio_min = gamma_ratio_min)
+      gamma_ratio_min = gamma_ratio_min)
   )
 
   scores <- vapply(candidates, function(cand) {
@@ -694,11 +690,11 @@ research_hyperOpt <- function(objective_opt,
       if (is.null(x_val)) next
 
       good_vals <- vapply(history[good_idx],
-                          function(h) h$params[[pname]] %||% NA_real_,
-                          numeric(1L))
+        function(h) h$params[[pname]] %||% NA_real_,
+        numeric(1L))
       bad_vals  <- vapply(history[bad_idx],
-                          function(h) h$params[[pname]] %||% NA_real_,
-                          numeric(1L))
+        function(h) h$params[[pname]] %||% NA_real_,
+        numeric(1L))
 
       good_vals <- good_vals[!is.na(good_vals)]
       bad_vals  <- bad_vals[!is.na(bad_vals)]
@@ -768,22 +764,22 @@ research_hyperOpt <- function(objective_opt,
   for (arg in required_args) {
     if (is.null(config[[arg]]))
       stop(paste("No", arg, "argument found in configuration file."),
-           call. = FALSE)
+        call. = FALSE)
   }
 
   valid_methods <- c("tpe", "random", "atpe", "anneal")
   if (!config$hp_method %in% valid_methods)
     stop(
       paste("Unknown hyperopt algorithm:", config$hp_method,
-            "-- valid options:", paste(valid_methods, collapse = ", ")),
+        "-- valid options:", paste(valid_methods, collapse = ", ")),
       call. = FALSE
     )
 
   # Validation of the optional ratio (all_gamma_dominant mode)
   if (!is.null(config$gamma_ratio_min)) {
     if (!is.numeric(config$gamma_ratio_min) ||
-        length(config$gamma_ratio_min) != 1L ||
-        config$gamma_ratio_min <= 0) {
+      length(config$gamma_ratio_min) != 1L ||
+      config$gamma_ratio_min <= 0) {
       stop("'gamma_ratio_min' must be a single positive numeric.", call. = FALSE)
     }
   }
@@ -844,42 +840,42 @@ research_hyperOpt <- function(objective_opt,
   .n   <- as.numeric
 
   switch(type,
-         choice      = list(type    = "choice",
-                            choices = specs[-1L]),
-         randint     = list(type    = "randint",
-                            low     = as.integer(specs[[2L]]),
-                            high    = as.integer(specs[[3L]])),
-         uniform     = list(type    = "uniform",
-                            low     = .n(specs[[2L]]),
-                            high    = .n(specs[[3L]])),
-         quniform    = list(type    = "quniform",
-                            low     = .n(specs[[2L]]),
-                            high    = .n(specs[[3L]]),
-                            q       = .n(specs[[4L]])),
-         loguniform  = list(type    = "loguniform",
-                            low     = .n(specs[[2L]]),
-                            high    = .n(specs[[3L]])),
-         qloguniform = list(type    = "qloguniform",
-                            low     = .n(specs[[2L]]),
-                            high    = .n(specs[[3L]]),
-                            q       = .n(specs[[4L]])),
-         normal      = list(type    = "normal",
-                            mu      = .n(specs[[2L]]),
-                            sigma   = .n(specs[[3L]])),
-         qnormal     = list(type    = "qnormal",
-                            mu      = .n(specs[[2L]]),
-                            sigma   = .n(specs[[3L]]),
-                            q       = .n(specs[[4L]])),
-         lognormal   = list(type    = "lognormal",
-                            mu      = .n(specs[[2L]]),
-                            sigma   = .n(specs[[3L]])),
-         qlognormal  = list(type    = "qlognormal",
-                            mu      = .n(specs[[2L]]),
-                            sigma   = .n(specs[[3L]]),
-                            q       = .n(specs[[4L]])),
-         stop(sprintf(
-           "Unknown search space type '%s' for parameter '%s'.", type, arg
-         ), call. = FALSE)
+    choice      = list(type    = "choice",
+      choices = specs[-1L]),
+    randint     = list(type    = "randint",
+      low     = as.integer(specs[[2L]]),
+      high    = as.integer(specs[[3L]])),
+    uniform     = list(type    = "uniform",
+      low     = .n(specs[[2L]]),
+      high    = .n(specs[[3L]])),
+    quniform    = list(type    = "quniform",
+      low     = .n(specs[[2L]]),
+      high    = .n(specs[[3L]]),
+      q       = .n(specs[[4L]])),
+    loguniform  = list(type    = "loguniform",
+      low     = .n(specs[[2L]]),
+      high    = .n(specs[[3L]])),
+    qloguniform = list(type    = "qloguniform",
+      low     = .n(specs[[2L]]),
+      high    = .n(specs[[3L]]),
+      q       = .n(specs[[4L]])),
+    normal      = list(type    = "normal",
+      mu      = .n(specs[[2L]]),
+      sigma   = .n(specs[[3L]])),
+    qnormal     = list(type    = "qnormal",
+      mu      = .n(specs[[2L]]),
+      sigma   = .n(specs[[3L]]),
+      q       = .n(specs[[4L]])),
+    lognormal   = list(type    = "lognormal",
+      mu      = .n(specs[[2L]]),
+      sigma   = .n(specs[[3L]])),
+    qlognormal  = list(type    = "qlognormal",
+      mu      = .n(specs[[2L]]),
+      sigma   = .n(specs[[3L]]),
+      q       = .n(specs[[4L]])),
+    stop(sprintf(
+      "Unknown search space type '%s' for parameter '%s'.", type, arg
+    ), call. = FALSE)
   )
 }
 

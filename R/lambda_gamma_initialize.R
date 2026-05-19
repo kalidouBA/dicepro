@@ -31,22 +31,19 @@
 #'   }
 #' @param n_samples Positive integer. Configurations to draw (default \code{200L}).
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
-#'   Defaults to \code{42L}.
+#'   Defaults to \code{NULL}.
 #' @return A \code{ggplot2} figure object.
 #'
 #' @export
 #' @examples
 #' create_gamma_lambda_plot(hspaceTechniqueChoose = "all")
 #' create_gamma_lambda_plot(hspaceTechniqueChoose = "restrictionEspace")
-
 create_gamma_lambda_plot <- function(
-    hspaceTechniqueChoose = c("all", "restrictionEspace"),
-    n_samples             = 200L,
-    seed                  = NULL) {
+  hspaceTechniqueChoose = c("all", "restrictionEspace"),
+  n_samples             = 200L,
+  seed                  = NULL) {
 
   hspaceTechniqueChoose <- match.arg(hspaceTechniqueChoose)
-
-  if (is.null(seed)) seed <- 42L
 
   raw_space <- switch(
     hspaceTechniqueChoose,
@@ -58,10 +55,12 @@ create_gamma_lambda_plot <- function(
     restrictionEspace = .custom_space()
   )
 
-  samples <- withr::with_seed(seed, {
-    lapply(seq_len(n_samples), function(i) {
-      .sample_from_space(raw_space)
-    })
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  samples <- lapply(seq_len(n_samples), function(i) {
+    .sample_from_space(raw_space)
   })
 
   plot_df <- data.frame(

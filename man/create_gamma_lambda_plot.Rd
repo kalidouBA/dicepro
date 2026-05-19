@@ -25,7 +25,7 @@ Lower (\eqn{\lambda = 2\gamma}) and upper
 \item{n_samples}{Positive integer. Configurations to draw (default \code{200L}).}
 
 \item{seed}{Integer. Random seed used for full pipeline reproducibility.
-Defaults to \code{42L}.}
+Defaults to \code{NULL}.}
 }
 \value{
 A \code{ggplot2} figure object.

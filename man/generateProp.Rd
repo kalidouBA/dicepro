@@ -39,7 +39,7 @@ concentration parameters for the five tissue compartments
 (Immune, Stromal, Endothelial, Epithelial, Muscle). Only used when
 \code{scenario = "bluecode"}.
 Default: \code{c(Immune=4, Stromal=2.5, Endothelial=1.8, Epithelial=1.8,
-  Muscle=1.5)}.}
+Muscle=1.5)}.}
 
 \item{alpha_subtypes}{Named list with one scalar per compartment. Controls
 the concentration of sub-type Dirichlet draws within each compartment.
@@ -48,7 +48,7 @@ Higher values produce more even sub-type distributions. Only used when
 Default: all compartments set to \code{8}.}
 
 \item{seed}{Integer. Random seed. Only used when \code{scenario =
-"bluecode"}. Default: \code{1234}.}
+"bluecode"}. Default: \code{NULL}.}
 }
 \value{
 A numeric matrix of dimensions \code{nSample x n_cell_types} where
@@ -72,12 +72,12 @@ set.seed(2101)
 # Equal proportions
 prop_even <- generateProp(nSample = 20, n_cell_types = 10, scenario = "even")
 
-  # Generic hierarchical Dirichlet
+# Generic hierarchical Dirichlet
 prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
-scenario = "hierarchical")
+  scenario = "hierarchical")
 all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
 
 # BlueCode hierarchical Dirichlet (real cell-type names)
-prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
+prop_bc <- generateProp(nSample = 20, scenario = "bluecode")
 colnames(prop_bc)  # real BlueCode cell-type names
 }
