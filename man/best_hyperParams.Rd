@@ -4,7 +4,7 @@
 \alias{best_hyperParams}
 \title{Select optimal hyper-parameters using a Pareto frontier}
 \usage{
-best_hyperParams(trials_df, W, H, savePaths, constraint_threshold = 0.1)
+best_hyperParams(trials_df, W, H, constraint_threshold = 0.1)
 }
 \arguments{
 \item{trials_df}{data.frame of optimization trials as returned
@@ -14,9 +14,6 @@ least: \code{lambda_}, \code{gamma}, \code{frobNorm}, \code{constraint}.}
 \item{W}{List of \eqn{W} matrices, one per trial.}
 
 \item{H}{List of \eqn{H} matrices, one per trial.}
-
-\item{savePaths}{Character scalar. Root directory (kept for
-API compatibility; no file I/O is performed here).}
 
 \item{constraint_threshold}{Numeric scalar. Maximum allowed
 \eqn{|1 - \text{constraint}|}; trials above this threshold are discarded

@@ -39,8 +39,6 @@
 #' @param gamma_par  Numeric scalar. Penalty coefficient for the sum-to-one
 #'   constraint (default \code{100}). Reduce if the optimizer returns
 #'   infinite values.
-#' @param path2save  Character scalar. Directory where intermediate results
-#'   may be saved (currently unused; reserved for future use).
 #' @param N_unknownCT Positive integer. Number of latent cell types to
 #'   estimate (default \code{1}).
 #' @param con        Named list of control parameters forwarded to
@@ -73,7 +71,6 @@ nmf_lbfgsb <- function(r_dataset,
                        p_prime     = 0,
                        lambda_     = 10,
                        gamma_par   = 100,
-                       path2save   = "",
                        N_unknownCT = 1L,
                        con         = list(maxit = 3000L)) {
 

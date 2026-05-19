@@ -248,8 +248,6 @@
 #'   least: \code{lambda_}, \code{gamma}, \code{frobNorm}, \code{constraint}.
 #' @param W                    List of \eqn{W} matrices, one per trial.
 #' @param H                    List of \eqn{H} matrices, one per trial.
-#' @param savePaths            Character scalar. Root directory (kept for
-#'   API compatibility; no file I/O is performed here).
 #' @param constraint_threshold Numeric scalar. Maximum allowed
 #'   \eqn{|1 - \text{constraint}|}; trials above this threshold are discarded
 #'   (default \code{0.1}).
@@ -270,7 +268,6 @@
 best_hyperParams <- function(trials_df,
                              W,
                              H,
-                             savePaths,
                              constraint_threshold = 0.1) {
 
   # ── Guard: empty input ──────────────────────────────────────────────────────

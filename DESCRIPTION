@@ -1,6 +1,6 @@
 Package: dicepro
 Title: Semi-Supervised Deconvolution of Bulk RNA-Seq Data with Hyperparameter Optimization
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Kalidou", "BA",
            role  = c("aut", "cre"),
@@ -10,9 +10,9 @@ Authors@R: c(
            email = "boris.hejblum@u-bordeaux.fr"))
 Description: Performs semi-supervised deconvolution of bulk RNA sequencing
     (RNA-seq) data. Known cell-type proportions are estimated using
-    supervised methods — CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP (Fast
+    supervised methods -- CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP (Fast
     And Robust DEconvolution of Expression Profiles), and DCQ (Digital
-    Cell Quantifier) — while unknown components are inferred using
+    Cell Quantifier) -- while unknown components are inferred using
     non-negative matrix factorization (NMF) with limited-memory
     Broyden-Fletcher-Goldfarb-Shanno with bounds (L-BFGS-B) optimization.
     Hyperparameters are selected automatically using a Pareto-frontier-based

@@ -56,9 +56,9 @@ run_experiment <- function(dataset,
                            refName,
                            hp_max_evals,
                            algo_select,
-                           output_base_dir       = ".",
+                           output_base_dir = tempdir(),
                            hspaceTechniqueChoose,
-                           gamma_ratio_min        = 10,
+                           gamma_ratio_min = 10,
                            seed) {
 
   paths <- .generate_experiment_paths(
