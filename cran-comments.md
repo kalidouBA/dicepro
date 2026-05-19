@@ -9,7 +9,9 @@
 ## R CMD check results
 0 errors | 0 warnings | 1 note  
 
-* This is a new release.
+This is a resubmission (1.0.1) of dicepro intial release, addressing all the points raised
+in the previous review.
+
 * On some architectures, the size of the compiled code may lead to a note during checks. These compiled components are required to ensure reasonable computation times for dicepro.
 * Some words can be wrongly flagged as misspelled (those are listed in inst/WORDLIST).
 
