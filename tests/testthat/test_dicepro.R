@@ -2,11 +2,11 @@ test_that("dicepro runs on simulated data with incomplete reference", {
   skip_on_cran()
 
   library(dicepro)
-  set.seed(42L)
+  set.seed(2026)
 
-  nCellsType <- 5L
-  nGenes     <- 50L
-  nSample    <- 10L
+  nCellsType <- 5
+  nGenes     <- 50
+  nSample    <- 10
 
   # ---- Simulate — single call guarantees W / p / B column alignment -------
   sim <- simulation(
@@ -17,7 +17,7 @@ test_that("dicepro runs on simulated data with incomplete reference", {
     nCellsType = nCellsType,
     sigma_bio  = 0.07,
     sigma_tech = 0.07,
-    seed       = 42L
+    seed       = 123
   )
 
   expect_true(is.data.frame(sim$B) || is.matrix(sim$B))
@@ -44,7 +44,8 @@ test_that("dicepro runs on simulated data with incomplete reference", {
     hp_max_evals          = 5L,
     algo_select           = "random",
     output_path           = tempdir(),
-    hspaceTechniqueChoose = "all"
+    hspaceTechniqueChoose = "all",
+    seed = 2026
   )
   if (is.null(out)) {
     skip("All hyperparameter trials failed — increase nGenes/nCellsType or hp_max_evals.")
@@ -54,11 +55,13 @@ test_that("dicepro runs on simulated data with incomplete reference", {
   # ---- Check output structure ---------------------------------------------
   expect_s3_class(out, "dicepro")
   expect_named(out, c("hyperparameters", "metrics", "trials",
-                      "W", "H", "plot", "plot_hyperopt"),
-               ignore.order = TRUE)
+    "W", "H", "plot", "plot_hyperopt"),
+  ignore.order = TRUE)
   expect_true(is.numeric(out$hyperparameters$lambda))
   expect_true(is.numeric(out$hyperparameters$gamma))
-  expect_true(is.numeric(out$metrics$loss))
+  expect_true(is.numeric(out$metrics$frobNorm))
+  expect_true(is.numeric(out$metrics$abs_constraint))
+  expect_true(is.numeric(out$metrics$constraint))
   expect_true(is.data.frame(out$trials))
   expect_gt(nrow(out$trials), 0L)
 
