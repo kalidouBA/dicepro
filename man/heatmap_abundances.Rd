@@ -34,7 +34,6 @@ type across NMF iterations (or samples). Color encodes abundance using
 the viridis scale (reversed: dark = high abundance).
 }
 \examples{
-\dontrun{
 df <- data.frame(
   Iterate   = 1:10,
   CellTypeA = runif(10),
@@ -42,6 +41,5 @@ df <- data.frame(
 )
 heatmap_abundances(df)
 heatmap_abundances(df, title = "Estimated abundances", midpoint = 0.5)
-}
 
 }

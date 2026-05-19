@@ -4,7 +4,13 @@
 \alias{run_CSx}
 \title{Run CIBERSORTx Deconvolution Method}
 \usage{
-run_CSx(bulk, reference, cibersortx_email, cibersortx_token)
+run_CSx(
+  bulk,
+  reference,
+  cibersortx_email,
+  cibersortx_token,
+  work_dir = tempdir()
+)
 }
 \arguments{
 \item{bulk}{A matrix of bulk RNA-seq data.}
@@ -14,6 +20,9 @@ run_CSx(bulk, reference, cibersortx_email, cibersortx_token)
 \item{cibersortx_email}{The CIBERSORTx account email.}
 
 \item{cibersortx_token}{The CIBERSORTx account token.}
+
+\item{work_dir}{Character. Path to the working directory where CIBERSORTx
+output files are written. Defaults to \code{tempdir()}.}
 }
 \value{
 A matrix containing the estimated cell type proportions.

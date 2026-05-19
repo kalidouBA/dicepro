@@ -86,7 +86,6 @@
 #'   \code{ggplot2::ggsave()}.
 #'
 #' @examples
-#' \dontrun{
 #' df <- data.frame(
 #'   Iterate   = 1:10,
 #'   CellTypeA = runif(10),
@@ -94,7 +93,6 @@
 #' )
 #' heatmap_abundances(df)
 #' heatmap_abundances(df, title = "Estimated abundances", midpoint = 0.5)
-#' }
 #'
 #' @export
 heatmap_abundances <- function(res2plot,
@@ -193,7 +191,6 @@ heatmap_abundances <- function(res2plot,
 #' @return A \code{ggplot} object.
 #'
 #' @examples
-#' \dontrun{
 #' df <- data.frame(
 #'   Iterate = 1:50,
 #'   metric  = cumsum(runif(50, -0.01, 0.1))
@@ -208,7 +205,6 @@ heatmap_abundances <- function(res2plot,
 #'   group   = rep(c("Fold 1", "Fold 2"), each = 20)
 #' )
 #' metric_plot(df2)
-#' }
 #'
 #' @export
 metric_plot <- function(perf2plot,

@@ -36,8 +36,6 @@ sampled from the search space defined by \code{hspaceTechniqueChoose},
 with feasibility bounds overlaid for \code{"restrictionEspace"}.
 }
 \examples{
-\dontrun{
 create_gamma_lambda_plot(hspaceTechniqueChoose = "all")
 create_gamma_lambda_plot(hspaceTechniqueChoose = "restrictionEspace")
-}
 }

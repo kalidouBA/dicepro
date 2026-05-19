@@ -31,11 +31,8 @@ effects) and derives ICC(3,1), Concordance correlation coefficient, and relative
 sample-wise correlation and RMSE from \code{\link{samplewise_metrics}}.
 }
 \examples{
-\dontrun{
 set.seed(1)
 x <- matrix(rnorm(100), ncol = 5)
 y <- x + matrix(rnorm(100, sd = 0.1), ncol = 5)
 full_metrics(x, y)
-}
-
 }

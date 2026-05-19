@@ -36,10 +36,9 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
 #' create_gamma_lambda_plot(hspaceTechniqueChoose = "all")
 #' create_gamma_lambda_plot(hspaceTechniqueChoose = "restrictionEspace")
-#' }
+
 create_gamma_lambda_plot <- function(
     hspaceTechniqueChoose = c("all", "restrictionEspace"),
     n_samples             = 200L,

@@ -557,19 +557,9 @@ research_hyperOpt <- function(objective_opt,
 
   config <- .parse_config(config)
 
-  seed <- seed %||% config$seed %||% 42L
-
-  old_state <- if (exists(".Random.seed", .GlobalEnv)) .Random.seed else NULL
-
-  set.seed(seed)
-
-  on.exit({
-    if (!is.null(old_state)) {
-      .Random.seed <<- old_state
-    } else {
-      rm(".Random.seed", envir = .GlobalEnv)
-    }
-  }, add = TRUE)
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
 
   gamma_ratio_min <- config$gamma_ratio_min
 

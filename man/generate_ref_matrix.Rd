@@ -75,11 +75,10 @@ For any other value of \code{loi}, a log-normal model is used: multivariate
 normal draws are exponentiated after a location shift of 6.
 }
 \examples{
-if (interactive()) {
-  set.seed(2101)
-  ref_pois  <- generate_ref_matrix(loi = "rpois", nGenes = 50, nCellsType = 5)
-  ref_gauss <- generate_ref_matrix(loi = "gauss", nGenes = 50, nCellsType = 5)
-  dim(ref_pois)   # 50 x 5
-  dim(ref_gauss)  # 50 x 5
-}
+set.seed(2101)
+ref_pois  <- generate_ref_matrix(loi = "rpois", nGenes = 50, nCellsType = 5)
+ref_gauss <- generate_ref_matrix(loi = "gauss", nGenes = 50, nCellsType = 5)
+dim(ref_pois)   # 50 x 5
+dim(ref_gauss)  # 50 x 5
+
 }

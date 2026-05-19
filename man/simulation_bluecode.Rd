@@ -89,16 +89,14 @@ The function validates at runtime that the cell-type names in
 ensuring consistency between the proportion model and the reference matrix.
 }
 \examples{
-if (interactive()) {
-  sim <- simulation_bluecode(
+sim <- simulation_bluecode(
     nSample    = 30,
     sigma_bio  = 0.15,
     sigma_tech = 0.02,
     seed       = 42
   )
-  dim(sim$p)                            # 30 x 34
-  dim(sim$W)                            # nGenes x 34
-  dim(sim$B)                            # nGenes x 30
-  all(abs(rowSums(sim$p) - 1) < 1e-8)  # TRUE
-}
+dim(sim$p)
+dim(sim$W)
+dim(sim$B)
+all(abs(rowSums(sim$p) - 1) < 1e-8)
 }

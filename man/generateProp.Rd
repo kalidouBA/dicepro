@@ -67,20 +67,17 @@ realistic tissue compartment organization, or a BlueCode-specific
 hierarchical model that preserves real cell-type names.
 }
 \examples{
-if (interactive()) {
-  set.seed(2101)
+set.seed(2101)
 
-  # Equal proportions
-  prop_even <- generateProp(nSample = 20, n_cell_types = 10,
-    scenario = "even")
+# Equal proportions
+prop_even <- generateProp(nSample = 20, n_cell_types = 10, scenario = "even")
 
   # Generic hierarchical Dirichlet
-  prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
-    scenario = "hierarchical")
-  all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
+prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
+scenario = "hierarchical")
+all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
 
-  # BlueCode hierarchical Dirichlet (real cell-type names)
-  prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
-  colnames(prop_bc)  # real BlueCode cell-type names
-}
+# BlueCode hierarchical Dirichlet (real cell-type names)
+prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
+colnames(prop_bc)  # real BlueCode cell-type names
 }

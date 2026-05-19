@@ -116,13 +116,10 @@ samplewise_metrics <- function(obs_mat, pred_mat) {
 #' }
 #'
 #' @examples
-#' \dontrun{
 #' set.seed(1)
 #' x <- matrix(rnorm(100), ncol = 5)
 #' y <- x + matrix(rnorm(100, sd = 0.1), ncol = 5)
 #' full_metrics(x, y)
-#' }
-#'
 #' @export
 full_metrics <- function(x, y) {
 
@@ -147,6 +144,9 @@ full_metrics <- function(x, y) {
 
   n <- nrow(x)
   p <- ncol(x)
+
+  if (is.null(colnames(x))) colnames(x) <- paste0("V", seq_len(p))
+  if (is.null(colnames(y))) colnames(y) <- colnames(x)
 
   df <- data.frame(
     value      = c(as.vector(x), as.vector(y)),

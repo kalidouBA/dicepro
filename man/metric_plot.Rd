@@ -44,7 +44,6 @@ NRMSE, R\eqn{^2}, loss) over NMF iterations. Useful for monitoring
 convergence and diagnosing early stopping.
 }
 \examples{
-\dontrun{
 df <- data.frame(
   Iterate = 1:50,
   metric  = cumsum(runif(50, -0.01, 0.1))
@@ -59,6 +58,5 @@ df2 <- data.frame(
   group   = rep(c("Fold 1", "Fold 2"), each = 20)
 )
 metric_plot(df2)
-}
 
 }

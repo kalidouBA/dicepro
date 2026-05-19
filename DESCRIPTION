@@ -8,13 +8,16 @@ Authors@R: c(
     person("Boris P.", "Hejblum",
            role  = "aut",
            email = "boris.hejblum@u-bordeaux.fr"))
-Description: Performs semi-supervised deconvolution of bulk RNA-seq data.
-    Known cell-type proportions are estimated using supervised methods
-    (CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP, DCQ), while unknown
-    components are inferred using non-negative matrix factorization (NMF)
-    with L-BFGS-B optimization. Hyperparameters are selected automatically
-    using a Pareto-frontier-based approach with knee-point detection,
-    allowing application when the reference signature matrix is incomplete.
+Description: Performs semi-supervised deconvolution of bulk RNA sequencing
+    (RNA-seq) data. Known cell-type proportions are estimated using
+    supervised methods — CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP (Fast
+    And Robust DEconvolution of Expression Profiles), and DCQ (Digital
+    Cell Quantifier) — while unknown components are inferred using
+    non-negative matrix factorization (NMF) with limited-memory
+    Broyden-Fletcher-Goldfarb-Shanno with bounds (L-BFGS-B) optimization.
+    Hyperparameters are selected automatically using a Pareto-frontier-based
+    approach with knee-point detection, allowing application when the
+    reference signature matrix is incomplete.
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
 License: MIT + file LICENSE

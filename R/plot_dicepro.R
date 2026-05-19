@@ -115,7 +115,7 @@ plot_hyperopt <- function(x, ...) UseMethod("plot_hyperopt")
 #'   \code{ggplot2::ggsave()}, or embedded in R Markdown documents.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' out <- dicepro(reference = BlueCode, bulk = CellMixtures,
 #'                methodDeconv = "FARDEEP", hp_max_evals = 50L)
 #' plot_hyperopt(out, params = c("lambda_", "gamma", "p_prime"))

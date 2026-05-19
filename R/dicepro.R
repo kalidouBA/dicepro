@@ -313,8 +313,8 @@
 #' @param N_unknownCT         Positive integer. Number of unknown cell types.
 #' @param algo_select         Character. One of \code{"random"}, \code{"tpe"},
 #'   \code{"atpe"}, \code{"anneal"}.
-#' @param output_path         Character scalar. Root output directory
-#'   (\code{getwd()} by default).
+#' @param output_path Character scalar. Root output directory. Defaults to
+#'   tempdir(); pass an explicit directory to persist results across sessions.
 #' @param hspaceTechniqueChoose Character. \code{"all"} or
 #'   \code{"restrictionEspace"}.
 #' @param out_Decon           Optional precomputed deconvolution matrix
@@ -333,7 +333,7 @@
 #'   \item \code{W}               — estimated unknown signature matrix
 #'   \item \code{H}               — estimated proportion matrix
 #'   \item \code{plot}            — Pareto frontier ggplot2 figure
-#'   \item \code{plot_hyperopt}   — hyperparameter space ggplot2 figure
+#'   \item \code{plot_hyperopt}   — hyper-parameter space ggplot2 figure
 #' }
 #' Returns \code{invisible(NULL)} with a warning when no valid configuration
 #' is found.
@@ -342,12 +342,30 @@
 #'   \code{\link{best_hyperParams}}
 #'
 #' @examples
-#' \dontrun{
-#' res <- dicepro(
-#'   reference    = BlueCode,
-#'   bulk         = CellMixtures,
-#'   methodDeconv = "FARDEEP",
-#'   hp_max_evals = 50L
+#' \donttest{
+#' sim_data <- simulation(
+#'   loi        = "gauss",
+#'   scenario   = "hierarchical",
+#'   nSample    = 30L,
+#'   nGenes     = 200L,
+#'   nCellsType = 10L,
+#'   sigma_bio  = 0.07,
+#'   sigma_tech = 0.07,
+#'   seed       = 2101L
+#' )
+#'
+#' out <- dicepro(
+#'   reference             = as.matrix(sim_data$W)[, -c(1, 5, 10)],
+#'   bulk                  = as.matrix(sim_data$B),
+#'   methodDeconv          = "FARDEEP",
+#'   W_prime               = 0,
+#'   bulkName              = "SimBulk",
+#'   refName               = "SimRef",
+#'   hp_max_evals          = 20L,
+#'   algo_select           = "random",
+#'   output_path           = tempdir(),
+#'   hspaceTechniqueChoose = "all",
+#'   normalize             = FALSE
 #' )
 #' }
 #'
@@ -393,7 +411,7 @@ dicepro <- function(reference,
   dataset <- list(B = bulk, W = reference, P = out_Dec)
 
   # ---- Output directory ----------------------------------------------------
-  if (is.null(output_path)) output_path <- getwd()
+  if (is.null(output_path)) output_path <- tempdir()
   output_dir <- file.path(
     output_path,
     paste0("dicepro_", bulkName, "_", refName)

@@ -109,9 +109,8 @@ and \eqn{\varepsilon^{\text{tech}} \sim \mathcal{N}(0, \sigma^2_{\text{tech}})}.
 Negative values are clipped to zero.
 }
 \examples{
-if (interactive()) {
-  set.seed(2101)
-  sim <- simulation(
+set.seed(2101)
+sim <- simulation(
     scenario   = "hierarchical",
     nSample    = 20,
     nGenes     = 100,
@@ -119,8 +118,7 @@ if (interactive()) {
     sigma_bio  = 0.07,
     sigma_tech = 0.07,
     seed       = 2101
-  )
-  dim(sim$p)  # 20 x 10
-  dim(sim$B)  # 100 x 20
-}
+    )
+dim(sim$p)  # 20 x 10
+dim(sim$B)  # 100 x 20
 }

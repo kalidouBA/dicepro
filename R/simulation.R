@@ -232,22 +232,19 @@
 #' @importFrom stats rnorm runif aggregate
 #'
 #' @examples
-#' if (interactive()) {
-#'   set.seed(2101)
+#' set.seed(2101)
 #'
-#'   # Equal proportions
-#'   prop_even <- generateProp(nSample = 20, n_cell_types = 10,
-#'     scenario = "even")
+#' # Equal proportions
+#' prop_even <- generateProp(nSample = 20, n_cell_types = 10, scenario = "even")
 #'
 #'   # Generic hierarchical Dirichlet
-#'   prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
-#'     scenario = "hierarchical")
-#'   all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
+#' prop_hier <- generateProp(nSample = 20, n_cell_types = 34,
+#' scenario = "hierarchical")
+#' all(abs(rowSums(prop_hier) - 1) < 1e-8)  # TRUE
 #'
-#'   # BlueCode hierarchical Dirichlet (real cell-type names)
-#'   prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
-#'   colnames(prop_bc)  # real BlueCode cell-type names
-#' }
+#' # BlueCode hierarchical Dirichlet (real cell-type names)
+#' prop_bc <- generateProp(nSample = 20, scenario = "bluecode", seed = 42)
+#' colnames(prop_bc)  # real BlueCode cell-type names
 generateProp <- function(n_cell_types   = NULL,
                          nSample,
                          nCell          = 500,
@@ -432,13 +429,12 @@ generateProp <- function(n_cell_types   = NULL,
 #' @importFrom stats runif rbinom rnorm pnorm qpois
 #'
 #' @examples
-#' if (interactive()) {
-#'   set.seed(2101)
-#'   ref_pois  <- generate_ref_matrix(loi = "rpois", nGenes = 50, nCellsType = 5)
-#'   ref_gauss <- generate_ref_matrix(loi = "gauss", nGenes = 50, nCellsType = 5)
-#'   dim(ref_pois)   # 50 x 5
-#'   dim(ref_gauss)  # 50 x 5
-#' }
+#' set.seed(2101)
+#' ref_pois  <- generate_ref_matrix(loi = "rpois", nGenes = 50, nCellsType = 5)
+#' ref_gauss <- generate_ref_matrix(loi = "gauss", nGenes = 50, nCellsType = 5)
+#' dim(ref_pois)   # 50 x 5
+#' dim(ref_gauss)  # 50 x 5
+#'
 generate_ref_matrix <- function(loi              = "rpois",
                                 tpm              = FALSE,
                                 bloc             = FALSE,
@@ -575,9 +571,8 @@ generate_ref_matrix <- function(loi              = "rpois",
 #' @importFrom stats rnorm
 #'
 #' @examples
-#' if (interactive()) {
-#'   set.seed(2101)
-#'   sim <- simulation(
+#' set.seed(2101)
+#' sim <- simulation(
 #'     scenario   = "hierarchical",
 #'     nSample    = 20,
 #'     nGenes     = 100,
@@ -585,10 +580,9 @@ generate_ref_matrix <- function(loi              = "rpois",
 #'     sigma_bio  = 0.07,
 #'     sigma_tech = 0.07,
 #'     seed       = 2101
-#'   )
-#'   dim(sim$p)  # 20 x 10
-#'   dim(sim$B)  # 100 x 20
-#' }
+#'     )
+#' dim(sim$p)  # 20 x 10
+#' dim(sim$B)  # 100 x 20
 simulation <- function(W                = NULL,
                        prop             = NULL,
                        nSample          = 50,
@@ -748,18 +742,16 @@ simulation <- function(W                = NULL,
 #' @importFrom stats rnorm
 #'
 #' @examples
-#' if (interactive()) {
-#'   sim <- simulation_bluecode(
+#' sim <- simulation_bluecode(
 #'     nSample    = 30,
 #'     sigma_bio  = 0.15,
 #'     sigma_tech = 0.02,
 #'     seed       = 42
 #'   )
-#'   dim(sim$p)                            # 30 x 34
-#'   dim(sim$W)                            # nGenes x 34
-#'   dim(sim$B)                            # nGenes x 30
-#'   all(abs(rowSums(sim$p) - 1) < 1e-8)  # TRUE
-#' }
+#' dim(sim$p)
+#' dim(sim$W)
+#' dim(sim$B)
+#' all(abs(rowSums(sim$p) - 1) < 1e-8)
 simulation_bluecode <- function(
     nSample        = 50,
     alpha_groups   = c(

@@ -48,8 +48,8 @@ dicepro(
 \item{algo_select}{Character. One of \code{"random"}, \code{"tpe"},
 \code{"atpe"}, \code{"anneal"}.}
 
-\item{output_path}{Character scalar. Root output directory
-(\code{getwd()} by default).}
+\item{output_path}{Character scalar. Root output directory. Defaults to
+tempdir(); pass an explicit directory to persist results across sessions.}
 
 \item{hspaceTechniqueChoose}{Character. \code{"all"} or
 \code{"restrictionEspace"}.}
@@ -73,7 +73,7 @@ An object of class \code{"dicepro"} (a named list) containing:
 \item \code{W}               — estimated unknown signature matrix
 \item \code{H}               — estimated proportion matrix
 \item \code{plot}            — Pareto frontier ggplot2 figure
-\item \code{plot_hyperopt}   — hyperparameter space ggplot2 figure
+\item \code{plot_hyperopt}   — hyper-parameter space ggplot2 figure
 }
 Returns \code{invisible(NULL)} with a warning when no valid configuration
 is found.
@@ -89,12 +89,30 @@ Gene matrices are optionally z-score normalised per gene, and only
 intersecting genes are retained before optimisation.
 }
 \examples{
-\dontrun{
-res <- dicepro(
-  reference    = BlueCode,
-  bulk         = CellMixtures,
-  methodDeconv = "FARDEEP",
-  hp_max_evals = 50L
+\donttest{
+sim_data <- simulation(
+  loi        = "gauss",
+  scenario   = "hierarchical",
+  nSample    = 30L,
+  nGenes     = 200L,
+  nCellsType = 10L,
+  sigma_bio  = 0.07,
+  sigma_tech = 0.07,
+  seed       = 2101L
+)
+
+out <- dicepro(
+  reference             = as.matrix(sim_data$W)[, -c(1, 5, 10)],
+  bulk                  = as.matrix(sim_data$B),
+  methodDeconv          = "FARDEEP",
+  W_prime               = 0,
+  bulkName              = "SimBulk",
+  refName               = "SimRef",
+  hp_max_evals          = 20L,
+  algo_select           = "random",
+  output_path           = tempdir(),
+  hspaceTechniqueChoose = "all",
+  normalize             = FALSE
 )
 }
 
