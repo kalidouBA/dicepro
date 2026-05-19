@@ -265,7 +265,7 @@ generateProp <- function(n_cell_types   = NULL,
                            Epithelial  = 8,
                            Muscle      = 8
                          ),
-                         seed = 1234) {
+                         seed = NULL) {
 
   if (scenario == "even") {
     # ── Near-equal proportions with small Gaussian perturbation ──────────
@@ -547,7 +547,7 @@ generate_ref_matrix <- function(loi              = "rpois",
 #'   biological noise. Default: \code{0.07}.
 #' @param sigma_tech      Numeric. Standard deviation of additive technical
 #'   noise (proportional to expression level). Default: \code{0.07}.
-#' @param seed            Integer. Random seed. Default: \code{1234}.
+#' @param seed            Integer. Random seed. Default: \code{NULL}.
 #'
 #' @return A named list with three elements:
 #' \describe{
@@ -573,7 +573,7 @@ generate_ref_matrix <- function(loi              = "rpois",
 #' @importFrom stats rnorm
 #'
 #' @examples
-#' set.seed(2101)
+#' set.seed(2026)
 #' sim <- simulation(
 #'   scenario   = "hierarchical",
 #'   nSample    = 20,
@@ -602,7 +602,7 @@ simulation <- function(W                = NULL,
                        prob_sparse      = 0.5,
                        sigma_bio        = 0.07,
                        sigma_tech       = 0.07,
-                       seed             = 1234) {
+                       seed             = NULL) {
   # ── Reference matrix ──────────────────────────────────────────────────────
   if (is.null(W)) {
     W <- generate_ref_matrix(
@@ -631,7 +631,8 @@ simulation <- function(W                = NULL,
       n_cell_types = nCellsType,
       nSample      = nSample,
       nCell        = nCell,
-      scenario     = scenario
+      scenario     = scenario,
+      seed = seed
     )
   }
   prop <- as.matrix(prop)
@@ -640,7 +641,6 @@ simulation <- function(W                = NULL,
   bulk <- as.matrix(W) %*% t(prop)
   rownames(bulk) <- rownames(W)
 
-  set.seed(seed)
 
   # ── Biological noise: multiplicative, mean-zero Gaussian ──────────────────
   bio_noise  <- matrix(
@@ -709,9 +709,8 @@ simulation <- function(W                = NULL,
 #'   noise, expressed as a fraction of the global expression standard
 #'   deviation. Default: \code{0.02}.
 #' @param seed          Integer. Random seed for full reproducibility.
-#'   Proportion sampling uses \code{seed}; noise sampling uses
-#'   \code{seed + 1L} so that both components can be varied independently.
-#'   Default: \code{1234}.
+#'   Proportion sampling uses \code{seed}.
+#'   Default: \code{NULL}.
 #'
 #' @return A named list with three elements:
 #' \describe{
@@ -803,7 +802,6 @@ simulation_bluecode <- function(
   colnames(bulk) <- rownames(prop)
 
   # ── 5. Biological noise: multiplicative log-normal ─────────────────────────
-  # seed + 1L keeps proportion and noise sampling independently reproducible
   bio_noise  <- matrix(
     rnorm(length(bulk), mean = 0, sd = sigma_bio),
     nrow = nrow(bulk), ncol = ncol(bulk)

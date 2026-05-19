@@ -39,9 +39,8 @@ noise, expressed as a fraction of the global expression standard
 deviation. Default: \code{0.02}.}
 
 \item{seed}{Integer. Random seed for full reproducibility.
-Proportion sampling uses \code{seed}; noise sampling uses
-\code{seed + 1L} so that both components can be varied independently.
-Default: \code{1234}.}
+Proportion sampling uses \code{seed}.
+Default: \code{NULL}.}
 }
 \value{
 A named list with three elements:

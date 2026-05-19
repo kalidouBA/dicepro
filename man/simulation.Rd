@@ -22,7 +22,7 @@ simulation(
   prob_sparse = 0.5,
   sigma_bio = 0.07,
   sigma_tech = 0.07,
-  seed = 1234
+  seed = NULL
 )
 }
 \arguments{
@@ -76,7 +76,7 @@ biological noise. Default: \code{0.07}.}
 \item{sigma_tech}{Numeric. Standard deviation of additive technical
 noise (proportional to expression level). Default: \code{0.07}.}
 
-\item{seed}{Integer. Random seed. Default: \code{1234}.}
+\item{seed}{Integer. Random seed. Default: \code{NULL}.}
 }
 \value{
 A named list with three elements:
@@ -109,7 +109,7 @@ and \eqn{\varepsilon^{\text{tech}} \sim \mathcal{N}(0, \sigma^2_{\text{tech}})}.
 Negative values are clipped to zero.
 }
 \examples{
-set.seed(2101)
+set.seed(2026)
 sim <- simulation(
   scenario   = "hierarchical",
   nSample    = 20,

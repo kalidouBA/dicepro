@@ -13,7 +13,7 @@ generateProp(
     = 1.5),
   alpha_subtypes = list(Immune = 8, Stromal = 8, Endothelial = 8, Epithelial = 8, Muscle
     = 8),
-  seed = 1234
+  seed = NULL
 )
 }
 \arguments{
