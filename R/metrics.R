@@ -108,40 +108,23 @@ samplewise_metrics <- function(obs_mat, pred_mat) {
 #'   \item{Correlation_mean}{Mean sample-wise Pearson correlation.}
 #'   \item{RMSE_mean}{Mean sample-wise RMSE.}
 #'   \item{ICC3_adapted}{ICC(3,1) from the mixed model
-#'     (\code{NA} for constant data or when lme4 fails).}
+#'     (\code{NA} for constant data).}
 #'   \item{CCC_adapted}{Concordance correlation coefficient
-#'     (\code{NA} for constant data or when lme4 fails).}
+#'     (\code{NA} for constant data).}
 #'   \item{rRMSE_adapted}{Relative RMSE \eqn{\sqrt{\sigma^2_\varepsilon / V_T}}
-#'     (\code{NA} for constant data or when lme4 fails).}
-#' }
-#'
-#' @examples
-#' set.seed(1)
-#' x <- matrix(rnorm(100), ncol = 5)
-#' y <- x + matrix(rnorm(100, sd = 0.1), ncol = 5)
-#' \donttest{
-#' full_metrics(x, y)
+#'     (\code{NA} for constant data).}
 #' }
 #' @export
 full_metrics <- function(x, y) {
-  if (!requireNamespace("lme4", quietly = TRUE)) {
-    warning("Package 'lme4' is not available. Returning NA for mixed-effects metrics.",
-            call. = FALSE)
-    cor_rmse <- samplewise_metrics(x, y)
-    return(list(
-      Correlation_mean = cor_rmse$Correlation_mean,
-      RMSE_mean        = cor_rmse$RMSE_mean,
-      ICC3_adapted     = NA_real_,
-      CCC_adapted      = NA_real_,
-      rRMSE_adapted    = NA_real_
-    ))
-  }
 
+  if (!requireNamespace("lme4", quietly = TRUE))
+    stop("Package 'lme4' is required for full_metrics().")
   if (!identical(dim(x), dim(y)))
     stop("x and y must have identical dimensions.")
 
   cor_rmse <- samplewise_metrics(x, y)
 
+  # Degenerate case: constant data -> skip mixed model
   if (sd(as.vector(x), na.rm = TRUE) == 0 ||
       sd(as.vector(y), na.rm = TRUE) == 0) {
     return(list(
@@ -166,62 +149,19 @@ full_metrics <- function(x, y) {
     method     = factor(rep(c("obs", "pred"), each = n * p))
   )
 
-  model <- tryCatch({
-    lme4::lmer(
-      value ~ 1 + (1 | population / subject),
-      data    = df,
-      control = lme4::lmerControl(
-        optimizer = "bobyqa",
-        check.conv.singular = .makeOption(lme4::lmerControl()$check.conv.singular, "warning")
-      )
-    )
-  }, error = function(e) {
-    warning("Mixed model failed to converge: ", e$message, call. = FALSE)
-    return(NULL)
-  }, warning = function(w) {
-    warning("Mixed model warning: ", w$message, call. = FALSE)
-    return(suppressWarnings(
-      lme4::lmer(
-        value ~ 1 + (1 | population / subject),
-        data    = df,
-        control = lme4::lmerControl(optimizer = "bobyqa")
-      )
-    ))
-  })
+  model <- lme4::lmer(
+    value ~ 1 + (1 | population / subject),
+    data    = df,
+    control = lme4::lmerControl(optimizer = "bobyqa")
+  )
 
-  if (is.null(model)) {
-    return(list(
-      Correlation_mean = cor_rmse$Correlation_mean,
-      RMSE_mean        = cor_rmse$RMSE_mean,
-      ICC3_adapted     = NA_real_,
-      CCC_adapted      = NA_real_,
-      rRMSE_adapted    = NA_real_
-    ))
-  }
-
-  vc <- tryCatch({
-    lme4::VarCorr(model)
-  }, error = function(e) {
-    warning("Failed to extract variance components: ", e$message, call. = FALSE)
-    return(NULL)
-  })
-
-  if (is.null(vc)) {
-    return(list(
-      Correlation_mean = cor_rmse$Correlation_mean,
-      RMSE_mean        = cor_rmse$RMSE_mean,
-      ICC3_adapted     = NA_real_,
-      CCC_adapted      = NA_real_,
-      rRMSE_adapted    = NA_real_
-    ))
-  }
-
-  var_population <- tryCatch(vc[["population"]][1L, 1L], error = function(e) 0)
-  var_subject    <- tryCatch(vc[["subject:population"]][1L, 1L], error = function(e) 0)
-  var_residual   <- tryCatch(attr(vc, "sc")^2, error = function(e) 0)
+  vc             <- lme4::VarCorr(model)
+  var_population <- vc[["population"]][1L, 1L]
+  var_subject    <- vc[["subject:population"]][1L, 1L]
+  var_residual   <- attr(vc, "sc")^2
   V_T            <- var_population + var_subject
 
-  if (V_T == 0 || is.na(var_residual) || var_residual == 0) {
+  if (V_T == 0) {
     icc3  <- NA_real_
     ccc   <- NA_real_
     rrmse <- NA_real_
@@ -239,6 +179,7 @@ full_metrics <- function(x, y) {
     rRMSE_adapted    = rrmse
   )
 }
+
 
 # -----------------------------------------------------------------------------
 # MakeTable1Tool
