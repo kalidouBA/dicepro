@@ -18,11 +18,11 @@ Named list:
 \item{Correlation_mean}{Mean sample-wise Pearson correlation.}
 \item{RMSE_mean}{Mean sample-wise RMSE.}
 \item{ICC3_adapted}{ICC(3,1) from the mixed model
-(\code{NA} for constant data).}
+(\code{NA} for constant data or when lme4 fails).}
 \item{CCC_adapted}{Concordance correlation coefficient
-(\code{NA} for constant data).}
+(\code{NA} for constant data or when lme4 fails).}
 \item{rRMSE_adapted}{Relative RMSE \eqn{\sqrt{\sigma^2_\varepsilon / V_T}}
-(\code{NA} for constant data).}
+(\code{NA} for constant data or when lme4 fails).}
 }
 }
 \description{
@@ -34,5 +34,7 @@ sample-wise correlation and RMSE from \code{\link{samplewise_metrics}}.
 set.seed(1)
 x <- matrix(rnorm(100), ncol = 5)
 y <- x + matrix(rnorm(100, sd = 0.1), ncol = 5)
+\donttest{
 full_metrics(x, y)
+}
 }
