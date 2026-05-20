@@ -117,7 +117,7 @@ plot_hyperopt <- function(x, ...) UseMethod("plot_hyperopt")
 #' @examples
 #' \donttest{
 #' out <- dicepro(reference = BlueCode, bulk = CellMixtures,
-#'                methodDeconv = "FARDEEP", hp_max_evals = 50L)
+#'                methodDeconv = "FARDEEP", hp_max_evals = 50)
 #' plot_hyperopt(out, params = c("lambda_", "gamma", "p_prime"))
 #' }
 #'
@@ -137,11 +137,11 @@ plot_hyperopt.dicepro <- function(x,
                                   ...) {
 
   trials <- x$trials
-  if (is.null(trials) || nrow(trials) == 0L)
+  if (is.null(trials) || nrow(trials) == 0)
     stop("x$trials is NULL or empty.")
 
   missing_cols <- setdiff(c(params, loss_metric, metric), names(trials))
-  if (length(missing_cols) > 0L)
+  if (length(missing_cols) > 0)
     stop("Columns not found in x$trials: ", paste(missing_cols, collapse = ", "))
 
   .scale_01 <- function(v) {
@@ -166,7 +166,7 @@ plot_hyperopt.dicepro <- function(x,
     values <- lapply(values, `[`, ok)
   }
 
-  categorical <- categorical %||% character(0L)
+  categorical <- categorical %||% character(0)
   for (p in categorical) values[[p]] <- as.character(values[[p]])
 
   sorted_idx <- do.call(order, c(
@@ -195,7 +195,7 @@ plot_hyperopt.dicepro <- function(x,
   df$smaxs  <- seq_along(scores) %in% smaxs
   df$lmaxs  <- lmaxs
   df$cmaxs  <- cmaxs
-  not_log   <- not_log %||% character(0L)
+  not_log   <- not_log %||% character(0)
 
   # ---- Per-panel plot factory -----------------------------------------------
   .make_plot <- function(x_var, y_var, diag = FALSE) {

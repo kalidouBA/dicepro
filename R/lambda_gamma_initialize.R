@@ -29,7 +29,7 @@
 #'       Lower (\eqn{\lambda = 2\gamma}) and upper
 #'       (\eqn{\lambda = 100\gamma}) bounds are drawn.}
 #'   }
-#' @param n_samples Positive integer. Configurations to draw (default \code{200L}).
+#' @param n_samples Positive integer. Configurations to draw (default \code{200}).
 #' @param seed Integer. Random seed used for full pipeline reproducibility.
 #'   Defaults to \code{NULL}.
 #' @return A \code{ggplot2} figure object.
@@ -40,7 +40,7 @@
 #' create_gamma_lambda_plot(hspaceTechniqueChoose = "restrictionEspace")
 create_gamma_lambda_plot <- function(
   hspaceTechniqueChoose = c("all", "restrictionEspace"),
-  n_samples             = 200L,
+  n_samples             = 200,
   seed                  = NULL) {
 
   hspaceTechniqueChoose <- match.arg(hspaceTechniqueChoose)
@@ -78,7 +78,7 @@ create_gamma_lambda_plot <- function(
     gamma_range <- exp(seq(
       log(min(plot_df$gamma, na.rm = TRUE)),
       log(max(plot_df$gamma, na.rm = TRUE)),
-      length.out = 100L
+      length.out = 100
     ))
 
     bounds_df <- data.frame(
@@ -87,7 +87,7 @@ create_gamma_lambda_plot <- function(
       bound_label = rep(
         c("lambda = 2 * gamma (lower bound)",
           "lambda = 100 * gamma (upper bound)"),
-        each = 100L
+        each = 100
       )
     )
 

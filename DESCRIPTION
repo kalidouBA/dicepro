@@ -50,3 +50,4 @@ Suggests:
 URL: https://github.com/kalidouBA/dicepro
 BugReports: https://github.com/kalidouBA/dicepro/issues
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3

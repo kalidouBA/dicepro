@@ -92,7 +92,7 @@
       B[2L] * A[1L]
   )
   den        <- sqrt((B[2L] - A[2L])^2 + (B[1L] - A[1L])^2) + eps
-  knee_score <- num / den   # higher -> stronger knee
+  knee_score <- num / den
 
   best_index <- which.max(knee_score)
   best_row   <- df[best_index, , drop = FALSE]
@@ -271,7 +271,7 @@ best_hyperParams <- function(trials_df,
                              constraint_threshold = 0.1) {
 
   # ── Guard: empty input ──────────────────────────────────────────────────────
-  if (nrow(trials_df) == 0L) {
+  if (nrow(trials_df) == 0) {
     warning("trials_df is empty -- no configurations to evaluate.",
             call. = FALSE)
     return(invisible(NULL))
@@ -280,7 +280,7 @@ best_hyperParams <- function(trials_df,
   # ── Required columns ────────────────────────────────────────────────────────
   required_cols <- c("lambda_", "gamma", "frobNorm", "constraint")
   missing_cols  <- setdiff(required_cols, names(trials_df))
-  if (length(missing_cols) > 0L) {
+  if (length(missing_cols) > 0) {
     stop(
       "trials_df is missing required column(s): ",
       paste(missing_cols, collapse = ", "),
@@ -300,7 +300,7 @@ best_hyperParams <- function(trials_df,
     trials_df$abs_constraint <= constraint_threshold, , drop = FALSE
   ]
 
-  if (nrow(trials_df) == 0L) {
+  if (nrow(trials_df) == 0) {
     warning(sprintf(
       "No trials pass the constraint filter (abs_constraint <= %g).",
       constraint_threshold
@@ -319,7 +319,7 @@ best_hyperParams <- function(trials_df,
   )
   frontier_df <- trials_df[rownames(frontier_result), , drop = FALSE]
 
-  if (nrow(frontier_df) == 0L) {
+  if (nrow(frontier_df) == 0) {
     warning("Pareto frontier is empty after extraction.", call. = FALSE)
     return(invisible(NULL))
   }

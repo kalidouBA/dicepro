@@ -70,7 +70,7 @@ the top 5\\% of trials. Reads all data from \code{x$trials} -- no file I/O.
 \examples{
 \donttest{
 out <- dicepro(reference = BlueCode, bulk = CellMixtures,
-               methodDeconv = "FARDEEP", hp_max_evals = 50L)
+               methodDeconv = "FARDEEP", hp_max_evals = 50)
 plot_hyperopt(out, params = c("lambda_", "gamma", "p_prime"))
 }
 

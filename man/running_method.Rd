@@ -7,10 +7,10 @@
 running_method(
   bulk,
   reference,
-  methodDeconv = "CSx",
+  methodDeconv = "CS",
   cibersortx_email = NULL,
   cibersortx_token = NULL,
-  cibersort_perm = 0L,
+  cibersort_perm = 0,
   cibersort_QN = TRUE
 )
 }
@@ -38,7 +38,7 @@ when \code{methodDeconv = "CSx"}).}
 when \code{methodDeconv = "CSx"}).}
 
 \item{cibersort_perm}{Non-negative integer. Number of permutations for
-CIBERSORT p-values (default \code{0L} = no p-values). Only used when
+CIBERSORT p-values (default \code{0} = no p-values). Only used when
 \code{methodDeconv = "CS"}.}
 
 \item{cibersort_QN}{Logical. Apply quantile normalisation in

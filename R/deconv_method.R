@@ -131,7 +131,7 @@
 #' @param sig_matrix   Numeric matrix. Reference signature (genes x cell types).
 #' @param mixture      Numeric matrix. Bulk expression (genes x samples).
 #' @param perm         Non-negative integer. Permutations for p-values
-#'   (default \code{0L} = no p-values).
+#'   (default \code{0} = no p-values).
 #' @param QN           Logical. Quantile-normalise the mixture (default
 #'   \code{TRUE}).
 #' @param absolute     Logical. Return absolute scores instead of fractions
@@ -147,7 +147,7 @@
 #' @noRd
 .run_cibersort_core <- function(sig_matrix,
                                 mixture,
-                                perm       = 0L,
+                                perm       = 0,
                                 QN         = TRUE,
                                 absolute   = FALSE,
                                 abs_method = "sig.score") {
@@ -160,7 +160,7 @@
 
   # ---- Deduplicate rownames in Y ------------------------------------------
   dups <- nrow(Y) - length(unique(rownames(Y)))
-  if (dups > 0L) {
+  if (dups > 0) {
     warning(sprintf("%d duplicated gene symbol(s) in mixture - made unique.",
                     dups), call. = FALSE)
     rownames(Y) <- make.names(rownames(Y), unique = TRUE)
@@ -185,7 +185,7 @@
 
   # ---- Gene intersection ---------------------------------------------------
   common <- intersect(rownames(X), rownames(Y))
-  if (length(common) == 0L)
+  if (length(common) == 0)
     stop("No common genes between signature matrix and mixture.", call. = FALSE)
   X <- X[common, , drop = FALSE]
   Y <- Y[common, , drop = FALSE]
@@ -194,7 +194,7 @@
   X <- (X - mean(X)) / stats::sd(as.vector(X))
 
   # ---- Empirical null distribution (permutations) -------------------------
-  null_dist <- if (perm > 0L) {
+  null_dist <- if (perm > 0) {
     .run_cibersort_perm(perm, X, Y, absolute, abs_method)
   } else {
     NULL
@@ -274,7 +274,7 @@
 #' @param cibersortx_token Character. CIBERSORTx account token (required
 #'   when \code{methodDeconv = "CSx"}).
 #' @param cibersort_perm   Non-negative integer. Number of permutations for
-#'   CIBERSORT p-values (default \code{0L} = no p-values). Only used when
+#'   CIBERSORT p-values (default \code{0} = no p-values). Only used when
 #'   \code{methodDeconv = "CS"}.
 #' @param cibersort_QN     Logical. Apply quantile normalisation in
 #'   CIBERSORT (default \code{TRUE}). Only used when
@@ -304,13 +304,13 @@
 #' @export
 running_method <- function(bulk,
                            reference,
-                           methodDeconv     = "CSx",
+                           methodDeconv     = "CS",
                            cibersortx_email = NULL,
                            cibersortx_token = NULL,
-                           cibersort_perm   = 0L,
+                           cibersort_perm   = 0,
                            cibersort_QN     = TRUE) {
 
-  valid_methods <- c("CSx", "CS", "DCQ", "FARDEEP")
+  valid_methods <- c("CS", "CSx", "DCQ", "FARDEEP")
 
   methodDeconv <- tryCatch(
     match.arg(methodDeconv, valid_methods),
@@ -330,7 +330,7 @@ running_method <- function(bulk,
 
   # ---- Gene intersection --------------------------------------------------
   common <- intersect(rownames(bulk), rownames(reference))
-  if (length(common) == 0L)
+  if (length(common) == 0)
     stop("No common genes between 'bulk' and 'reference'.", call. = FALSE)
 
   bulk_int <- bulk[common, , drop = FALSE]
@@ -379,7 +379,7 @@ running_method <- function(bulk,
         marker_set        = as.data.frame(rownames(ref_int)),
         alpha_used        = 0.05,
         lambda_min        = 0.2,
-        number_of_repeats = 30L
+        number_of_repeats = 30
       )$average
       raw <- t(raw)
       raw[raw < 0] <- 0
@@ -396,7 +396,7 @@ running_method <- function(bulk,
           Y         = bulk,
           nn        = TRUE,
           intercept = TRUE,
-          permn     = 100L,
+          permn     = 100,
           QN        = FALSE
         )$abs.beta)
       )

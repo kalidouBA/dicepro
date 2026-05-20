@@ -821,7 +821,7 @@ simulation_bluecode <- function(
   rownames(bulk_noisy) <- rownames(bulk)
   colnames(bulk_noisy) <- colnames(bulk)
 
-  # ── 8. Return standardised list ───────────────────────────────────────────
+  # ── 8. Return standard list ───────────────────────────────────────────
   return(list(
     p = as.data.frame(prop),
     W = as.data.frame(W),

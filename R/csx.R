@@ -48,7 +48,7 @@ run_CSx <- function(bulk, reference,
   )
   code <- system(command_to_run)
 
-  if (code != 0L)
+  if (code != 0)
     stop("CIBERSORTx Docker run failed with exit code ", code, call. = FALSE)
 
   out_CSx   <- utils::read.delim2(out_file, row.names = 1)

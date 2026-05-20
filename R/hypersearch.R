@@ -54,7 +54,7 @@ contains_nan_or_inf <- function(value) {
     )
   )
 
-  if (length(char_cols) > 0L) {
+  if (length(char_cols) > 0) {
     rn  <- mat[, char_cols[1L]]
     mat <- mat[, -char_cols, drop = FALSE]
     rownames(mat) <- rn
@@ -196,7 +196,7 @@ objective_opt <- function(dataset,
     x <- result[[nm]]
     if (nm %in% c("H", "W", "p_prime_estm")) {
       if (is.data.frame(x)) as.matrix(x) else x
-    } else if (is.numeric(x) && (is.null(dim(x)) || length(dim(x)) == 0L)) {
+    } else if (is.numeric(x) && (is.null(dim(x)) || length(dim(x)) == 0)) {
       x
     } else if (is.matrix(x) || is.data.frame(x)) {
       num_cols <- vapply(as.data.frame(x), is.numeric, logical(1L))
@@ -209,7 +209,7 @@ objective_opt <- function(dataset,
 
   # Helper: safely extract first element as numeric scalar
   .sc <- function(x) {
-    if (is.null(x) || length(x) == 0L) return(NA_real_)
+    if (is.null(x) || length(x) == 0) return(NA_real_)
     as.numeric(x[[1L]])
   }
 
@@ -280,7 +280,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 
       n_samples    <- ncol(dataset$B)
       n_unknown_ct <- if (
-        !is.null(W_prime) && is.matrix(W_prime) && ncol(W_prime) > 0L
+        !is.null(W_prime) && is.matrix(W_prime) && ncol(W_prime) > 0
       ) ncol(W_prime) else 1L
 
       if (!is.matrix(params$p_prime)) {
@@ -328,7 +328,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
         cp <- returned_dict$current_params
         cp <- cp[!names(cp) %in% c("gamma", "lambda_", "p_prime")]
         cp <- lapply(cp, function(v) {
-          if (is.null(v) || length(v) == 0L) return(NA_real_)
+          if (is.null(v) || length(v) == 0) return(NA_real_)
           if (length(v) == 1L) return(v)
           v[[1L]]
         })
@@ -383,7 +383,7 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #'   required ratio \code{gamma / lambda_}. \code{NULL} disables rejection
 #'   sampling entirely.
 #' @param max_tries Positive integer. Maximum rejection-sampling attempts
-#'   before falling back to the last draw (default \code{100L}).
+#'   before falling back to the last draw (default \code{100}).
 #'
 #' @return A named list of sampled hyperparameter values, plus \code{lambda_}
 #'   when applicable (see *Derived parameters*).
@@ -393,10 +393,10 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #' @noRd
 .sample_from_space <- function(space,
                                gamma_ratio_min = NULL,
-                               max_tries       = 100L) {
+                               max_tries       = 100) {
 
   space_names <- names(space)
-  if (is.null(space_names) || length(space_names) == 0L)
+  if (is.null(space_names) || length(space_names) == 0)
     stop(".sample_from_space: `space` must be a *named* list.")
 
   # Normalise every spec once, delegating entirely to the shared parser.
@@ -495,8 +495,8 @@ objective_wrapper <- function(objective_opt, dataset, config, params,
 #' @return A list with one element \code{tick()}.
 #' @keywords internal
 #' @noRd
-.custom_progress_bar <- function(total, width = 60L) {
-  current <- 0L
+.custom_progress_bar <- function(total, width = 60) {
+  current <- 0
   list(
     tick = function() {
       current  <<- current + 1L
@@ -579,10 +579,10 @@ research_hyperOpt <- function(objective_opt,
     W_list          <- vector("list", n_evals)
     out_deconv_list <- vector("list", n_evals)
 
-    n_startup   <- max(10L, ceiling(sqrt(n_evals)))
+    n_startup   <- max(10, ceiling(sqrt(n_evals)))
     tpe_history <- list()
 
-    pb <- .custom_progress_bar(total = n_evals, width = 60L)
+    pb <- .custom_progress_bar(total = n_evals, width = 60)
 
     for (i in seq_len(n_evals)) {
 
@@ -630,10 +630,10 @@ research_hyperOpt <- function(objective_opt,
     n_ok   <- sum(ok)
     n_fail <- n_evals - n_ok
 
-    if (n_fail > 0L)
+    if (n_fail > 0)
       message(sprintf("%d/%d trial(s) failed and were discarded.", n_fail, n_evals))
 
-    if (n_ok == 0L) {
+    if (n_ok == 0) {
       warning("All ", n_evals, " trials failed -- returning empty results.")
       return(list(trials = data.frame(), W = list(), H = list()))
     }

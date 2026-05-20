@@ -74,9 +74,9 @@ set.seed(2101L)
 sim_data <- simulation(
   loi        = "gauss",
   scenario   = "hierarchical",
-  nSample    = 30L,
-  nGenes     = 200L,
-  nCellsType = 10L,
+  nSample    = 30,
+  nGenes     = 200,
+  nCellsType = 10,
   sigma_bio  = 0.07,
   sigma_tech = 0.07,
   seed       = 2101L
@@ -94,8 +94,8 @@ cat("Row sums   :", round(range(rowSums(sim_data$p)), 4), "\n")
 bulk_clean <- as.matrix(sim_data$W) %*% t(as.matrix(sim_data$p))
 
 plot(
-  bulk_clean[seq_len(500L)],
-  as.matrix(sim_data$B)[seq_len(500L)],
+  bulk_clean[seq_len(500)],
+  as.matrix(sim_data$B)[seq_len(500)],
   xlab = "Clean bulk (first 500 entries)",
   ylab = "Noisy bulk",
   pch  = 19, cex = 0.4, col = "#2c7bb6",
@@ -114,7 +114,7 @@ out <- dicepro(
   W_prime               = 0,
   bulkName              = "SimBulk",
   refName               = "SimRef",
-  hp_max_evals          = 500L,
+  hp_max_evals          = 500,
   algo_select           = "random",
   output_path           = tempdir(),
   hspaceTechniqueChoose = "gamma_dominant",
@@ -229,7 +229,7 @@ cell types:
 library(dicepro)
 
 sim_bc <- simulation_bluecode(
-  nSample    = 30L,
+  nSample    = 30,
   sigma_bio  = 0.15,
   sigma_tech = 0.02,
   seed       = 2101L
@@ -281,8 +281,8 @@ boxplot(
 bulk_clean_bc <- as.matrix(sim_bc$W) %*% t(as.matrix(sim_bc$p))
 
 plot(
-  bulk_clean_bc[seq_len(500L)],
-  as.matrix(sim_bc$B)[seq_len(500L)],
+  bulk_clean_bc[seq_len(500)],
+  as.matrix(sim_bc$B)[seq_len(500)],
   xlab = "Clean bulk (first 500 entries)",
   ylab = "Noisy bulk",
   pch  = 19, cex = 0.4, col = "#74c476",
@@ -301,7 +301,7 @@ out_bc <- dicepro(
   W_prime               = 0,
   bulkName              = "BlueCodeBulk",
   refName               = "BlueCode",
-  hp_max_evals          = 100L,
+  hp_max_evals          = 100,
   algo_select           = "random",
   output_path           = tempdir(),
   hspaceTechniqueChoose = "gamma_dominant",

@@ -236,7 +236,7 @@ MakeTable1Tool <- function(pred_mat, obs_mat) {
 
   # ---- Align to common populations -------------------------------------------
   common <- intersect(colnames(pred_mat), colnames(obs_mat))
-  if (length(common) == 0L)
+  if (length(common) == 0)
     stop("No common populations between pred_mat and obs_mat.")
 
   pred_mat <- pred_mat[, common, drop = FALSE]

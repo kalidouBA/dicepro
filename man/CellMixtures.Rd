@@ -82,7 +82,7 @@ out <- dicepro(
   methodDeconv          = "FARDEEP",
   bulkName              = "CellMixtures",
   refName               = "BlueCode",
-  hp_max_evals          = 100L,
+  hp_max_evals          = 100,
   hspaceTechniqueChoose = "all"
 )
 

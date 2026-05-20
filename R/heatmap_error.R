@@ -112,7 +112,7 @@ heatmap_abundances <- function(res2plot,
   iter_col <- res2plot$Iterate
   ct_cols  <- setdiff(names(res2plot), "Iterate")
 
-  if (length(ct_cols) == 0L)
+  if (length(ct_cols) == 0)
     stop("'res2plot' must contain at least one cell-type column.", call. = FALSE)
 
   # ---- Reshape to long format ----------------------------------------------
@@ -223,7 +223,7 @@ metric_plot <- function(perf2plot,
 
   required_cols <- c("Iterate", "metric")
   missing_cols  <- setdiff(required_cols, names(perf2plot))
-  if (length(missing_cols) > 0L)
+  if (length(missing_cols) > 0)
     stop(sprintf(
       "'perf2plot' must contain columns: %s. Missing: %s.",
       paste(required_cols, collapse = ", "),

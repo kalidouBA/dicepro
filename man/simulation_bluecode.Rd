@@ -24,7 +24,7 @@ concentration parameters for the five tissue compartments
 (Immune, Stromal, Endothelial, Epithelial, Muscle). Larger values
 produce more even compartment proportions.
 Default: \code{c(Immune=4, Stromal=2.5, Endothelial=1.8,
-Epithelial=1.8, Muscle=1.5)}.}
+  Epithelial=1.8, Muscle=1.5)}.}
 
 \item{alpha_subtypes}{Named list with one numeric scalar per compartment.
 Controls the concentration of sub-type Dirichlet draws within each
