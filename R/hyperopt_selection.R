@@ -188,11 +188,11 @@
     ggplot2::labs(
       title    = "Frobenius Norm vs Constraint Deviation \u2014 Pareto Frontier",
       subtitle = sprintf(
-        "Constraint threshold: |1 \u2212 constraint| \u2264 %g",
+        "Constraint threshold: |1 - constraint| <= %g",
         constraint_threshold
       ),
-      x       = "Frobenius Norm (log\u2081\u2080 scale)",
-      y       = "|1 \u2212 Constraint| (log\u2081\u2080 scale)",
+      x       = "Frobenius Norm (log10 scale)",
+      y       = "|1 - Constraint| (log10 scale)",
       caption = "Red diamonds: Pareto frontier  \u2022  Blue star: knee point"
     ) +
     ggplot2::theme_bw() +
