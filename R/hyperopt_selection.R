@@ -193,7 +193,7 @@
       ),
       x       = "Frobenius Norm (log10 scale)",
       y       = "|1 - Constraint| (log10 scale)",
-      caption = "Red diamonds: Pareto frontier  \u2022  Blue star: knee point"
+      caption = "Red diamonds: Pareto frontier -- Blue star: knee point"
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(

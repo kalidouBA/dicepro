@@ -32,7 +32,6 @@ LinkingTo:
     RcppEigen
 Imports:
     Rcpp (>= 1.0.12),
-    RcppEigen,
     lbfgsb3c,
     KraljicMatrix,
     ggplot2,
