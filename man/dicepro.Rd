@@ -152,22 +152,22 @@ needed, unlike \code{"CSx"}.
 sim_data <- simulation(
   loi        = "gauss",
   scenario   = "hierarchical",
-  nSample    = 30,
-  nGenes     = 200,
-  nCellsType = 10,
+  nSample    = 5,
+  nGenes     = 50,
+  nCellsType = 5,
   sigma_bio  = 0.07,
   sigma_tech = 0.07,
-  seed       = 2101L
+  seed       = 2101
 )
 
 out <- dicepro(
-  reference             = as.matrix(sim_data$W)[, -c(1, 5, 10)],
+  reference             = as.matrix(sim_data$W)[, -c(1)],
   bulk                  = as.matrix(sim_data$B),
   methodDeconv          = "FARDEEP",
   W_prime               = 0,
   bulkName              = "SimBulk",
   refName               = "SimRef",
-  hp_max_evals          = 20,
+  hp_max_evals          = 5,
   algo_select           = "random",
   output_path           = tempdir(),
   hspaceTechniqueChoose = "all",

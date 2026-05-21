@@ -116,11 +116,32 @@ plot_hyperopt <- function(x, ...) UseMethod("plot_hyperopt")
 #'
 #' @examples
 #' \donttest{
-#' out <- dicepro(reference = BlueCode, bulk = CellMixtures,
-#'                methodDeconv = "FARDEEP", hp_max_evals = 50)
+#' sim_data <- simulation(
+#'   loi        = "gauss",
+#'   scenario   = "hierarchical",
+#'   nSample    = 5,
+#'   nGenes     = 150,
+#'   nCellsType = 10,
+#'   sigma_bio  = 0.07,
+#'   sigma_tech = 0.07,
+#'   seed       = 2101
+#' )
+#'
+#' out <- dicepro(
+#'   reference             = as.matrix(sim_data$W)[, -c(1, 5, 10)],
+#'   bulk                  = as.matrix(sim_data$B),
+#'   methodDeconv          = "FARDEEP",
+#'   W_prime               = 0,
+#'   bulkName              = "SimBulk",
+#'   refName               = "SimRef",
+#'   hp_max_evals          = 10,
+#'   algo_select           = "random",
+#'   output_path           = tempdir(),
+#'   hspaceTechniqueChoose = "all",
+#'   normalize             = FALSE
+#' )
 #' plot_hyperopt(out, params = c("lambda_", "gamma", "p_prime"))
 #' }
-#'
 #' @rdname plot_hyperopt
 #' @import ggplot2
 #' @importFrom patchwork wrap_plots plot_layout plot_annotation
