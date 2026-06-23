@@ -5,7 +5,7 @@
 \alias{dicepro-package}
 \title{dicepro: Semi-Supervised Deconvolution of Bulk RNA-Seq Data with Hyperparameter Optimization}
 \description{
-Performs semi-supervised deconvolution of bulk RNA sequencing (RNA-seq) data. Known cell-type proportions are estimated using supervised methods -- CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP (Fast And Robust DEconvolution of Expression Profiles), and DCQ (Digital Cell Quantifier) -- while unknown components are inferred using non-negative matrix factorization (NMF) with limited-memory Broyden-Fletcher-Goldfarb-Shanno with bounds (L-BFGS-B) optimization. Hyperparameters are selected automatically using a Pareto-frontier-based approach with knee-point detection, allowing application when the reference signature matrix is incomplete. More details about DICEpro are available in Ba et al. (2026) \doi{ 10.1101/2026.05.XX.XXXXXX TODO (biorxiv)}.
+Performs semi-supervised deconvolution of bulk RNA sequencing (RNA-seq) data. Known cell-type proportions are estimated using supervised methods -- CIBERSORTx (CSx), CIBERSORT (CS), FARDEEP (Fast And Robust DEconvolution of Expression Profiles), and DCQ (Digital Cell Quantifier) -- while unknown components are inferred using non-negative matrix factorization (NMF) with limited-memory Broyden-Fletcher-Goldfarb-Shanno with bounds (L-BFGS-B) optimization. Hyperparameters are selected automatically using a Pareto-frontier-based approach with knee-point detection, allowing application when the reference signature matrix is incomplete. More details about DICEpro are available in Ba et al. (2026) \doi{ 10.64898/2026.06.17.732876}.
 }
 \seealso{
 Useful links:
