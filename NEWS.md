@@ -1,3 +1,5 @@
+# dicepro 1.0.1
+
 # dicepro 1.0.2
 
 # dicepro 0.1.0

@@ -1,6 +1,6 @@
 Package: dicepro
 Title: Semi-Supervised Deconvolution of Bulk RNA-Seq Data with Hyperparameter Optimization
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Kalidou", "BA",
            role  = c("aut", "cre"),
