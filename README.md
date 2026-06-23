@@ -227,6 +227,6 @@ vignette("vignette-real-data",  package = "dicepro")
 If you use dicepro in your research, please cite: **When Less Is Not
 More: *dicepro* Mitigates the Impact of Incomplete Reference Matrices on
 Cellular Frequency Deconvolution.**  
-*Bioinformatics*. doi:
+*Bioinformatics*. doi: <https://doi.org/10.64898/2026.06.17.732876>
 
 ------------------------------------------------------------------------
