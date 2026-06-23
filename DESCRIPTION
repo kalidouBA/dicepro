@@ -18,7 +18,7 @@ Description: Performs semi-supervised deconvolution of bulk RNA sequencing
     Hyperparameters are selected automatically using a Pareto-frontier-based
     approach with knee-point detection, allowing application when the
     reference signature matrix is incomplete. More details about DICEpro are 
-    available in Ba et al. (2026) <doi: 10.1101/2026.05.XX.XXXXXX TODO (biorxiv)>.
+    available in Ba et al. (2026) <doi: 10.64898/2026.06.17.732876>.
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
 License: MIT + file LICENSE
