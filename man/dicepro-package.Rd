@@ -20,6 +20,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Kalidou BA \email{sistm.soft.maintain@gmail.com}
   \item Boris P. Hejblum \email{boris.hejblum@u-bordeaux.fr}
 }
 
