@@ -35,7 +35,7 @@
 #' The column ordering in the matrix follows this partition exactly (columns
 #' 1--9, 10--17, 18--20, 21--25, 26--34).
 #'
-#' \strong{Immune compartment — columns 1--9:}
+#' \strong{Immune compartment -- columns 1--9:}
 #' \enumerate{
 #'   \item \code{B.cell.naive}
 #'   \item \code{B.cell.memory}
@@ -48,7 +48,7 @@
 #'   \item \code{Mature.neutrophil}
 #' }
 #'
-#' \strong{Stromal compartment — columns 10--17:}
+#' \strong{Stromal compartment -- columns 10--17:}
 #' \enumerate{
 #'   \item \code{Fibroblast.cardiac.ventricle}
 #'   \item \code{Fibroblast.of.arm}
@@ -60,14 +60,14 @@
 #'   \item \code{Osteoblast}
 #' }
 #'
-#' \strong{Endothelial compartment — columns 18--20:}
+#' \strong{Endothelial compartment -- columns 18--20:}
 #' \enumerate{
 #'   \item \code{Endothelial.large.blood.vessel}
 #'   \item \code{Endothelial.microvascular.mammary.or.endometrial}
 #'   \item \code{Endothelial.microvascular.non.reproductive}
 #' }
 #'
-#' \strong{Epithelial compartment — columns 21--25:}
+#' \strong{Epithelial compartment -- columns 21--25:}
 #' \enumerate{
 #'   \item \code{Epithelial.cell.mammary}
 #'   \item \code{Epithelial.renal.cortical}
@@ -76,7 +76,7 @@
 #'   \item \code{Melanocyte.of.skin}
 #' }
 #'
-#' \strong{Muscle compartment — columns 26--34:}
+#' \strong{Muscle compartment -- columns 26--34:}
 #' \enumerate{
 #'   \item \code{Smooth.muscle.cell.aortic}
 #'   \item \code{Smooth.muscle.cell.bronchial}
@@ -152,7 +152,7 @@
 #' populations at known proportions across the five tissue compartments
 #' represented in \code{BlueCode}. Each sample targets a distinct
 #' mixture composition, providing a controlled benchmark spanning a wide
-#' range of cell-type abundance profiles — from immune-dominated samples
+#' range of cell-type abundance profiles -- from immune-dominated samples
 #' to Stromal- or muscle-enriched configurations.
 #'
 #' ## Gene coverage

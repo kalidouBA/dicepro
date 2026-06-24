@@ -16,8 +16,8 @@ metric_plot(
 \arguments{
 \item{perf2plot}{A \code{data.frame} with at least two columns:
 \itemize{
-\item \code{Iterate} — iteration index (numeric or integer).
-\item \code{metric}  — scalar performance value at each iteration.
+\item \code{Iterate} -- iteration index (numeric or integer).
+\item \code{metric}  -- scalar performance value at each iteration.
 }
 Optionally a \code{group} column (character or factor) to draw
 multiple colored lines, one per group.}

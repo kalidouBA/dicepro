@@ -794,8 +794,8 @@ research_hyperOpt <- function(objective_opt,
 
 #' Parse one hyper-parameter search-space specification
 #'
-#' Converts a raw specification — either an atomic vector
-#' \code{c(type, low, high, ...)} or an already-structured named list — into
+#' Converts a raw specification -- either an atomic vector
+#' \code{c(type, low, high, ...)} or an already-structured named list -- into
 #' the canonical named list consumed by \code{\link{.sample_from_space}}.
 #'
 #' If \code{specs} is already a named list containing a \code{type} field it
@@ -819,7 +819,7 @@ research_hyperOpt <- function(objective_opt,
 #'   \item{\code{qlognormal}}{Quantised log-normal.}
 #' }
 #'
-#' @param arg   Character scalar. Parameter name — used only in error messages
+#' @param arg   Character scalar. Parameter name -- used only in error messages
 #'   to pinpoint the offending spec.
 #' @param specs Atomic vector or list. When atomic, element 1 is the type
 #'   string and subsequent elements are the bounds / parameters in the order

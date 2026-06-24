@@ -47,7 +47,7 @@ The 34 cell types are partitioned into five major tissue compartments.
 The column ordering in the matrix follows this partition exactly (columns
 1--9, 10--17, 18--20, 21--25, 26--34).
 
-\strong{Immune compartment — columns 1--9:}
+\strong{Immune compartment -- columns 1--9:}
 \enumerate{
 \item \code{B.cell.naive}
 \item \code{B.cell.memory}
@@ -60,7 +60,7 @@ The column ordering in the matrix follows this partition exactly (columns
 \item \code{Mature.neutrophil}
 }
 
-\strong{Stromal compartment — columns 10--17:}
+\strong{Stromal compartment -- columns 10--17:}
 \enumerate{
 \item \code{Fibroblast.cardiac.ventricle}
 \item \code{Fibroblast.of.arm}
@@ -72,14 +72,14 @@ The column ordering in the matrix follows this partition exactly (columns
 \item \code{Osteoblast}
 }
 
-\strong{Endothelial compartment — columns 18--20:}
+\strong{Endothelial compartment -- columns 18--20:}
 \enumerate{
 \item \code{Endothelial.large.blood.vessel}
 \item \code{Endothelial.microvascular.mammary.or.endometrial}
 \item \code{Endothelial.microvascular.non.reproductive}
 }
 
-\strong{Epithelial compartment — columns 21--25:}
+\strong{Epithelial compartment -- columns 21--25:}
 \enumerate{
 \item \code{Epithelial.cell.mammary}
 \item \code{Epithelial.renal.cortical}
@@ -88,7 +88,7 @@ The column ordering in the matrix follows this partition exactly (columns
 \item \code{Melanocyte.of.skin}
 }
 
-\strong{Muscle compartment — columns 26--34:}
+\strong{Muscle compartment -- columns 26--34:}
 \enumerate{
 \item \code{Smooth.muscle.cell.aortic}
 \item \code{Smooth.muscle.cell.bronchial}

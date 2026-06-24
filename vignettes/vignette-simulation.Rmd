@@ -45,7 +45,7 @@ Two simulation strategies are available and covered here:
 | `simulation()` | Synthetic (generated internally) | Generic (`CellType_k`) | Flexible benchmarking with custom parameters |
 | `simulation_bluecode()` | BlueCode (bundled real reference) | Real biological names | Realistic benchmarking on human tissue cell types |
 
-Both functions return the same standardized triplet — `$W`, `$p`, `$B` —
+Both functions return the same standardized triplet -- `$W`, `$p`, `$B` --
 and are fully interchangeable as input to `dicepro()`.
 
 The pipeline proceeds in four stages:
@@ -59,7 +59,7 @@ The pipeline proceeds in four stages:
 
 ---
 
-# Strategy 1 — Fully Synthetic Simulation
+# Strategy 1 -- Fully Synthetic Simulation
 
 `simulation()` generates a self-consistent triplet from scratch: a synthetic
 reference matrix `$W`, ground-truth proportion matrix `$p`, and noisy bulk
@@ -198,11 +198,11 @@ knitr::kable(perf$Perf, digits = 3,
 
 ---
 
-# Strategy 2 — BlueCode-Based Simulation
+# Strategy 2 -- BlueCode-Based Simulation
 
 `simulation_bluecode()` uses the **BlueCode** reference matrix bundled with
-the package — a curated signature matrix covering 34 human cell types across
-five tissue compartments — as the fixed reference `$W`. Proportions are
+the package -- a curated signature matrix covering 34 human cell types across
+five tissue compartments -- as the fixed reference `$W`. Proportions are
 simulated via a two-level Dirichlet hierarchy that reflects the biological
 organisation of human tissues.
 
@@ -351,7 +351,7 @@ plot(
   xlab = "True proportions",
   ylab = "Predicted proportions",
   pch  = 19, cex = 0.5, col = "#74c47699",
-  main = sprintf("True vs Predicted — BlueCode  (r = %.3f)", r_overall_bc)
+  main = sprintf("True vs Predicted -- BlueCode  (r = %.3f)", r_overall_bc)
 )
 abline(0, 1, col = "firebrick", lwd = 1.5)
 ```

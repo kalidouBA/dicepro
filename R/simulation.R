@@ -132,8 +132,8 @@
 # Internal proportion sampler for the BlueCode hierarchical scenario
 #
 # Implements a two-level Dirichlet model:
-#   Level 1 — tissue compartment proportions drawn from Dirichlet(alpha_groups)
-#   Level 2 — cell-type sub-proportions within each compartment drawn from
+#   Level 1 -- tissue compartment proportions drawn from Dirichlet(alpha_groups)
+#   Level 2 -- cell-type sub-proportions within each compartment drawn from
 #              Dirichlet(rep(alpha_subtypes[[grp]], n_subtypes)) and scaled
 #              by the compartment proportion.
 #
@@ -681,10 +681,10 @@ simulation <- function(W                = NULL,
 #' The proportion model follows a two-level Dirichlet hierarchy that mirrors
 #' the biological organization of human tissues:
 #' \enumerate{
-#'   \item \strong{Compartment level} — five major tissue compartments
+#'   \item \strong{Compartment level} -- five major tissue compartments
 #'     (Immune, Stromal, Endothelial, Epithelial, Muscle) are drawn from
 #'     \eqn{\text{Dirichlet}(\alpha_{\text{groups}})}.
-#'   \item \strong{Cell-type level} — within each compartment, sub-type
+#'   \item \strong{Cell-type level} -- within each compartment, sub-type
 #'     proportions are drawn from a symmetric Dirichlet controlled by
 #'     \code{alpha_subtypes} and scaled by the compartment proportion.
 #' }

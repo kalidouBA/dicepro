@@ -36,7 +36,7 @@ The 12 mixture samples (A--L) were prepared by combining sorted cell
 populations at known proportions across the five tissue compartments
 represented in \code{BlueCode}. Each sample targets a distinct
 mixture composition, providing a controlled benchmark spanning a wide
-range of cell-type abundance profiles — from immune-dominated samples
+range of cell-type abundance profiles -- from immune-dominated samples
 to Stromal- or muscle-enriched configurations.
 }
 

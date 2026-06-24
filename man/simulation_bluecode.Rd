@@ -24,7 +24,7 @@ concentration parameters for the five tissue compartments
 (Immune, Stromal, Endothelial, Epithelial, Muscle). Larger values
 produce more even compartment proportions.
 Default: \code{c(Immune=4, Stromal=2.5, Endothelial=1.8,
-Epithelial=1.8, Muscle=1.5)}.}
+  Epithelial=1.8, Muscle=1.5)}.}
 
 \item{alpha_subtypes}{Named list with one numeric scalar per compartment.
 Controls the concentration of sub-type Dirichlet draws within each
@@ -62,10 +62,10 @@ proportions, then applying biological and technical noise.
 The proportion model follows a two-level Dirichlet hierarchy that mirrors
 the biological organization of human tissues:
 \enumerate{
-\item \strong{Compartment level} — five major tissue compartments
+\item \strong{Compartment level} -- five major tissue compartments
 (Immune, Stromal, Endothelial, Epithelial, Muscle) are drawn from
 \eqn{\text{Dirichlet}(\alpha_{\text{groups}})}.
-\item \strong{Cell-type level} — within each compartment, sub-type
+\item \strong{Cell-type level} -- within each compartment, sub-type
 proportions are drawn from a symmetric Dirichlet controlled by
 \code{alpha_subtypes} and scaled by the compartment proportion.
 }

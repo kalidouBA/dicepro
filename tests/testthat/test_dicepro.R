@@ -8,7 +8,7 @@ test_that("dicepro runs on simulated data with incomplete reference", {
   nGenes     <- 50
   nSample    <- 10
 
-  # ---- Simulate — single call guarantees W / p / B column alignment -------
+  # ---- Simulate -- single call guarantees W / p / B column alignment -------
   sim <- simulation(
     loi        = "gauss",
     scenario   = "hierarchical",
@@ -48,7 +48,7 @@ test_that("dicepro runs on simulated data with incomplete reference", {
     seed = 2026
   )
   if (is.null(out)) {
-    skip("All hyperparameter trials failed — increase nGenes/nCellsType or hp_max_evals.")
+    skip("All hyperparameter trials failed -- increase nGenes/nCellsType or hp_max_evals.")
   }
 
 

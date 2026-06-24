@@ -14,7 +14,7 @@ Proportions from RNA-seq Data
 
 Bulk RNA-seq deconvolution infers the proportions of distinct cell types
 from a mixed gene expression profile. Most existing methods assume that
-the reference signature matrix is *complete* — i.e., that every cell
+the reference signature matrix is *complete* – i.e., that every cell
 population present in the bulk sample is represented. In practice this
 assumption rarely holds, leading to biased estimates.
 
@@ -35,15 +35,15 @@ knee-point procedure, so no manual tuning is required.
 
 ## Key Features
 
-- **Incomplete-reference robustness** — recovers cell types absent from
+- **Incomplete-reference robustness** – recovers cell types absent from
   the reference matrix.
-- **Method-agnostic supervised step** — plug in any supported
+- **Method-agnostic supervised step** – plug in any supported
   deconvolution backend.
-- **Automated hyper-parameter search** — random search over a
+- **Automated hyper-parameter search** – random search over a
   log-uniform grid with Pareto-optimal selection.
-- **Bundled benchmark data** — `BlueCode` (34-cell-type reference) and
+- **Bundled benchmark data** – `BlueCode` (34-cell-type reference) and
   `CellMixtures` (12 experimentally mixed bulk samples) included.
-- **Rich diagnostics** — Pareto plot and hyper-parameter scatter matrix
+- **Rich diagnostics** – Pareto plot and hyper-parameter scatter matrix
   saved automatically to `output_path/report/`.
 
 ------------------------------------------------------------------------
@@ -126,7 +126,7 @@ head(out$H)
 CIBERSORTx (`methodDeconv = "CSx"`) requires Docker and a personal
 token.
 
-**Step 1 — Install Docker Desktop**
+**Step 1 – Install Docker Desktop**
 
 Download from <https://www.docker.com/products/docker-desktop/>, open
 it, log in, then pull the CIBERSORTx image from a terminal:
@@ -135,13 +135,13 @@ it, log in, then pull the CIBERSORTx image from a terminal:
 docker pull cibersortx/fractions
 ```
 
-**Step 2 — Obtain a token**
+**Step 2 – Obtain a token**
 
 Request a token at <https://cibersortx.stanford.edu/> (you will first
 need to register). Tokens are tied to your account and expire
 periodically; request a new one when the existing token has expired.
 
-**Step 3 — Run dicepro with CIBERSORTx**
+**Step 3 – Run dicepro with CIBERSORTx**
 
 ``` r
 out <- dicepro(

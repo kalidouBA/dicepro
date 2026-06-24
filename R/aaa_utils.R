@@ -1,5 +1,5 @@
 # =============================================================================
-# utils.R  — package-wide helpers, operators, and global variable declarations
+# utils.R  -- package-wide helpers, operators, and global variable declarations
 #
 # Private fns : convert_matrix_to_df(), .generate_experiment_paths(), `%||%`
 # No public exports (all helpers are internal)
