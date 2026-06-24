@@ -182,7 +182,7 @@ full_metrics <- function(x, y) {
 
 
 # -----------------------------------------------------------------------------
-# MakeTable1Tool
+# makeTable1Tool
 # -----------------------------------------------------------------------------
 
 #' Build a performance metrics table for composition matrices
@@ -213,7 +213,7 @@ full_metrics <- function(x, y) {
 #' @seealso \code{\link{full_metrics}}, \code{\link{row_norm_pos}}
 #'
 #' @export
-MakeTable1Tool <- function(pred_mat, obs_mat) {
+makeTable1Tool <- function(pred_mat, obs_mat) {
 
   na_row <- data.frame(
     Correlation      = NA_real_,

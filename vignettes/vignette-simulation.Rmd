@@ -191,7 +191,7 @@ abline(v = 0.7, lty = 2, col = "gray40")
 ### Quantitative Performance Metrics
 
 ```{r perf-metrics-synthetic}
-perf <- MakeTable1Tool(pred_mat = pred_common, obs_mat = true_common)
+perf <- makeTable1Tool(pred_mat = pred_common, obs_mat = true_common)
 knitr::kable(perf$Perf, digits = 3,
              caption = "Performance metrics -- fully synthetic data")
 ```
@@ -378,7 +378,7 @@ abline(v = 0.7, lty = 2, col = "gray40")
 ### Quantitative Performance Metrics
 
 ```{r perf-metrics-bluecode}
-perf_bc <- MakeTable1Tool(pred_mat = pred_common_bc, obs_mat = true_common_bc)
+perf_bc <- makeTable1Tool(pred_mat = pred_common_bc, obs_mat = true_common_bc)
 knitr::kable(perf_bc$Perf, digits = 3,
              caption = "Performance metrics -- BlueCode simulation")
 ```
